@@ -1,0 +1,44 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/vmachado/CLionProjects/nncpp_exec/Layer.h
+Matrix.h
+/home/vmachado/CLionProjects/nncpp_exec/Matrix.h
+
+/home/vmachado/CLionProjects/nncpp_exec/Matrix.h
+cstring
+-
+array
+-
+cmath
+-
+cblas.h
+-
+cassert
+-
+random
+-
+chrono
+-
+
+/home/vmachado/CLionProjects/nncpp_exec/NeuralNet.h
+Layer.h
+/home/vmachado/CLionProjects/nncpp_exec/Layer.h
+ctime
+-
+fstream
+-
+iostream
+-
+
+/home/vmachado/CLionProjects/nncpp_exec/main.cpp
+iostream
+-
+NeuralNet.h
+/home/vmachado/CLionProjects/nncpp_exec/NeuralNet.h
+

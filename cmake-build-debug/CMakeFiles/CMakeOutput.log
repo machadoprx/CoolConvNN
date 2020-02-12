@@ -1,0 +1,426 @@
+The system is: Linux - 4.19.102-111.lts2018 - x86_64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: /usr/bin/gcc 
+Build flags: -g;-O3;-feliminate-unused-debug-types;;-pipe;-Wall;-Wp,-D_FORTIFY_SOURCE=2;-fexceptions;-fstack-protector;--param=ssp-buffer-size=32;-Wformat;-Wformat-security;-m64;;-fasynchronous-unwind-tables;-Wp,-D_REENTRANT;-ftree-loop-distribute-patterns;-Wl,-z;-Wl,now;-Wl,-z;-Wl,relro;-fno-semantic-interposition;-ffat-lto-objects;;-fno-trapping-math;-Wl,-sort-common;-Wl,--enable-new-dtags;-mtune=skylake;;-Wa,-mbranches-within-32B-boundaries
+Id flags:  
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+
+The C compiler identification is GNU, found in "/home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/3.15.3/CompilerIdC/a.out"
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler: /usr/bin/g++ 
+Build flags: -g;-O3;-feliminate-unused-debug-types;;-pipe;-Wall;-Wp,-D_FORTIFY_SOURCE=2;-fexceptions;-fstack-protector;--param=ssp-buffer-size=32;-Wformat;-Wformat-security;-m64;;-fasynchronous-unwind-tables;-Wp,-D_REENTRANT;-ftree-loop-distribute-patterns;-Wl,-z;-Wl,now;-Wl,-z;-Wl,relro;-fno-semantic-interposition;-ffat-lto-objects;;-fno-trapping-math;-Wl,-sort-common;-Wl,--enable-new-dtags;-mtune=skylake;;-Wa,-mbranches-within-32B-boundaries;-fvisibility-inlines-hidden;-Wl,--enable-new-dtags;
+Id flags:  
+
+The output was:
+0
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+
+The CXX compiler identification is GNU, found in "/home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/3.15.3/CompilerIdCXX/a.out"
+
+Determining if the C compiler works passed with the following output:
+Change Dir: /home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake cmTC_5e06b/fast && /usr/bin/gmake -f CMakeFiles/cmTC_5e06b.dir/build.make CMakeFiles/cmTC_5e06b.dir/build
+gmake[1]: Entering directory '/home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_5e06b.dir/testCCompiler.c.o
+/usr/bin/gcc   -g -O3 -feliminate-unused-debug-types  -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -m64  -fasynchronous-unwind-tables -Wp,-D_REENTRANT -ftree-loop-distribute-patterns -Wl,-z -Wl,now -Wl,-z -Wl,relro -fno-semantic-interposition -ffat-lto-objects  -fno-trapping-math -Wl,-sort-common -Wl,--enable-new-dtags -mtune=skylake  -Wa,-mbranches-within-32B-boundaries    -o CMakeFiles/cmTC_5e06b.dir/testCCompiler.c.o   -c /home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTC_5e06b
+/home/vmachado/Documents/clion-2019.3.3/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_5e06b.dir/link.txt --verbose=1
+/usr/bin/gcc -g -O3 -feliminate-unused-debug-types  -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -m64  -fasynchronous-unwind-tables -Wp,-D_REENTRANT -ftree-loop-distribute-patterns -Wl,-z -Wl,now -Wl,-z -Wl,relro -fno-semantic-interposition -ffat-lto-objects  -fno-trapping-math -Wl,-sort-common -Wl,--enable-new-dtags -mtune=skylake  -Wa,-mbranches-within-32B-boundaries     CMakeFiles/cmTC_5e06b.dir/testCCompiler.c.o  -o cmTC_5e06b 
+gmake[1]: Leaving directory '/home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: /home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake cmTC_8af0c/fast && /usr/bin/gmake -f CMakeFiles/cmTC_8af0c.dir/build.make CMakeFiles/cmTC_8af0c.dir/build
+gmake[1]: Entering directory '/home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building C object CMakeFiles/cmTC_8af0c.dir/CMakeCCompilerABI.c.o
+/usr/bin/gcc   -g -O3 -feliminate-unused-debug-types  -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -m64  -fasynchronous-unwind-tables -Wp,-D_REENTRANT -ftree-loop-distribute-patterns -Wl,-z -Wl,now -Wl,-z -Wl,relro -fno-semantic-interposition -ffat-lto-objects  -fno-trapping-math -Wl,-sort-common -Wl,--enable-new-dtags -mtune=skylake  -Wa,-mbranches-within-32B-boundaries    -v -o CMakeFiles/cmTC_8af0c.dir/CMakeCCompilerABI.c.o   -c /home/vmachado/Documents/clion-2019.3.3/bin/cmake/linux/share/cmake-3.15/Modules/CMakeCCompilerABI.c
+Using built-in specs.
+COLLECT_AS_OPTION=-Wa,-mbranches-within-32B-boundaries
+COLLECT_GCC=/usr/bin/gcc
+Target: x86_64-generic-linux
+Configured with: ../gcc-9.2.0/configure --prefix=/usr --with-pkgversion='Clear Linux OS for Intel Architecture' --libdir=/usr/lib64 --enable-libstdcxx-pch --libexecdir=/usr/lib64 --with-system-zlib --enable-shared --enable-gnu-indirect-function --disable-vtable-verify --enable-threads=posix --enable-__cxa_atexit --enable-plugin --enable-ld=default --enable-clocale=gnu --disable-multiarch --enable-multilib --enable-lto --disable-werror --enable-linker-build-id --build=x86_64-generic-linux --target=x86_64-generic-linux --enable-languages=c,c++,fortran,go --enable-bootstrap --with-ppl=yes --with-isl --includedir=/usr/include --exec-prefix=/usr --with-glibc-version=2.19 --disable-libunwind-exceptions --with-gnu-ld --with-tune=haswell --with-arch=westmere --enable-cet --disable-libmpx --with-gcc-major-version-only --enable-default-pie
+Thread model: posix
+gcc version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4 (Clear Linux OS for Intel Architecture) 
+COLLECT_GCC_OPTIONS='-g' '-O3' '-feliminate-unused-debug-types' '-pipe' '-Wall' '-fexceptions' '-fstack-protector' '--param' 'ssp-buffer-size=32' '-Wformat=1' '-Wformat-security' '-m64' '-fasynchronous-unwind-tables' '-ftree-loop-distribute-patterns' '-fno-semantic-interposition' '-ffat-lto-objects' '-fno-trapping-math' '-mtune=skylake' '-v' '-o' 'CMakeFiles/cmTC_8af0c.dir/CMakeCCompilerABI.c.o' '-c' '-march=westmere'
+ /usr/lib64/gcc/x86_64-generic-linux/9/cc1 -quiet -v -D_FORTIFY_SOURCE=2 -D_REENTRANT /home/vmachado/Documents/clion-2019.3.3/bin/cmake/linux/share/cmake-3.15/Modules/CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -m64 -mtune=skylake -march=westmere -auxbase-strip CMakeFiles/cmTC_8af0c.dir/CMakeCCompilerABI.c.o -g -O3 -Wall -Wformat=1 -Wformat-security -version -feliminate-unused-debug-types -fexceptions -fstack-protector -fasynchronous-unwind-tables -ftree-loop-distribute-patterns -fno-semantic-interposition -ffat-lto-objects -fno-trapping-math --param ssp-buffer-size=32 -o - |
+ as -v --64 -mbranches-within-32B-boundaries -o CMakeFiles/cmTC_8af0c.dir/CMakeCCompilerABI.c.o
+GNU assembler version 2.34.0 (x86_64-generic-linux) using BFD version (GNU Binutils) 2.34.0.20190203
+GNU C17 (Clear Linux OS for Intel Architecture) version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4 (x86_64-generic-linux)
+	compiled by GNU C version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4, GMP version 6.1.2, MPFR version 4.0.2, MPC version 1.1.0, isl version isl-0.16.1-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring nonexistent directory "/usr/local/include"
+ignoring nonexistent directory "/usr/lib64/gcc/x86_64-generic-linux/9/../../../../x86_64-generic-linux/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ /usr/lib64/gcc/x86_64-generic-linux/9/include
+ /usr/lib64/gcc/x86_64-generic-linux/9/include-fixed
+ /usr/include
+End of search list.
+GNU C17 (Clear Linux OS for Intel Architecture) version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4 (x86_64-generic-linux)
+	compiled by GNU C version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4, GMP version 6.1.2, MPFR version 4.0.2, MPC version 1.1.0, isl version isl-0.16.1-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: c9289ae5f8387fe3976af6e8db8b9ecb
+COMPILER_PATH=/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/:/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/
+LIBRARY_PATH=/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib64/gcc/x86_64-generic-linux/9/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-g' '-O3' '-feliminate-unused-debug-types' '-pipe' '-Wall' '-fexceptions' '-fstack-protector' '--param' 'ssp-buffer-size=32' '-Wformat=1' '-Wformat-security' '-m64' '-fasynchronous-unwind-tables' '-ftree-loop-distribute-patterns' '-fno-semantic-interposition' '-ffat-lto-objects' '-fno-trapping-math' '-mtune=skylake' '-v' '-o' 'CMakeFiles/cmTC_8af0c.dir/CMakeCCompilerABI.c.o' '-c' '-march=westmere'
+Linking C executable cmTC_8af0c
+/home/vmachado/Documents/clion-2019.3.3/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_8af0c.dir/link.txt --verbose=1
+/usr/bin/gcc -g -O3 -feliminate-unused-debug-types  -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -m64  -fasynchronous-unwind-tables -Wp,-D_REENTRANT -ftree-loop-distribute-patterns -Wl,-z -Wl,now -Wl,-z -Wl,relro -fno-semantic-interposition -ffat-lto-objects  -fno-trapping-math -Wl,-sort-common -Wl,--enable-new-dtags -mtune=skylake  -Wa,-mbranches-within-32B-boundaries    -v CMakeFiles/cmTC_8af0c.dir/CMakeCCompilerABI.c.o  -o cmTC_8af0c 
+Using built-in specs.
+COLLECT_AS_OPTION=-Wa,-mbranches-within-32B-boundaries
+COLLECT_GCC=/usr/bin/gcc
+COLLECT_LTO_WRAPPER=/usr/lib64/gcc/x86_64-generic-linux/9/lto-wrapper
+Target: x86_64-generic-linux
+Configured with: ../gcc-9.2.0/configure --prefix=/usr --with-pkgversion='Clear Linux OS for Intel Architecture' --libdir=/usr/lib64 --enable-libstdcxx-pch --libexecdir=/usr/lib64 --with-system-zlib --enable-shared --enable-gnu-indirect-function --disable-vtable-verify --enable-threads=posix --enable-__cxa_atexit --enable-plugin --enable-ld=default --enable-clocale=gnu --disable-multiarch --enable-multilib --enable-lto --disable-werror --enable-linker-build-id --build=x86_64-generic-linux --target=x86_64-generic-linux --enable-languages=c,c++,fortran,go --enable-bootstrap --with-ppl=yes --with-isl --includedir=/usr/include --exec-prefix=/usr --with-glibc-version=2.19 --disable-libunwind-exceptions --with-gnu-ld --with-tune=haswell --with-arch=westmere --enable-cet --disable-libmpx --with-gcc-major-version-only --enable-default-pie
+Thread model: posix
+gcc version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4 (Clear Linux OS for Intel Architecture) 
+COMPILER_PATH=/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/:/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/
+LIBRARY_PATH=/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib64/gcc/x86_64-generic-linux/9/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-g' '-O3' '-feliminate-unused-debug-types' '-pipe' '-Wall' '-fexceptions' '-fstack-protector' '--param' 'ssp-buffer-size=32' '-Wformat=1' '-Wformat-security' '-m64' '-fasynchronous-unwind-tables' '-ftree-loop-distribute-patterns' '-fno-semantic-interposition' '-ffat-lto-objects' '-fno-trapping-math' '-mtune=skylake' '-v' '-o' 'cmTC_8af0c' '-march=westmere'
+ /usr/lib64/gcc/x86_64-generic-linux/9/collect2 -plugin /usr/lib64/gcc/x86_64-generic-linux/9/liblto_plugin.so -plugin-opt=/usr/lib64/gcc/x86_64-generic-linux/9/lto-wrapper -plugin-opt=-fresolution=/tmp/ccDdyvcr.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -o cmTC_8af0c /usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-generic-linux/9/crtbeginS.o -L/usr/lib64/gcc/x86_64-generic-linux/9 -L/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib64/gcc/x86_64-generic-linux/9/../../.. -z now -z relro -sort-common --enable-new-dtags CMakeFiles/cmTC_8af0c.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib64/gcc/x86_64-generic-linux/9/crtendS.o /usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/crtn.o
+COLLECT_GCC_OPTIONS='-g' '-O3' '-feliminate-unused-debug-types' '-pipe' '-Wall' '-fexceptions' '-fstack-protector' '--param' 'ssp-buffer-size=32' '-Wformat=1' '-Wformat-security' '-m64' '-fasynchronous-unwind-tables' '-ftree-loop-distribute-patterns' '-fno-semantic-interposition' '-ffat-lto-objects' '-fno-trapping-math' '-mtune=skylake' '-v' '-o' 'cmTC_8af0c' '-march=westmere'
+gmake[1]: Leaving directory '/home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+
+Parsed C implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [/usr/lib64/gcc/x86_64-generic-linux/9/include]
+    add: [/usr/lib64/gcc/x86_64-generic-linux/9/include-fixed]
+    add: [/usr/include]
+  end of search list found
+  collapse include dir [/usr/lib64/gcc/x86_64-generic-linux/9/include] ==> [/usr/lib64/gcc/x86_64-generic-linux/9/include]
+  collapse include dir [/usr/lib64/gcc/x86_64-generic-linux/9/include-fixed] ==> [/usr/lib64/gcc/x86_64-generic-linux/9/include-fixed]
+  collapse include dir [/usr/include] ==> [/usr/include]
+  implicit include dirs: [/usr/lib64/gcc/x86_64-generic-linux/9/include;/usr/lib64/gcc/x86_64-generic-linux/9/include-fixed;/usr/include]
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):/usr/bin/gmake cmTC_8af0c/fast && /usr/bin/gmake -f CMakeFiles/cmTC_8af0c.dir/build.make CMakeFiles/cmTC_8af0c.dir/build]
+  ignore line: [gmake[1]: Entering directory '/home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/CMakeTmp']
+  ignore line: [Building C object CMakeFiles/cmTC_8af0c.dir/CMakeCCompilerABI.c.o]
+  ignore line: [/usr/bin/gcc   -g -O3 -feliminate-unused-debug-types  -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -m64  -fasynchronous-unwind-tables -Wp,-D_REENTRANT -ftree-loop-distribute-patterns -Wl,-z -Wl,now -Wl,-z -Wl,relro -fno-semantic-interposition -ffat-lto-objects  -fno-trapping-math -Wl,-sort-common -Wl,--enable-new-dtags -mtune=skylake  -Wa,-mbranches-within-32B-boundaries    -v -o CMakeFiles/cmTC_8af0c.dir/CMakeCCompilerABI.c.o   -c /home/vmachado/Documents/clion-2019.3.3/bin/cmake/linux/share/cmake-3.15/Modules/CMakeCCompilerABI.c]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_AS_OPTION=-Wa,-mbranches-within-32B-boundaries]
+  ignore line: [COLLECT_GCC=/usr/bin/gcc]
+  ignore line: [Target: x86_64-generic-linux]
+  ignore line: [Configured with: ../gcc-9.2.0/configure --prefix=/usr --with-pkgversion='Clear Linux OS for Intel Architecture' --libdir=/usr/lib64 --enable-libstdcxx-pch --libexecdir=/usr/lib64 --with-system-zlib --enable-shared --enable-gnu-indirect-function --disable-vtable-verify --enable-threads=posix --enable-__cxa_atexit --enable-plugin --enable-ld=default --enable-clocale=gnu --disable-multiarch --enable-multilib --enable-lto --disable-werror --enable-linker-build-id --build=x86_64-generic-linux --target=x86_64-generic-linux --enable-languages=c,c++,fortran,go --enable-bootstrap --with-ppl=yes --with-isl --includedir=/usr/include --exec-prefix=/usr --with-glibc-version=2.19 --disable-libunwind-exceptions --with-gnu-ld --with-tune=haswell --with-arch=westmere --enable-cet --disable-libmpx --with-gcc-major-version-only --enable-default-pie]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4 (Clear Linux OS for Intel Architecture) ]
+  ignore line: [COLLECT_GCC_OPTIONS='-g' '-O3' '-feliminate-unused-debug-types' '-pipe' '-Wall' '-fexceptions' '-fstack-protector' '--param' 'ssp-buffer-size=32' '-Wformat=1' '-Wformat-security' '-m64' '-fasynchronous-unwind-tables' '-ftree-loop-distribute-patterns' '-fno-semantic-interposition' '-ffat-lto-objects' '-fno-trapping-math' '-mtune=skylake' '-v' '-o' 'CMakeFiles/cmTC_8af0c.dir/CMakeCCompilerABI.c.o' '-c' '-march=westmere']
+  ignore line: [ /usr/lib64/gcc/x86_64-generic-linux/9/cc1 -quiet -v -D_FORTIFY_SOURCE=2 -D_REENTRANT /home/vmachado/Documents/clion-2019.3.3/bin/cmake/linux/share/cmake-3.15/Modules/CMakeCCompilerABI.c -quiet -dumpbase CMakeCCompilerABI.c -m64 -mtune=skylake -march=westmere -auxbase-strip CMakeFiles/cmTC_8af0c.dir/CMakeCCompilerABI.c.o -g -O3 -Wall -Wformat=1 -Wformat-security -version -feliminate-unused-debug-types -fexceptions -fstack-protector -fasynchronous-unwind-tables -ftree-loop-distribute-patterns -fno-semantic-interposition -ffat-lto-objects -fno-trapping-math --param ssp-buffer-size=32 -o - |]
+  ignore line: [ as -v --64 -mbranches-within-32B-boundaries -o CMakeFiles/cmTC_8af0c.dir/CMakeCCompilerABI.c.o]
+  ignore line: [GNU assembler version 2.34.0 (x86_64-generic-linux) using BFD version (GNU Binutils) 2.34.0.20190203]
+  ignore line: [GNU C17 (Clear Linux OS for Intel Architecture) version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4 (x86_64-generic-linux)]
+  ignore line: [	compiled by GNU C version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4, GMP version 6.1.2, MPFR version 4.0.2, MPC version 1.1.0, isl version isl-0.16.1-GMP]
+  ignore line: []
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [ignoring nonexistent directory "/usr/local/include"]
+  ignore line: [ignoring nonexistent directory "/usr/lib64/gcc/x86_64-generic-linux/9/../../../../x86_64-generic-linux/include"]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ /usr/lib64/gcc/x86_64-generic-linux/9/include]
+  ignore line: [ /usr/lib64/gcc/x86_64-generic-linux/9/include-fixed]
+  ignore line: [ /usr/include]
+  ignore line: [End of search list.]
+  ignore line: [GNU C17 (Clear Linux OS for Intel Architecture) version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4 (x86_64-generic-linux)]
+  ignore line: [	compiled by GNU C version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4, GMP version 6.1.2, MPFR version 4.0.2, MPC version 1.1.0, isl version isl-0.16.1-GMP]
+  ignore line: []
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [Compiler executable checksum: c9289ae5f8387fe3976af6e8db8b9ecb]
+  ignore line: [COMPILER_PATH=/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/:/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/]
+  ignore line: [LIBRARY_PATH=/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib64/gcc/x86_64-generic-linux/9/../../../:/lib/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-g' '-O3' '-feliminate-unused-debug-types' '-pipe' '-Wall' '-fexceptions' '-fstack-protector' '--param' 'ssp-buffer-size=32' '-Wformat=1' '-Wformat-security' '-m64' '-fasynchronous-unwind-tables' '-ftree-loop-distribute-patterns' '-fno-semantic-interposition' '-ffat-lto-objects' '-fno-trapping-math' '-mtune=skylake' '-v' '-o' 'CMakeFiles/cmTC_8af0c.dir/CMakeCCompilerABI.c.o' '-c' '-march=westmere']
+  ignore line: [Linking C executable cmTC_8af0c]
+  ignore line: [/home/vmachado/Documents/clion-2019.3.3/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_8af0c.dir/link.txt --verbose=1]
+  ignore line: [/usr/bin/gcc -g -O3 -feliminate-unused-debug-types  -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -m64  -fasynchronous-unwind-tables -Wp,-D_REENTRANT -ftree-loop-distribute-patterns -Wl,-z -Wl,now -Wl,-z -Wl,relro -fno-semantic-interposition -ffat-lto-objects  -fno-trapping-math -Wl,-sort-common -Wl,--enable-new-dtags -mtune=skylake  -Wa,-mbranches-within-32B-boundaries    -v CMakeFiles/cmTC_8af0c.dir/CMakeCCompilerABI.c.o  -o cmTC_8af0c ]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_AS_OPTION=-Wa,-mbranches-within-32B-boundaries]
+  ignore line: [COLLECT_GCC=/usr/bin/gcc]
+  ignore line: [COLLECT_LTO_WRAPPER=/usr/lib64/gcc/x86_64-generic-linux/9/lto-wrapper]
+  ignore line: [Target: x86_64-generic-linux]
+  ignore line: [Configured with: ../gcc-9.2.0/configure --prefix=/usr --with-pkgversion='Clear Linux OS for Intel Architecture' --libdir=/usr/lib64 --enable-libstdcxx-pch --libexecdir=/usr/lib64 --with-system-zlib --enable-shared --enable-gnu-indirect-function --disable-vtable-verify --enable-threads=posix --enable-__cxa_atexit --enable-plugin --enable-ld=default --enable-clocale=gnu --disable-multiarch --enable-multilib --enable-lto --disable-werror --enable-linker-build-id --build=x86_64-generic-linux --target=x86_64-generic-linux --enable-languages=c,c++,fortran,go --enable-bootstrap --with-ppl=yes --with-isl --includedir=/usr/include --exec-prefix=/usr --with-glibc-version=2.19 --disable-libunwind-exceptions --with-gnu-ld --with-tune=haswell --with-arch=westmere --enable-cet --disable-libmpx --with-gcc-major-version-only --enable-default-pie]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4 (Clear Linux OS for Intel Architecture) ]
+  ignore line: [COMPILER_PATH=/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/:/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/]
+  ignore line: [LIBRARY_PATH=/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib64/gcc/x86_64-generic-linux/9/../../../:/lib/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-g' '-O3' '-feliminate-unused-debug-types' '-pipe' '-Wall' '-fexceptions' '-fstack-protector' '--param' 'ssp-buffer-size=32' '-Wformat=1' '-Wformat-security' '-m64' '-fasynchronous-unwind-tables' '-ftree-loop-distribute-patterns' '-fno-semantic-interposition' '-ffat-lto-objects' '-fno-trapping-math' '-mtune=skylake' '-v' '-o' 'cmTC_8af0c' '-march=westmere']
+  link line: [ /usr/lib64/gcc/x86_64-generic-linux/9/collect2 -plugin /usr/lib64/gcc/x86_64-generic-linux/9/liblto_plugin.so -plugin-opt=/usr/lib64/gcc/x86_64-generic-linux/9/lto-wrapper -plugin-opt=-fresolution=/tmp/ccDdyvcr.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -o cmTC_8af0c /usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-generic-linux/9/crtbeginS.o -L/usr/lib64/gcc/x86_64-generic-linux/9 -L/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib64/gcc/x86_64-generic-linux/9/../../.. -z now -z relro -sort-common --enable-new-dtags CMakeFiles/cmTC_8af0c.dir/CMakeCCompilerABI.c.o -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib64/gcc/x86_64-generic-linux/9/crtendS.o /usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/crtn.o]
+    arg [/usr/lib64/gcc/x86_64-generic-linux/9/collect2] ==> ignore
+    arg [-plugin] ==> ignore
+    arg [/usr/lib64/gcc/x86_64-generic-linux/9/liblto_plugin.so] ==> ignore
+    arg [-plugin-opt=/usr/lib64/gcc/x86_64-generic-linux/9/lto-wrapper] ==> ignore
+    arg [-plugin-opt=-fresolution=/tmp/ccDdyvcr.res] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+    arg [-plugin-opt=-pass-through=-lc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+    arg [--build-id] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-m] ==> ignore
+    arg [elf_x86_64] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+    arg [-pie] ==> ignore
+    arg [-znow] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_8af0c] ==> ignore
+    arg [/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/Scrt1.o] ==> ignore
+    arg [/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/crti.o] ==> ignore
+    arg [/usr/lib64/gcc/x86_64-generic-linux/9/crtbeginS.o] ==> ignore
+    arg [-L/usr/lib64/gcc/x86_64-generic-linux/9] ==> dir [/usr/lib64/gcc/x86_64-generic-linux/9]
+    arg [-L/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64] ==> dir [/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64]
+    arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+    arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+    arg [-L/usr/lib64/gcc/x86_64-generic-linux/9/../../..] ==> dir [/usr/lib64/gcc/x86_64-generic-linux/9/../../..]
+    arg [-znow] ==> ignore
+    arg [-zrelro] ==> ignore
+    arg [-sort-common] ==> ignore
+    arg [--enable-new-dtags] ==> ignore
+    arg [CMakeFiles/cmTC_8af0c.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [-lgcc] ==> lib [gcc]
+    arg [--push-state] ==> ignore
+    arg [--as-needed] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [--pop-state] ==> ignore
+    arg [-lc] ==> lib [c]
+    arg [-lgcc] ==> lib [gcc]
+    arg [--push-state] ==> ignore
+    arg [--as-needed] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [--pop-state] ==> ignore
+    arg [/usr/lib64/gcc/x86_64-generic-linux/9/crtendS.o] ==> ignore
+    arg [/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/crtn.o] ==> ignore
+  collapse library dir [/usr/lib64/gcc/x86_64-generic-linux/9] ==> [/usr/lib64/gcc/x86_64-generic-linux/9]
+  collapse library dir [/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64] ==> [/usr/lib64]
+  collapse library dir [/lib/../lib64] ==> [/lib64]
+  collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+  collapse library dir [/usr/lib64/gcc/x86_64-generic-linux/9/../../..] ==> [/usr/lib64]
+  implicit libs: [gcc;gcc_s;c;gcc;gcc_s]
+  implicit dirs: [/usr/lib64/gcc/x86_64-generic-linux/9;/usr/lib64;/lib64]
+  implicit fwks: []
+
+
+Determining if the CXX compiler works passed with the following output:
+Change Dir: /home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake cmTC_bd520/fast && /usr/bin/gmake -f CMakeFiles/cmTC_bd520.dir/build.make CMakeFiles/cmTC_bd520.dir/build
+gmake[1]: Entering directory '/home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_bd520.dir/testCXXCompiler.cxx.o
+/usr/bin/g++    -g -O3 -feliminate-unused-debug-types  -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -m64  -fasynchronous-unwind-tables -Wp,-D_REENTRANT -ftree-loop-distribute-patterns -Wl,-z -Wl,now -Wl,-z -Wl,relro -fno-semantic-interposition -ffat-lto-objects  -fno-trapping-math -Wl,-sort-common -Wl,--enable-new-dtags -mtune=skylake  -Wa,-mbranches-within-32B-boundaries -fvisibility-inlines-hidden -Wl,--enable-new-dtags    -o CMakeFiles/cmTC_bd520.dir/testCXXCompiler.cxx.o -c /home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
+Linking CXX executable cmTC_bd520
+/home/vmachado/Documents/clion-2019.3.3/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bd520.dir/link.txt --verbose=1
+/usr/bin/g++  -g -O3 -feliminate-unused-debug-types  -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -m64  -fasynchronous-unwind-tables -Wp,-D_REENTRANT -ftree-loop-distribute-patterns -Wl,-z -Wl,now -Wl,-z -Wl,relro -fno-semantic-interposition -ffat-lto-objects  -fno-trapping-math -Wl,-sort-common -Wl,--enable-new-dtags -mtune=skylake  -Wa,-mbranches-within-32B-boundaries -fvisibility-inlines-hidden -Wl,--enable-new-dtags     CMakeFiles/cmTC_bd520.dir/testCXXCompiler.cxx.o  -o cmTC_bd520 
+gmake[1]: Leaving directory '/home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: /home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake cmTC_786e0/fast && /usr/bin/gmake -f CMakeFiles/cmTC_786e0.dir/build.make CMakeFiles/cmTC_786e0.dir/build
+gmake[1]: Entering directory '/home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/CMakeTmp'
+Building CXX object CMakeFiles/cmTC_786e0.dir/CMakeCXXCompilerABI.cpp.o
+/usr/bin/g++    -g -O3 -feliminate-unused-debug-types  -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -m64  -fasynchronous-unwind-tables -Wp,-D_REENTRANT -ftree-loop-distribute-patterns -Wl,-z -Wl,now -Wl,-z -Wl,relro -fno-semantic-interposition -ffat-lto-objects  -fno-trapping-math -Wl,-sort-common -Wl,--enable-new-dtags -mtune=skylake  -Wa,-mbranches-within-32B-boundaries -fvisibility-inlines-hidden -Wl,--enable-new-dtags    -v -o CMakeFiles/cmTC_786e0.dir/CMakeCXXCompilerABI.cpp.o -c /home/vmachado/Documents/clion-2019.3.3/bin/cmake/linux/share/cmake-3.15/Modules/CMakeCXXCompilerABI.cpp
+Using built-in specs.
+COLLECT_AS_OPTION=-Wa,-mbranches-within-32B-boundaries
+COLLECT_GCC=/usr/bin/g++
+Target: x86_64-generic-linux
+Configured with: ../gcc-9.2.0/configure --prefix=/usr --with-pkgversion='Clear Linux OS for Intel Architecture' --libdir=/usr/lib64 --enable-libstdcxx-pch --libexecdir=/usr/lib64 --with-system-zlib --enable-shared --enable-gnu-indirect-function --disable-vtable-verify --enable-threads=posix --enable-__cxa_atexit --enable-plugin --enable-ld=default --enable-clocale=gnu --disable-multiarch --enable-multilib --enable-lto --disable-werror --enable-linker-build-id --build=x86_64-generic-linux --target=x86_64-generic-linux --enable-languages=c,c++,fortran,go --enable-bootstrap --with-ppl=yes --with-isl --includedir=/usr/include --exec-prefix=/usr --with-glibc-version=2.19 --disable-libunwind-exceptions --with-gnu-ld --with-tune=haswell --with-arch=westmere --enable-cet --disable-libmpx --with-gcc-major-version-only --enable-default-pie
+Thread model: posix
+gcc version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4 (Clear Linux OS for Intel Architecture) 
+COLLECT_GCC_OPTIONS='-g' '-O3' '-feliminate-unused-debug-types' '-pipe' '-Wall' '-fexceptions' '-fstack-protector' '--param' 'ssp-buffer-size=32' '-Wformat=1' '-Wformat-security' '-m64' '-fasynchronous-unwind-tables' '-ftree-loop-distribute-patterns' '-fno-semantic-interposition' '-ffat-lto-objects' '-fno-trapping-math' '-mtune=skylake' '-fvisibility-inlines-hidden' '-v' '-o' 'CMakeFiles/cmTC_786e0.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-march=westmere'
+ /usr/lib64/gcc/x86_64-generic-linux/9/cc1plus -quiet -v -D_GNU_SOURCE -D_FORTIFY_SOURCE=2 -D_REENTRANT /home/vmachado/Documents/clion-2019.3.3/bin/cmake/linux/share/cmake-3.15/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpbase CMakeCXXCompilerABI.cpp -m64 -mtune=skylake -march=westmere -auxbase-strip CMakeFiles/cmTC_786e0.dir/CMakeCXXCompilerABI.cpp.o -g -O3 -Wall -Wformat=1 -Wformat-security -version -feliminate-unused-debug-types -fexceptions -fstack-protector -fasynchronous-unwind-tables -ftree-loop-distribute-patterns -fno-semantic-interposition -ffat-lto-objects -fno-trapping-math -fvisibility-inlines-hidden --param ssp-buffer-size=32 -o - |
+ as -v --64 -mbranches-within-32B-boundaries -o CMakeFiles/cmTC_786e0.dir/CMakeCXXCompilerABI.cpp.o
+GNU assembler version 2.34.0 (x86_64-generic-linux) using BFD version (GNU Binutils) 2.34.0.20190203
+GNU C++14 (Clear Linux OS for Intel Architecture) version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4 (x86_64-generic-linux)
+	compiled by GNU C version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4, GMP version 6.1.2, MPFR version 4.0.2, MPC version 1.1.0, isl version isl-0.16.1-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+ignoring nonexistent directory "/usr/local/include"
+ignoring nonexistent directory "/usr/lib64/gcc/x86_64-generic-linux/9/../../../../x86_64-generic-linux/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ /usr/lib64/gcc/x86_64-generic-linux/9/../../../../include/c++/9
+ /usr/lib64/gcc/x86_64-generic-linux/9/../../../../include/c++/9/x86_64-generic-linux
+ /usr/lib64/gcc/x86_64-generic-linux/9/../../../../include/c++/9/backward
+ /usr/lib64/gcc/x86_64-generic-linux/9/include
+ /usr/lib64/gcc/x86_64-generic-linux/9/include-fixed
+ /usr/include
+End of search list.
+GNU C++14 (Clear Linux OS for Intel Architecture) version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4 (x86_64-generic-linux)
+	compiled by GNU C version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4, GMP version 6.1.2, MPFR version 4.0.2, MPC version 1.1.0, isl version isl-0.16.1-GMP
+
+GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072
+Compiler executable checksum: a6a715072049a14de32b02222e629477
+COMPILER_PATH=/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/:/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/
+LIBRARY_PATH=/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib64/gcc/x86_64-generic-linux/9/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-g' '-O3' '-feliminate-unused-debug-types' '-pipe' '-Wall' '-fexceptions' '-fstack-protector' '--param' 'ssp-buffer-size=32' '-Wformat=1' '-Wformat-security' '-m64' '-fasynchronous-unwind-tables' '-ftree-loop-distribute-patterns' '-fno-semantic-interposition' '-ffat-lto-objects' '-fno-trapping-math' '-mtune=skylake' '-fvisibility-inlines-hidden' '-v' '-o' 'CMakeFiles/cmTC_786e0.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-march=westmere'
+Linking CXX executable cmTC_786e0
+/home/vmachado/Documents/clion-2019.3.3/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_786e0.dir/link.txt --verbose=1
+/usr/bin/g++  -g -O3 -feliminate-unused-debug-types  -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -m64  -fasynchronous-unwind-tables -Wp,-D_REENTRANT -ftree-loop-distribute-patterns -Wl,-z -Wl,now -Wl,-z -Wl,relro -fno-semantic-interposition -ffat-lto-objects  -fno-trapping-math -Wl,-sort-common -Wl,--enable-new-dtags -mtune=skylake  -Wa,-mbranches-within-32B-boundaries -fvisibility-inlines-hidden -Wl,--enable-new-dtags    -v CMakeFiles/cmTC_786e0.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_786e0 
+Using built-in specs.
+COLLECT_AS_OPTION=-Wa,-mbranches-within-32B-boundaries
+COLLECT_GCC=/usr/bin/g++
+COLLECT_LTO_WRAPPER=/usr/lib64/gcc/x86_64-generic-linux/9/lto-wrapper
+Target: x86_64-generic-linux
+Configured with: ../gcc-9.2.0/configure --prefix=/usr --with-pkgversion='Clear Linux OS for Intel Architecture' --libdir=/usr/lib64 --enable-libstdcxx-pch --libexecdir=/usr/lib64 --with-system-zlib --enable-shared --enable-gnu-indirect-function --disable-vtable-verify --enable-threads=posix --enable-__cxa_atexit --enable-plugin --enable-ld=default --enable-clocale=gnu --disable-multiarch --enable-multilib --enable-lto --disable-werror --enable-linker-build-id --build=x86_64-generic-linux --target=x86_64-generic-linux --enable-languages=c,c++,fortran,go --enable-bootstrap --with-ppl=yes --with-isl --includedir=/usr/include --exec-prefix=/usr --with-glibc-version=2.19 --disable-libunwind-exceptions --with-gnu-ld --with-tune=haswell --with-arch=westmere --enable-cet --disable-libmpx --with-gcc-major-version-only --enable-default-pie
+Thread model: posix
+gcc version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4 (Clear Linux OS for Intel Architecture) 
+COMPILER_PATH=/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/:/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/
+LIBRARY_PATH=/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib64/gcc/x86_64-generic-linux/9/../../../:/lib/:/usr/lib/
+COLLECT_GCC_OPTIONS='-g' '-O3' '-feliminate-unused-debug-types' '-pipe' '-Wall' '-fexceptions' '-fstack-protector' '--param' 'ssp-buffer-size=32' '-Wformat=1' '-Wformat-security' '-m64' '-fasynchronous-unwind-tables' '-ftree-loop-distribute-patterns' '-fno-semantic-interposition' '-ffat-lto-objects' '-fno-trapping-math' '-mtune=skylake' '-fvisibility-inlines-hidden' '-v' '-o' 'cmTC_786e0' '-shared-libgcc' '-march=westmere'
+ /usr/lib64/gcc/x86_64-generic-linux/9/collect2 -plugin /usr/lib64/gcc/x86_64-generic-linux/9/liblto_plugin.so -plugin-opt=/usr/lib64/gcc/x86_64-generic-linux/9/lto-wrapper -plugin-opt=-fresolution=/tmp/ccxEWuY5.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --build-id --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -o cmTC_786e0 /usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-generic-linux/9/crtbeginS.o -L/usr/lib64/gcc/x86_64-generic-linux/9 -L/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib64/gcc/x86_64-generic-linux/9/../../.. -z now -z relro -sort-common --enable-new-dtags --enable-new-dtags CMakeFiles/cmTC_786e0.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib64/gcc/x86_64-generic-linux/9/crtendS.o /usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/crtn.o
+COLLECT_GCC_OPTIONS='-g' '-O3' '-feliminate-unused-debug-types' '-pipe' '-Wall' '-fexceptions' '-fstack-protector' '--param' 'ssp-buffer-size=32' '-Wformat=1' '-Wformat-security' '-m64' '-fasynchronous-unwind-tables' '-ftree-loop-distribute-patterns' '-fno-semantic-interposition' '-ffat-lto-objects' '-fno-trapping-math' '-mtune=skylake' '-fvisibility-inlines-hidden' '-v' '-o' 'cmTC_786e0' '-shared-libgcc' '-march=westmere'
+gmake[1]: Leaving directory '/home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/CMakeTmp'
+
+
+
+Parsed CXX implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [/usr/lib64/gcc/x86_64-generic-linux/9/../../../../include/c++/9]
+    add: [/usr/lib64/gcc/x86_64-generic-linux/9/../../../../include/c++/9/x86_64-generic-linux]
+    add: [/usr/lib64/gcc/x86_64-generic-linux/9/../../../../include/c++/9/backward]
+    add: [/usr/lib64/gcc/x86_64-generic-linux/9/include]
+    add: [/usr/lib64/gcc/x86_64-generic-linux/9/include-fixed]
+    add: [/usr/include]
+  end of search list found
+  collapse include dir [/usr/lib64/gcc/x86_64-generic-linux/9/../../../../include/c++/9] ==> [/usr/include/c++/9]
+  collapse include dir [/usr/lib64/gcc/x86_64-generic-linux/9/../../../../include/c++/9/x86_64-generic-linux] ==> [/usr/include/c++/9/x86_64-generic-linux]
+  collapse include dir [/usr/lib64/gcc/x86_64-generic-linux/9/../../../../include/c++/9/backward] ==> [/usr/include/c++/9/backward]
+  collapse include dir [/usr/lib64/gcc/x86_64-generic-linux/9/include] ==> [/usr/lib64/gcc/x86_64-generic-linux/9/include]
+  collapse include dir [/usr/lib64/gcc/x86_64-generic-linux/9/include-fixed] ==> [/usr/lib64/gcc/x86_64-generic-linux/9/include-fixed]
+  collapse include dir [/usr/include] ==> [/usr/include]
+  implicit include dirs: [/usr/include/c++/9;/usr/include/c++/9/x86_64-generic-linux;/usr/include/c++/9/backward;/usr/lib64/gcc/x86_64-generic-linux/9/include;/usr/lib64/gcc/x86_64-generic-linux/9/include-fixed;/usr/include]
+
+
+Parsed CXX implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):/usr/bin/gmake cmTC_786e0/fast && /usr/bin/gmake -f CMakeFiles/cmTC_786e0.dir/build.make CMakeFiles/cmTC_786e0.dir/build]
+  ignore line: [gmake[1]: Entering directory '/home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/CMakeTmp']
+  ignore line: [Building CXX object CMakeFiles/cmTC_786e0.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [/usr/bin/g++    -g -O3 -feliminate-unused-debug-types  -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -m64  -fasynchronous-unwind-tables -Wp,-D_REENTRANT -ftree-loop-distribute-patterns -Wl,-z -Wl,now -Wl,-z -Wl,relro -fno-semantic-interposition -ffat-lto-objects  -fno-trapping-math -Wl,-sort-common -Wl,--enable-new-dtags -mtune=skylake  -Wa,-mbranches-within-32B-boundaries -fvisibility-inlines-hidden -Wl,--enable-new-dtags    -v -o CMakeFiles/cmTC_786e0.dir/CMakeCXXCompilerABI.cpp.o -c /home/vmachado/Documents/clion-2019.3.3/bin/cmake/linux/share/cmake-3.15/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_AS_OPTION=-Wa,-mbranches-within-32B-boundaries]
+  ignore line: [COLLECT_GCC=/usr/bin/g++]
+  ignore line: [Target: x86_64-generic-linux]
+  ignore line: [Configured with: ../gcc-9.2.0/configure --prefix=/usr --with-pkgversion='Clear Linux OS for Intel Architecture' --libdir=/usr/lib64 --enable-libstdcxx-pch --libexecdir=/usr/lib64 --with-system-zlib --enable-shared --enable-gnu-indirect-function --disable-vtable-verify --enable-threads=posix --enable-__cxa_atexit --enable-plugin --enable-ld=default --enable-clocale=gnu --disable-multiarch --enable-multilib --enable-lto --disable-werror --enable-linker-build-id --build=x86_64-generic-linux --target=x86_64-generic-linux --enable-languages=c,c++,fortran,go --enable-bootstrap --with-ppl=yes --with-isl --includedir=/usr/include --exec-prefix=/usr --with-glibc-version=2.19 --disable-libunwind-exceptions --with-gnu-ld --with-tune=haswell --with-arch=westmere --enable-cet --disable-libmpx --with-gcc-major-version-only --enable-default-pie]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4 (Clear Linux OS for Intel Architecture) ]
+  ignore line: [COLLECT_GCC_OPTIONS='-g' '-O3' '-feliminate-unused-debug-types' '-pipe' '-Wall' '-fexceptions' '-fstack-protector' '--param' 'ssp-buffer-size=32' '-Wformat=1' '-Wformat-security' '-m64' '-fasynchronous-unwind-tables' '-ftree-loop-distribute-patterns' '-fno-semantic-interposition' '-ffat-lto-objects' '-fno-trapping-math' '-mtune=skylake' '-fvisibility-inlines-hidden' '-v' '-o' 'CMakeFiles/cmTC_786e0.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-march=westmere']
+  ignore line: [ /usr/lib64/gcc/x86_64-generic-linux/9/cc1plus -quiet -v -D_GNU_SOURCE -D_FORTIFY_SOURCE=2 -D_REENTRANT /home/vmachado/Documents/clion-2019.3.3/bin/cmake/linux/share/cmake-3.15/Modules/CMakeCXXCompilerABI.cpp -quiet -dumpbase CMakeCXXCompilerABI.cpp -m64 -mtune=skylake -march=westmere -auxbase-strip CMakeFiles/cmTC_786e0.dir/CMakeCXXCompilerABI.cpp.o -g -O3 -Wall -Wformat=1 -Wformat-security -version -feliminate-unused-debug-types -fexceptions -fstack-protector -fasynchronous-unwind-tables -ftree-loop-distribute-patterns -fno-semantic-interposition -ffat-lto-objects -fno-trapping-math -fvisibility-inlines-hidden --param ssp-buffer-size=32 -o - |]
+  ignore line: [ as -v --64 -mbranches-within-32B-boundaries -o CMakeFiles/cmTC_786e0.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [GNU assembler version 2.34.0 (x86_64-generic-linux) using BFD version (GNU Binutils) 2.34.0.20190203]
+  ignore line: [GNU C++14 (Clear Linux OS for Intel Architecture) version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4 (x86_64-generic-linux)]
+  ignore line: [	compiled by GNU C version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4, GMP version 6.1.2, MPFR version 4.0.2, MPC version 1.1.0, isl version isl-0.16.1-GMP]
+  ignore line: []
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [ignoring nonexistent directory "/usr/local/include"]
+  ignore line: [ignoring nonexistent directory "/usr/lib64/gcc/x86_64-generic-linux/9/../../../../x86_64-generic-linux/include"]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ /usr/lib64/gcc/x86_64-generic-linux/9/../../../../include/c++/9]
+  ignore line: [ /usr/lib64/gcc/x86_64-generic-linux/9/../../../../include/c++/9/x86_64-generic-linux]
+  ignore line: [ /usr/lib64/gcc/x86_64-generic-linux/9/../../../../include/c++/9/backward]
+  ignore line: [ /usr/lib64/gcc/x86_64-generic-linux/9/include]
+  ignore line: [ /usr/lib64/gcc/x86_64-generic-linux/9/include-fixed]
+  ignore line: [ /usr/include]
+  ignore line: [End of search list.]
+  ignore line: [GNU C++14 (Clear Linux OS for Intel Architecture) version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4 (x86_64-generic-linux)]
+  ignore line: [	compiled by GNU C version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4, GMP version 6.1.2, MPFR version 4.0.2, MPC version 1.1.0, isl version isl-0.16.1-GMP]
+  ignore line: []
+  ignore line: [GGC heuristics: --param ggc-min-expand=100 --param ggc-min-heapsize=131072]
+  ignore line: [Compiler executable checksum: a6a715072049a14de32b02222e629477]
+  ignore line: [COMPILER_PATH=/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/:/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/]
+  ignore line: [LIBRARY_PATH=/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib64/gcc/x86_64-generic-linux/9/../../../:/lib/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-g' '-O3' '-feliminate-unused-debug-types' '-pipe' '-Wall' '-fexceptions' '-fstack-protector' '--param' 'ssp-buffer-size=32' '-Wformat=1' '-Wformat-security' '-m64' '-fasynchronous-unwind-tables' '-ftree-loop-distribute-patterns' '-fno-semantic-interposition' '-ffat-lto-objects' '-fno-trapping-math' '-mtune=skylake' '-fvisibility-inlines-hidden' '-v' '-o' 'CMakeFiles/cmTC_786e0.dir/CMakeCXXCompilerABI.cpp.o' '-c' '-shared-libgcc' '-march=westmere']
+  ignore line: [Linking CXX executable cmTC_786e0]
+  ignore line: [/home/vmachado/Documents/clion-2019.3.3/bin/cmake/linux/bin/cmake -E cmake_link_script CMakeFiles/cmTC_786e0.dir/link.txt --verbose=1]
+  ignore line: [/usr/bin/g++  -g -O3 -feliminate-unused-debug-types  -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -m64  -fasynchronous-unwind-tables -Wp,-D_REENTRANT -ftree-loop-distribute-patterns -Wl,-z -Wl,now -Wl,-z -Wl,relro -fno-semantic-interposition -ffat-lto-objects  -fno-trapping-math -Wl,-sort-common -Wl,--enable-new-dtags -mtune=skylake  -Wa,-mbranches-within-32B-boundaries -fvisibility-inlines-hidden -Wl,--enable-new-dtags    -v CMakeFiles/cmTC_786e0.dir/CMakeCXXCompilerABI.cpp.o  -o cmTC_786e0 ]
+  ignore line: [Using built-in specs.]
+  ignore line: [COLLECT_AS_OPTION=-Wa,-mbranches-within-32B-boundaries]
+  ignore line: [COLLECT_GCC=/usr/bin/g++]
+  ignore line: [COLLECT_LTO_WRAPPER=/usr/lib64/gcc/x86_64-generic-linux/9/lto-wrapper]
+  ignore line: [Target: x86_64-generic-linux]
+  ignore line: [Configured with: ../gcc-9.2.0/configure --prefix=/usr --with-pkgversion='Clear Linux OS for Intel Architecture' --libdir=/usr/lib64 --enable-libstdcxx-pch --libexecdir=/usr/lib64 --with-system-zlib --enable-shared --enable-gnu-indirect-function --disable-vtable-verify --enable-threads=posix --enable-__cxa_atexit --enable-plugin --enable-ld=default --enable-clocale=gnu --disable-multiarch --enable-multilib --enable-lto --disable-werror --enable-linker-build-id --build=x86_64-generic-linux --target=x86_64-generic-linux --enable-languages=c,c++,fortran,go --enable-bootstrap --with-ppl=yes --with-isl --includedir=/usr/include --exec-prefix=/usr --with-glibc-version=2.19 --disable-libunwind-exceptions --with-gnu-ld --with-tune=haswell --with-arch=westmere --enable-cet --disable-libmpx --with-gcc-major-version-only --enable-default-pie]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 9.2.1 20200207 gcc_9_2_0_release-591-g850c38f5f4 (Clear Linux OS for Intel Architecture) ]
+  ignore line: [COMPILER_PATH=/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/:/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/]
+  ignore line: [LIBRARY_PATH=/usr/lib64/gcc/x86_64-generic-linux/9/:/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/:/lib/../lib64/:/usr/lib/../lib64/:/usr/lib64/gcc/x86_64-generic-linux/9/../../../:/lib/:/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-g' '-O3' '-feliminate-unused-debug-types' '-pipe' '-Wall' '-fexceptions' '-fstack-protector' '--param' 'ssp-buffer-size=32' '-Wformat=1' '-Wformat-security' '-m64' '-fasynchronous-unwind-tables' '-ftree-loop-distribute-patterns' '-fno-semantic-interposition' '-ffat-lto-objects' '-fno-trapping-math' '-mtune=skylake' '-fvisibility-inlines-hidden' '-v' '-o' 'cmTC_786e0' '-shared-libgcc' '-march=westmere']
+  link line: [ /usr/lib64/gcc/x86_64-generic-linux/9/collect2 -plugin /usr/lib64/gcc/x86_64-generic-linux/9/liblto_plugin.so -plugin-opt=/usr/lib64/gcc/x86_64-generic-linux/9/lto-wrapper -plugin-opt=-fresolution=/tmp/ccxEWuY5.res -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lgcc --build-id --eh-frame-hdr -m elf_x86_64 -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie -z now -o cmTC_786e0 /usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/Scrt1.o /usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/crti.o /usr/lib64/gcc/x86_64-generic-linux/9/crtbeginS.o -L/usr/lib64/gcc/x86_64-generic-linux/9 -L/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib64/gcc/x86_64-generic-linux/9/../../.. -z now -z relro -sort-common --enable-new-dtags --enable-new-dtags CMakeFiles/cmTC_786e0.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc /usr/lib64/gcc/x86_64-generic-linux/9/crtendS.o /usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/crtn.o]
+    arg [/usr/lib64/gcc/x86_64-generic-linux/9/collect2] ==> ignore
+    arg [-plugin] ==> ignore
+    arg [/usr/lib64/gcc/x86_64-generic-linux/9/liblto_plugin.so] ==> ignore
+    arg [-plugin-opt=/usr/lib64/gcc/x86_64-generic-linux/9/lto-wrapper] ==> ignore
+    arg [-plugin-opt=-fresolution=/tmp/ccxEWuY5.res] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lc] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc_s] ==> ignore
+    arg [-plugin-opt=-pass-through=-lgcc] ==> ignore
+    arg [--build-id] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-m] ==> ignore
+    arg [elf_x86_64] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib64/ld-linux-x86-64.so.2] ==> ignore
+    arg [-pie] ==> ignore
+    arg [-znow] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_786e0] ==> ignore
+    arg [/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/Scrt1.o] ==> ignore
+    arg [/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/crti.o] ==> ignore
+    arg [/usr/lib64/gcc/x86_64-generic-linux/9/crtbeginS.o] ==> ignore
+    arg [-L/usr/lib64/gcc/x86_64-generic-linux/9] ==> dir [/usr/lib64/gcc/x86_64-generic-linux/9]
+    arg [-L/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64] ==> dir [/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64]
+    arg [-L/lib/../lib64] ==> dir [/lib/../lib64]
+    arg [-L/usr/lib/../lib64] ==> dir [/usr/lib/../lib64]
+    arg [-L/usr/lib64/gcc/x86_64-generic-linux/9/../../..] ==> dir [/usr/lib64/gcc/x86_64-generic-linux/9/../../..]
+    arg [-znow] ==> ignore
+    arg [-zrelro] ==> ignore
+    arg [-sort-common] ==> ignore
+    arg [--enable-new-dtags] ==> ignore
+    arg [--enable-new-dtags] ==> ignore
+    arg [CMakeFiles/cmTC_786e0.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [-lstdc++] ==> lib [stdc++]
+    arg [-lm] ==> lib [m]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [-lc] ==> lib [c]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lgcc] ==> lib [gcc]
+    arg [/usr/lib64/gcc/x86_64-generic-linux/9/crtendS.o] ==> ignore
+    arg [/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64/crtn.o] ==> ignore
+  collapse library dir [/usr/lib64/gcc/x86_64-generic-linux/9] ==> [/usr/lib64/gcc/x86_64-generic-linux/9]
+  collapse library dir [/usr/lib64/gcc/x86_64-generic-linux/9/../../../../lib64] ==> [/usr/lib64]
+  collapse library dir [/lib/../lib64] ==> [/lib64]
+  collapse library dir [/usr/lib/../lib64] ==> [/usr/lib64]
+  collapse library dir [/usr/lib64/gcc/x86_64-generic-linux/9/../../..] ==> [/usr/lib64]
+  implicit libs: [stdc++;m;gcc_s;gcc;c;gcc_s;gcc]
+  implicit dirs: [/usr/lib64/gcc/x86_64-generic-linux/9;/usr/lib64;/lib64]
+  implicit fwks: []
+
+
