@@ -9,16 +9,12 @@ Matrix::Matrix(int rows, int columns) {
     this->rows = rows;
     this->columns = columns;
     this->data = new double[rows * columns];
-    this->mean = nullptr;
-    this->variance = nullptr;
     memset(this->data, 0, sizeof(double) * rows * columns);
 
 }
 
 Matrix::~Matrix() {
     delete []data;
-    delete mean;
-    delete variance;
 }
 
 Matrix* Matrix::transposed() {
@@ -71,7 +67,7 @@ Matrix* Matrix::normalized() {
     return R;
 }
 
-Matrix* Matrix::multiply(Matrix *W) {
+Matrix* Matrix::multiply(Matrix* W) {
 
     assert(columns == W->rows);
 
@@ -83,71 +79,71 @@ Matrix* Matrix::multiply(Matrix *W) {
     return R;
 }
 
-Matrix* Matrix::sum(Matrix *W, double scalar) {
+Matrix* Matrix::sum(Matrix* W, double scalar) {
 
     assert((rows == W->rows) && (columns == W->columns));
 
     auto *R = new Matrix(rows, columns);
 
-    for (int i = 0; i < rows; i++) {
+    for (int i = 0; i < rows * columns; i++) {
 
-        for (int j = 0; j < columns; j++) {
-            int index = i * columns + j;
-            R->data[index] = data[index] + (W->data[index] * scalar);
-        }
+        R->data[i] = data[i] + (W->data[i] * scalar);
 
     }
 
     return R;
 }
 
-Matrix* Matrix::hadamard(Matrix *W) {
+Matrix* Matrix::elemMul(Matrix* W) {
 
-    if (W->rows == 1) {
-        assert(W->columns == columns);
-    }
-    else {
-        assert((rows == W->rows) && (columns == W->columns));
-    }
+    assert((rows == W->rows) && (columns == W->columns));
 
     auto *R = new Matrix(rows, columns);
 
-    for (int i = 0; i < rows; i++) {
-
-        for (int j = 0; j < columns; j++) {
-            int index = i * columns + j;
-            R->data[index] = data[index] * W->data[j];
-        }
-
+    for (int i = 0; i < rows * columns; i++) {
+        R->data[i] = data[i] * W->data[i];
     }
 
     return R;
 }
 
-Matrix* Matrix::hadamard(Matrix *W, Matrix * W1) {
+Matrix* Matrix::elemMulVector(Matrix* W, Matrix* W1) {
 
     assert((W->rows * W->columns) == columns);
     assert((W1->rows * W1->columns) == columns);
 
     auto *R = new Matrix(rows, columns);
 
-    for (int i = 0; i < rows; i++) {
+    for (int i = 0; i < rows * columns; i++) {
 
-        for (int j = 0; j < columns; j++) {
-            int index = i * columns + j;
-            R->data[index] = (data[index] * W->data[j]) + W1->data[j];
-        }
+        int j = i % columns;
+        R->data[i] = (data[i] * W->data[j]) + W1->data[j];
 
     }
 
     return R;
 }
 
-void Matrix::calcMean() {
+Matrix* Matrix::elemMulVector(Matrix* W) {
+
+    assert((W->rows * W->columns) == columns);
+
+    auto *R = new Matrix(rows, columns);
+
+    for (int i = 0; i < rows * columns; i++) {
+
+        int j = i % columns;
+        R->data[i] = (data[i] * W->data[j]);
+
+    }
+
+    return R;
+}
+
+Matrix* Matrix::mean0Axis() {
 
     auto *T = transposed();
-    delete mean;
-    mean = new Matrix(1, columns);
+    auto *mean = new Matrix(1, columns);
 
     for (int i = 0; i < T->rows; i++) {
 
@@ -161,13 +157,13 @@ void Matrix::calcMean() {
     }
 
     delete T;
+    return mean;
 }
 
-void Matrix::calcVariance() {
+Matrix* Matrix::variance0Axis() {
 
     auto *T = transposed();
-    delete variance;
-    variance = new Matrix(1, columns);
+    auto *variance = new Matrix(1, columns);
 
     for (int i = 0; i < T->rows; i++) {
 
@@ -181,38 +177,18 @@ void Matrix::calcVariance() {
     }
 
     delete T;
+
+    return variance;
 }
 
-Matrix* Matrix::centralized() {
-
-    if (mean == nullptr) {
-        calcMean();
-    }
+Matrix* Matrix::centralized(Matrix* desiredMean) {
 
     auto *R = new Matrix(rows, columns);
 
-    for (int i = 0; i < rows; i++) {
+    for (int i = 0; i < rows * columns; i++) {
 
-        for (int j = 0; j < columns; j++) {
-            int index = i * columns + j;
-            R->data[index] = data[index] - mean->data[j];
-        }
-
-    }
-
-    return R;
-}
-
-Matrix* Matrix::centralized(Matrix *desiredMean) {
-
-    auto *R = new Matrix(rows, columns);
-
-    for (int i = 0; i < rows; i++) {
-
-        for (int j = 0; j < columns; j++) {
-            int index = i * columns + j;
-            R->data[index] = data[index] - desiredMean->data[j];
-        }
+        int j = i % columns;
+        R->data[i] = data[i] - desiredMean->data[j];
 
     }
 
@@ -223,11 +199,10 @@ Matrix* Matrix::sumRows() {
 
     auto *R = new Matrix(1, columns);
 
-    for (int i = 0; i < rows; i++) {
+    for (int i = 0; i < rows * columns; i++) {
 
-        for (int j = 0; j < columns; j++) {
-            R->data[j] += data[i * columns + j];
-        }
+        int j = i % columns;
+        R->data[j] += data[i];
 
     }
 
@@ -241,11 +216,8 @@ void Matrix::randomize() {
 
     std::normal_distribution<double> distribution (0.0, sqrt(2.0 / rows));
 
-    for (int i = 0; i < rows; i++) {
-
-        for (int j = 0; j < columns; j++) {
-            data[i * columns + j] = distribution(generator);
-        }
+    for (int i = 0; i < rows * columns; i++) {
+        data[i] = distribution(generator);
     }
 }
 
@@ -253,23 +225,29 @@ double Matrix::sumElements() {
 
     double sum = 0;
 
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < columns; j++) {
-            sum += data[i * columns + j];
-        }
+    for (int i = 0; i < rows * columns; i++) {
+        sum += data[i];
     }
 
     return sum;
 }
 
-Matrix* Matrix::invDeviation(Matrix *desiredVar, int len) {
+Matrix* Matrix::invDeviation(Matrix* desiredVar) {
 
-    auto *R = new Matrix(1, len);
+    auto *R = new Matrix(1, desiredVar->columns);
     double e = 0.00000001;
 
-    for (int i = 0; i < len; i++) {
+    for (int i = 0; i < desiredVar->columns; i++) {
         R->data[i] = 1. / sqrt(desiredVar->data[i] + e);
     }
+
+    return R;
+}
+
+Matrix* Matrix::copy() {
+
+    auto *R = new Matrix(rows, columns);
+    memcpy(R->data, data, sizeof(double) * rows * columns);
 
     return R;
 }

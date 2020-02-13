@@ -21,29 +21,34 @@ private:
 public:
     int rows{}, columns{};
     double *data{};
-    Matrix *mean{};
-    Matrix *variance{};
 
     Matrix(int rows, int columns);
     ~Matrix();
 
     Matrix* transposed();
     Matrix* normalized();
-    Matrix* centralized();
-    Matrix* centralized(Matrix*);
     Matrix* sumRows();
-    static Matrix* invDeviation(Matrix*, int);
-
-    Matrix* multiply(Matrix*);
-    Matrix* sum(Matrix*, double);
-    Matrix* hadamard(Matrix*);
-    Matrix* hadamard(Matrix*, Matrix*);
+    Matrix* variance0Axis();
+    Matrix* mean0Axis();
 
     double sumElements();
-
     void randomize();
-    void calcMean();
-    void calcVariance();
+
+    Matrix *multiply(Matrix *W);
+
+    Matrix *sum(Matrix *W, double scalar);
+
+    Matrix *elemMul(Matrix *W);
+
+    Matrix *elemMulVector(Matrix *W, Matrix *W1);
+
+    Matrix *elemMulVector(Matrix *W);
+
+    Matrix *centralized(Matrix *desiredMean);
+
+    Matrix *copy();
+
+    static Matrix *invDeviation(Matrix *desiredVar);
 };
 
 

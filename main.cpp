@@ -1,34 +1,66 @@
 #include <iostream>
 #include "NeuralNet.h"
 
+double **loadData(const char* path, double* &mean, double* &deviation, int &labels, int &samplesPerLabels, int &featuresDimension) {
+
+    FILE *fp = fopen(path, "rb");
+    double **data;
+
+    fread(&labels, sizeof(int), 1, fp);
+    fread(&samplesPerLabels, sizeof(int), 1, fp);
+    fread(&featuresDimension, sizeof(int), 1, fp);
+
+    mean = new double[featuresDimension];
+    deviation = new double[featuresDimension];
+    data = new double*[labels * samplesPerLabels];
+
+    for (int i = 0; i < labels * samplesPerLabels; i++) {
+        data[i] = new double[featuresDimension];
+    }
+
+    fread(mean, sizeof(double) * featuresDimension, 1, fp);
+    fread(deviation, sizeof(double) * featuresDimension, 1, fp);
+
+    for (int i = 0; i < labels * samplesPerLabels; i++) {
+        fread(data[i], sizeof(double) * featuresDimension, 1, fp);
+    }
+
+    fclose(fp);
+    return data;
+}
+
+int *genTargets(int labels, int samplesPerLabels) {
+
+    int *targets = new int[labels * samplesPerLabels];
+
+    for (int i = 0; i < labels; i++) {
+        for (int j = 0; j < samplesPerLabels; j++) {
+            targets[i * samplesPerLabels + j] = i;
+        }
+    }
+
+    return targets;
+}
+
 int main() {
 
-    //double input[4][2] = {{1, 0}, {0, 0}, {1, 1}, {0, 1}};
-    auto **input = new double*[4];
-    for (int i = 0; i < 4; i++) {
-        input[i] = new double[2];
+    const char *path = "/home/vmachado/Documents/cppdata.dat";
+    int labels, samplesLabels, featuresDim;
+    double *mean, *deviation, **input;
+
+    input = loadData(path, mean, deviation, labels, samplesLabels, featuresDim);
+    int *targets = genTargets(labels, samplesLabels);
+
+    auto nn = NeuralNet(featuresDim, labels, 0 , 32, 32);
+    nn.train(input, targets, labels * samplesLabels, 100);
+
+    delete[] mean;
+    delete[] deviation;
+    delete[] targets;
+    for (int i = 0; i < labels * samplesLabels; i++) {
+        delete[] input[i];
     }
-    input[0][0] = 1;
-    input[0][1] = 0;
-    input[1][0] = 0;
-    input[1][1] = 0;
-    input[2][0] = 1;
-    input[2][1] = 1;
-    input[3][0] = 0;
-    input[3][1] = 1;
-
-    auto *output = new int[4];
-    output[0] = 1;
-    output[1] = 0;
-    output[2] = 0;
-    output[3] = 1;
-
-
-
-    auto *nn = new NeuralNet(2, 2, 0 , 100, 1);
-    nn->train(input, output, 4, 100);
-
-    delete nn;
+    delete[] input;
 
     return 0;
 }

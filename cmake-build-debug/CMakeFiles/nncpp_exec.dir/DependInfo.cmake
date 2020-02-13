@@ -4,7 +4,6 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/vmachado/CLionProjects/nncpp_exec/DataSetOrganizer.cpp" "/home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/nncpp_exec.dir/DataSetOrganizer.cpp.o"
   "/home/vmachado/CLionProjects/nncpp_exec/Layer.cpp" "/home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/nncpp_exec.dir/Layer.cpp.o"
   "/home/vmachado/CLionProjects/nncpp_exec/Matrix.cpp" "/home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/nncpp_exec.dir/Matrix.cpp.o"
   "/home/vmachado/CLionProjects/nncpp_exec/NeuralNet.cpp" "/home/vmachado/CLionProjects/nncpp_exec/cmake-build-debug/CMakeFiles/nncpp_exec.dir/NeuralNet.cpp.o"

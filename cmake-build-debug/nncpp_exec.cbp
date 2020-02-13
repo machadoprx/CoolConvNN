@@ -80,12 +80,6 @@
 				</MakeCommands>
 			</Target>
 		</Build>
-		<Unit filename="/home/vmachado/CLionProjects/nncpp_exec/DataSetOrganizer.cpp">
-			<Option target="nncpp_exec"/>
-		</Unit>
-		<Unit filename="/home/vmachado/CLionProjects/nncpp_exec/DataSetOrganizer.h">
-			<Option target="nncpp_exec"/>
-		</Unit>
 		<Unit filename="/home/vmachado/CLionProjects/nncpp_exec/Layer.cpp">
 			<Option target="nncpp_exec"/>
 		</Unit>

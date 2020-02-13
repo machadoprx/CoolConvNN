@@ -21,8 +21,6 @@ private:
 
     static double ReLU(double);
 
-    void updateRunningStatus(Matrix*, Matrix*);
-
 public:
 
     Matrix *weights{}, *output{}, *outputNormalized{}, *gamma{}, *beta{};
@@ -33,15 +31,10 @@ public:
 
     Layer(int, int);
 
-    Layer(int, int, double*, double*, double*, double*, double*);
+    Layer(int inputDimension, int outputDimension, double *weights, double *gamma, double *beta,
+          double *runningMean, double *runningVariance);
 
     ~Layer();
-
-    void feedForward(Matrix*, bool, bool);
-
-    void updateWeights(Matrix*, double);
-
-    void updateGammaBeta(Matrix*, Matrix*, double);
 
     Matrix* getOutput();
 
@@ -60,6 +53,14 @@ public:
     Matrix *getRunningVariance();
 
     void setFrozen(bool frozen);
+
+    void updateRunningStatus(Matrix *mean, Matrix *variance);
+
+    void feedForward(Matrix *input, bool hidden, bool validation);
+
+    void updateWeights(Matrix *dWeights, double learningRate);
+
+    void updateGammaBeta(Matrix *dGamma, Matrix *dBeta, double learningRate);
 };
 
 

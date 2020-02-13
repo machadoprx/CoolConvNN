@@ -123,33 +123,6 @@ nncpp_exec/fast:
 	$(MAKE) -f CMakeFiles/nncpp_exec.dir/build.make CMakeFiles/nncpp_exec.dir/build
 .PHONY : nncpp_exec/fast
 
-DataSetOrganizer.o: DataSetOrganizer.cpp.o
-
-.PHONY : DataSetOrganizer.o
-
-# target to build an object file
-DataSetOrganizer.cpp.o:
-	$(MAKE) -f CMakeFiles/nncpp_exec.dir/build.make CMakeFiles/nncpp_exec.dir/DataSetOrganizer.cpp.o
-.PHONY : DataSetOrganizer.cpp.o
-
-DataSetOrganizer.i: DataSetOrganizer.cpp.i
-
-.PHONY : DataSetOrganizer.i
-
-# target to preprocess a source file
-DataSetOrganizer.cpp.i:
-	$(MAKE) -f CMakeFiles/nncpp_exec.dir/build.make CMakeFiles/nncpp_exec.dir/DataSetOrganizer.cpp.i
-.PHONY : DataSetOrganizer.cpp.i
-
-DataSetOrganizer.s: DataSetOrganizer.cpp.s
-
-.PHONY : DataSetOrganizer.s
-
-# target to generate assembly for a file
-DataSetOrganizer.cpp.s:
-	$(MAKE) -f CMakeFiles/nncpp_exec.dir/build.make CMakeFiles/nncpp_exec.dir/DataSetOrganizer.cpp.s
-.PHONY : DataSetOrganizer.cpp.s
-
 Layer.o: Layer.cpp.o
 
 .PHONY : Layer.o
@@ -267,9 +240,6 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... nncpp_exec"
 	@echo "... edit_cache"
-	@echo "... DataSetOrganizer.o"
-	@echo "... DataSetOrganizer.i"
-	@echo "... DataSetOrganizer.s"
 	@echo "... Layer.o"
 	@echo "... Layer.i"
 	@echo "... Layer.s"

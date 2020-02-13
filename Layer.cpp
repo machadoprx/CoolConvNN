@@ -2,6 +2,7 @@
 // Created by vmachado on 2/11/20.
 //
 
+#include <iostream>
 #include "Layer.h"
 
 Layer::Layer(int inputDimension, int outputDimension) {
@@ -20,8 +21,8 @@ Layer::Layer(int inputDimension, int outputDimension) {
     }
 }
 
-Layer::Layer(int inputDimension, int outputDimension, double *weights, double *gamma, double *beta,
-            double *runningMean, double *runningVariance) {
+Layer::Layer(int inputDimension, int outputDimension, double* weights, double* gamma, double* beta,
+            double* runningMean, double* runningVariance) {
 
     this->inputDimension = inputDimension;
     this->outputDimension = outputDimension;
@@ -40,14 +41,14 @@ Layer::Layer(int inputDimension, int outputDimension, double *weights, double *g
 }
 
 Layer::~Layer() {
-    delete[] weights;
-    delete[] output;
-    delete[] outputNormalized;
-    delete[] gamma;
-    delete[] beta;
-    delete[] runningMean;
-    delete[] runningVariance;
-    delete[] deviationInv;
+    delete weights;
+    delete output;
+    delete outputNormalized;
+    delete gamma;
+    delete beta;
+    delete runningMean;
+    delete runningVariance;
+    delete deviationInv;
 }
 
 double Layer::ReLU(double x){
@@ -57,13 +58,20 @@ double Layer::ReLU(double x){
 void Layer::validationOutput() {
 
     auto *outputCentered = output->centralized(runningMean);
-    deviationInv = Matrix::invDeviation(runningVariance, outputDimension);
-    outputNormalized = outputCentered->hadamard(deviationInv);
-    output = outputNormalized->hadamard(gamma, beta);
 
+    delete deviationInv;
+    deviationInv = Matrix::invDeviation(runningVariance);
+
+    delete outputNormalized;
+    outputNormalized = outputCentered->elemMulVector(deviationInv);
+
+    delete output;
+    output = outputNormalized->elemMulVector(gamma, beta);
+
+    delete outputCentered;
 }
 
-void Layer::updateRunningStatus(Matrix *mean, Matrix *variance) {
+void Layer::updateRunningStatus(Matrix* mean, Matrix* variance) {
 
     int length = outputDimension;
     double momentum = 0.9;
@@ -77,22 +85,27 @@ void Layer::updateRunningStatus(Matrix *mean, Matrix *variance) {
 
 void Layer::trainingOutput() {
 
-    output->calcMean();
-    output->calcVariance(); // do i should use centered output or untouched for variance calc
-    Matrix *outputCentered = output->centralized();
+    Matrix *mean = output->mean0Axis();
+    Matrix *variance = output->variance0Axis(); // do i should use centered output or untouched for variance calc
+    Matrix *outputCentered = output->centralized(mean);
 
-    updateRunningStatus(output->mean, output->variance);
+    updateRunningStatus(mean, variance);
 
     delete deviationInv;
-    deviationInv = Matrix::invDeviation(output->variance, outputDimension);
+    deviationInv = Matrix::invDeviation(variance);
+
     delete outputNormalized;
-    outputNormalized = outputCentered->hadamard(deviationInv);
+    outputNormalized = outputCentered->elemMulVector(deviationInv);
+
     delete output;
-    output = outputNormalized->hadamard(gamma, beta);
+    output = outputNormalized->elemMulVector(gamma, beta);
+
     delete outputCentered;
+    delete mean;
+    delete variance;
 }
 
-void Layer::feedForward(Matrix *input, bool hidden, bool validation){
+void Layer::feedForward(Matrix* input, bool hidden, bool validation){
 
     delete output;
     output = input->multiply(weights);
@@ -114,18 +127,19 @@ void Layer::feedForward(Matrix *input, bool hidden, bool validation){
     }
 }
 
-void Layer::updateWeights(Matrix *dWeights, double learningRate){
+void Layer::updateWeights(Matrix* dWeights, double learningRate){
 
     if(frozen)
         return;
 
     Matrix *newWeights = weights->sum(dWeights, (-1) * learningRate);
-    memcpy(weights->data, newWeights->data, sizeof(double) * inputDimension * outputDimension);
-    delete newWeights;
 
+    delete weights;
+    weights = newWeights->copy();
+    delete newWeights;
 }
 
-void Layer::updateGammaBeta(Matrix *dGamma, Matrix *dBeta, double learningRate) {
+void Layer::updateGammaBeta(Matrix* dGamma, Matrix* dBeta, double learningRate) {
 
     if(frozen)
         return;
@@ -140,53 +154,37 @@ void Layer::updateGammaBeta(Matrix *dGamma, Matrix *dBeta, double learningRate) 
 }
 
 Matrix* Layer::getOutput() {
-    auto *R = new Matrix(output->rows, output->columns);
-    memcpy(R->data, this->output->data, sizeof(double) * output->rows * outputDimension);
-    return R;
+    return output->copy();
 }
 
 Matrix* Layer::getWeights() {
-    auto *R = new Matrix(inputDimension, outputDimension);
-    memcpy(R->data, this->weights->data, sizeof(double) * inputDimension * outputDimension);
-    return R;
+    return weights->copy();
 }
 
 Matrix* Layer::getDeviationInv() {
-    auto *R = new Matrix(1, outputDimension);
-    memcpy(R->data, this->deviationInv->data, sizeof(double) * outputDimension);
-    return R;
+    return deviationInv->copy();
 }
 
 Matrix* Layer::getOutputNormalized() {
-    auto *R = new Matrix(output->rows, output->columns);
-    memcpy(R->data, this->outputNormalized->data, sizeof(double) * output->rows * outputDimension);
-    return R;
+    return outputNormalized->copy();
 }
 
 Matrix* Layer::getGamma() {
-    auto *R = new Matrix(1, outputDimension);
-    memcpy(R->data, this->gamma->data, sizeof(double) * outputDimension);
-    return R;
+    return gamma->copy();
 }
 
 Matrix* Layer::getBeta() {
-    auto *R = new Matrix(1, outputDimension);
-    memcpy(R->data, this->beta->data, sizeof(double) * outputDimension);
-    return R;
+    return beta->copy();
 }
 
 Matrix* Layer::getRunningMean() {
-    auto *R = new Matrix(1, outputDimension);
-    memcpy(R->data, this->runningMean->data, sizeof(double) * outputDimension);
-    return R;
+    return runningMean->copy();
 }
 
 Matrix* Layer::getRunningVariance() {
-    auto *R = new Matrix(1, outputDimension);
-    memcpy(R->data, this->runningVariance->data, sizeof(double) * outputDimension);
-    return R;
+    return runningVariance->copy();
 }
 
 void Layer::setFrozen(bool value){
-    this->frozen = value;
+    frozen = value;
 }
