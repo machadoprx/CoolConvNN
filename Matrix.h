@@ -19,20 +19,24 @@ class Matrix {
 private:
 
 public:
+
     int rows{}, columns{};
+
     double *data{};
 
     Matrix(int rows, int columns);
+
     ~Matrix();
 
     Matrix* transposed();
+    
     Matrix* normalized();
+    
     Matrix* sumRows();
+    
     Matrix* variance0Axis();
-    Matrix* mean0Axis();
 
-    double sumElements();
-    void randomize();
+    Matrix* mean0Axis();
 
     Matrix *multiply(Matrix *W);
 
@@ -47,6 +51,10 @@ public:
     Matrix *centralized(Matrix *desiredMean);
 
     Matrix *copy();
+
+    double sumElements();
+
+    void randomize();
 
     static Matrix *invDeviation(Matrix *desiredVar);
 };

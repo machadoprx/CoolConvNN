@@ -67,7 +67,7 @@ NeuralNet::NeuralNet(const char *path) {
 }
 
 NeuralNet::~NeuralNet() {
-    for (auto*  layer : layers) {
+    for (auto* layer : layers) {
         delete layer;
     }
 }
@@ -111,7 +111,7 @@ void NeuralNet::saveState(const char *path) {
 
 }
 
-Matrix* NeuralNet::getCorrectProb(Matrix* prob, int *labels){
+Matrix* NeuralNet::getCorrectProb(Matrix* prob, const int *labels){
 
     auto *correctProb = new Matrix(prob->rows, 1);
 
@@ -122,7 +122,7 @@ Matrix* NeuralNet::getCorrectProb(Matrix* prob, int *labels){
     return correctProb;
 }
 
-Matrix* NeuralNet::getProbDerivative(Matrix* prob, int* labels){
+Matrix* NeuralNet::getProbDerivative(Matrix* prob, const int* labels){
 
     int rows = prob->rows, columns = prob->columns, currRow = 0;
     auto *dProb = prob->copy();
@@ -381,18 +381,9 @@ void NeuralNet::train(double** &dataSet, int* &labels, int samples, int epochs){
                 for (int j = 0; j < featuresDimension; j++) {
                     batch->data[x * featuresDimension + j] = dataSet[i][j];
                 }
+                batchLabels[x] = labels[i];
                 x++;
             }
-            memcpy(batchLabels, labels, batchLength * sizeof(int));
-
-            /*for (int i = 0; i < 28 * 28; i++){
-                if (batch->data[i] < 0)
-                    std::cout << "  ";
-                else std::cout << "o ";
-                if (i % 28 == 0) std::cout << '\n';
-            }
-            std::cout << '\n';
-            exit(0);*/
 
             //forward step
             Matrix *score = forwardStep(batch, false);

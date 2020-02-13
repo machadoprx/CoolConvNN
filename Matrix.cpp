@@ -26,6 +26,8 @@ Matrix* Matrix::transposed() {
         return R;
     }
 
+    #pragma omp parallel
+    #pragma omp for
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < columns; j++) {
             R->data[j * R->columns + i] = data[i * columns + j];
@@ -40,6 +42,8 @@ Matrix* Matrix::normalized() {
 
     auto *R = new Matrix(rows, columns);
 
+    #pragma omp parallel
+    #pragma omp for
     for (int i = 0; i < rows; i++) {
 
         int index;
@@ -74,8 +78,18 @@ Matrix* Matrix::multiply(Matrix* W) {
     auto *R = new Matrix(rows, W->columns);
 
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
-                rows, W->columns, columns, 1.0, data, columns, W->data, W->columns, 0, R->data, W->columns);
+            rows, W->columns, columns, 1.0, data, columns, W->data, W->columns, 0, R->data, W->columns);
 
+    /*auto *WT = W->transposed();
+    for (int i = 0; i < R->rows; i++) {
+        for (int j = 0; j < R->columns; j++) {
+            int index = i * R->columns + j;
+            for (int k = 0; k < columns; k++) {
+                R->data[index] += data[i * columns + k] * WT->data[j * WT->columns + k]; //W1[i][k] * W2T[j][k];
+            }
+        }
+    }
+    delete WT;*/
     return R;
 }
 
@@ -145,6 +159,8 @@ Matrix* Matrix::mean0Axis() {
     auto *T = transposed();
     auto *mean = new Matrix(1, columns);
 
+    #pragma omp parallel
+    #pragma omp for
     for (int i = 0; i < T->rows; i++) {
 
         double sum = 0;
@@ -165,6 +181,8 @@ Matrix* Matrix::variance0Axis() {
     auto *T = transposed();
     auto *variance = new Matrix(1, columns);
 
+    #pragma omp parallel
+    #pragma omp for
     for (int i = 0; i < T->rows; i++) {
 
         double sum = 0;

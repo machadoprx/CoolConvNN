@@ -38,17 +38,17 @@ private:
 
     double getRegulationLoss();
 
-    Matrix *getCorrectProb(Matrix *prob, int *labels);
+    static Matrix *getCorrectProb(Matrix *prob, const int *labels);
 
-    Matrix *getProbDerivative(Matrix *prob, int *labels);
+    static Matrix *getProbDerivative(Matrix *prob, const int *labels);
 
-    Matrix *getReLUDerivative(Matrix *W, Matrix *W1);
+    static Matrix *getReLUDerivative(Matrix *W, Matrix *W1);
 
-    double getDataLoss(Matrix *correctProb);
+    static double getDataLoss(Matrix *correctProb);
 
     void shuffleDataFisherYates(double** &data, int* &labels, int samples);
 
-    Matrix *getBatchNormDerivative(Matrix *dOut, Layer *layer);
+    static Matrix *getBatchNormDerivative(Matrix *dOut, Layer *layer);
 
     void backPropagationStep(Matrix *prob, Matrix *batch, int *labels);
 

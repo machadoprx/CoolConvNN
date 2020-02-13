@@ -51,8 +51,8 @@ int main() {
     input = loadData(path, mean, deviation, labels, samplesLabels, featuresDim);
     int *targets = genTargets(labels, samplesLabels);
 
-    auto nn = NeuralNet(featuresDim, labels, 0 , 32, 32);
-    nn.train(input, targets, labels * samplesLabels, 100);
+    auto *nn = new NeuralNet(featuresDim, labels, 0 , 512, 32);
+    nn->train(input, targets, labels * samplesLabels, 100);
 
     delete[] mean;
     delete[] deviation;
@@ -61,6 +61,7 @@ int main() {
         delete[] input[i];
     }
     delete[] input;
+    delete nn;
 
     return 0;
 }
