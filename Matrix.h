@@ -57,6 +57,10 @@ public:
     void randomize();
 
     static Matrix *invDeviation(Matrix *desiredVar);
+
+    void set(Matrix *W);
+
+    Matrix *ReLUDerivative(Matrix *W);
 };
 
 

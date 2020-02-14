@@ -22,37 +22,32 @@ public:
 
     void saveState(const char *path);
 
-    Matrix *forwardStep(Matrix *batch, bool validation);
-
     void train(double** &dataSet, int* &labels, int samples, int epochs);
 
 private:
-    std::vector<Layer*> layers;
-    double lambdaReg = 1e-3;
-    double learningRate = 0.1;
+
     int featuresDimension{};
     int outputDimension{};
     int additionalHiddenLayers{};
     int layersDimension{};
     int batchSize{};
+    double lambdaReg = 1e-3;
+    double learningRate = 0.1;
+    std::vector<Layer*> layers;
 
     double getRegulationLoss();
 
-    static Matrix *getCorrectProb(Matrix *prob, const int *labels);
+    static void shuffleDataFisherYates(double** &data, int* labels, int samples);
 
-    static Matrix *getProbDerivative(Matrix *prob, const int *labels);
+    static Matrix *getCorrectProb(Matrix *prob, int const *labels);
 
-    static Matrix *getReLUDerivative(Matrix *W, Matrix *W1);
+    static Matrix *getProbDerivative(Matrix *prob, int const *labels);
+
+    void backPropagationStep(Matrix *prob, Matrix *batch, int const *labels);
+
+    Matrix *forwardStep(Matrix *batch, bool validation);
 
     static double getDataLoss(Matrix *correctProb);
-
-    void shuffleDataFisherYates(double** &data, int* &labels, int samples);
-
-    static Matrix *getBatchNormDerivative(Matrix *dOut, Layer *layer);
-
-    void backPropagationStep(Matrix *prob, Matrix *batch, int *labels);
-
-
 };
 
 

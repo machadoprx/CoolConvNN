@@ -11,7 +11,11 @@ class Layer {
 
 private:
 
-    Matrix *deviationInv{};
+    Matrix *weights{}, *output{}, *outputNormalized{}, *gamma{}, *beta{};
+
+    Matrix *runningMean{}, *runningVariance{}, *deviationInv{};
+
+    bool hidden;
 
     bool frozen = false;
 
@@ -21,17 +25,15 @@ private:
 
     static double ReLU(double);
 
+    void updateRunningStatus(Matrix *mean, Matrix *variance);
+
+    static Matrix *getBatchNormDerivative(Matrix *dOut, Layer* prev);
+
 public:
 
-    Matrix *weights{}, *output{}, *outputNormalized{}, *gamma{}, *beta{};
+    Layer(int inputDimension, int outputDimension, bool hidden);
 
-    Matrix *runningMean{}, *runningVariance{};
-
-    int outputDimension{}, inputDimension{};
-
-    Layer(int, int);
-
-    Layer(int inputDimension, int outputDimension, double *weights, double *gamma, double *beta,
+    Layer(int inputDimension, int outputDimension, bool hidden, double *weights, double *gamma, double *beta,
           double *runningMean, double *runningVariance);
 
     ~Layer();
@@ -54,13 +56,14 @@ public:
 
     void setFrozen(bool frozen);
 
-    void updateRunningStatus(Matrix *mean, Matrix *variance);
-
-    void feedForward(Matrix *input, bool hidden, bool validation);
+    void feedForward(Matrix *input, bool validation);
 
     void updateWeights(Matrix *dWeights, double learningRate);
 
     void updateGammaBeta(Matrix *dGamma, Matrix *dBeta, double learningRate);
+
+    Matrix *backPropagation(Matrix *dOut, Matrix *input, Layer* previous, double learningRate, double lambdaReg);
+
 };
 
 

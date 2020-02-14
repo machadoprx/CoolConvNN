@@ -19,7 +19,7 @@ Matrix::~Matrix() {
 
 Matrix* Matrix::transposed() {
 
-    auto *R = new Matrix(columns, rows);
+    auto R = new Matrix(columns, rows);
 
     if (columns == 1 || rows == 1) {
         std::memcpy(R->data, data, rows * columns * sizeof(double));
@@ -40,7 +40,7 @@ Matrix* Matrix::transposed() {
 
 Matrix* Matrix::normalized() {
 
-    auto *R = new Matrix(rows, columns);
+    auto R = new Matrix(rows, columns);
 
     #pragma omp parallel
     #pragma omp for
@@ -75,21 +75,11 @@ Matrix* Matrix::multiply(Matrix* W) {
 
     assert(columns == W->rows);
 
-    auto *R = new Matrix(rows, W->columns);
+    auto R = new Matrix(rows, W->columns);
 
     cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
             rows, W->columns, columns, 1.0, data, columns, W->data, W->columns, 0, R->data, W->columns);
 
-    /*auto *WT = W->transposed();
-    for (int i = 0; i < R->rows; i++) {
-        for (int j = 0; j < R->columns; j++) {
-            int index = i * R->columns + j;
-            for (int k = 0; k < columns; k++) {
-                R->data[index] += data[i * columns + k] * WT->data[j * WT->columns + k]; //W1[i][k] * W2T[j][k];
-            }
-        }
-    }
-    delete WT;*/
     return R;
 }
 
@@ -97,7 +87,7 @@ Matrix* Matrix::sum(Matrix* W, double scalar) {
 
     assert((rows == W->rows) && (columns == W->columns));
 
-    auto *R = new Matrix(rows, columns);
+    auto R = new Matrix(rows, columns);
 
     for (int i = 0; i < rows * columns; i++) {
 
@@ -112,7 +102,7 @@ Matrix* Matrix::elemMul(Matrix* W) {
 
     assert((rows == W->rows) && (columns == W->columns));
 
-    auto *R = new Matrix(rows, columns);
+    auto R = new Matrix(rows, columns);
 
     for (int i = 0; i < rows * columns; i++) {
         R->data[i] = data[i] * W->data[i];
@@ -126,7 +116,7 @@ Matrix* Matrix::elemMulVector(Matrix* W, Matrix* W1) {
     assert((W->rows * W->columns) == columns);
     assert((W1->rows * W1->columns) == columns);
 
-    auto *R = new Matrix(rows, columns);
+    auto R = new Matrix(rows, columns);
 
     for (int i = 0; i < rows * columns; i++) {
 
@@ -142,7 +132,7 @@ Matrix* Matrix::elemMulVector(Matrix* W) {
 
     assert((W->rows * W->columns) == columns);
 
-    auto *R = new Matrix(rows, columns);
+    auto R = new Matrix(rows, columns);
 
     for (int i = 0; i < rows * columns; i++) {
 
@@ -156,8 +146,8 @@ Matrix* Matrix::elemMulVector(Matrix* W) {
 
 Matrix* Matrix::mean0Axis() {
 
-    auto *T = transposed();
-    auto *mean = new Matrix(1, columns);
+    auto T = transposed();
+    auto mean = new Matrix(1, columns);
 
     #pragma omp parallel
     #pragma omp for
@@ -178,8 +168,8 @@ Matrix* Matrix::mean0Axis() {
 
 Matrix* Matrix::variance0Axis() {
 
-    auto *T = transposed();
-    auto *variance = new Matrix(1, columns);
+    auto T = transposed();
+    auto variance = new Matrix(1, columns);
 
     #pragma omp parallel
     #pragma omp for
@@ -201,7 +191,7 @@ Matrix* Matrix::variance0Axis() {
 
 Matrix* Matrix::centralized(Matrix* desiredMean) {
 
-    auto *R = new Matrix(rows, columns);
+    auto R = new Matrix(rows, columns);
 
     for (int i = 0; i < rows * columns; i++) {
 
@@ -215,7 +205,7 @@ Matrix* Matrix::centralized(Matrix* desiredMean) {
 
 Matrix* Matrix::sumRows() {
 
-    auto *R = new Matrix(1, columns);
+    auto R = new Matrix(1, columns);
 
     for (int i = 0; i < rows * columns; i++) {
 
@@ -252,7 +242,7 @@ double Matrix::sumElements() {
 
 Matrix* Matrix::invDeviation(Matrix* desiredVar) {
 
-    auto *R = new Matrix(1, desiredVar->columns);
+    auto R = new Matrix(1, desiredVar->columns);
     double e = 0.00000001;
 
     for (int i = 0; i < desiredVar->columns; i++) {
@@ -262,10 +252,37 @@ Matrix* Matrix::invDeviation(Matrix* desiredVar) {
     return R;
 }
 
+Matrix* Matrix::ReLUDerivative(Matrix* W) {
+
+    assert(W->rows == rows && W->columns == columns);
+
+    auto R = new Matrix(rows, columns);
+
+    for (int i = 0; i < rows * columns; i++) {
+
+        R->data[i] = W->data[i] <= 0 ? 0 : data[i];
+
+    }
+
+    return R;
+}
+
+void Matrix::set(Matrix *W) {
+
+    assert(W->rows == rows && W->columns == columns);
+
+    for (int i = 0; i < rows * columns; i++) {
+        data[i] = W->data[i];
+    }
+
+}
+
 Matrix* Matrix::copy() {
 
-    auto *R = new Matrix(rows, columns);
-    memcpy(R->data, data, sizeof(double) * rows * columns);
+    auto R = new Matrix(rows, columns);
+    for (int i = 0; i < rows * columns; i++) {
+        R->data[i] = data[i];
+    }
 
     return R;
 }

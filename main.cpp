@@ -31,7 +31,7 @@ double **loadData(const char* path, double* &mean, double* &deviation, int &labe
 
 int *genTargets(int labels, int samplesPerLabels) {
 
-    int *targets = new int[labels * samplesPerLabels];
+    auto targets = new int[labels * samplesPerLabels];
 
     for (int i = 0; i < labels; i++) {
         for (int j = 0; j < samplesPerLabels; j++) {
@@ -51,7 +51,7 @@ int main() {
     input = loadData(path, mean, deviation, labels, samplesLabels, featuresDim);
     int *targets = genTargets(labels, samplesLabels);
 
-    auto *nn = new NeuralNet(featuresDim, labels, 0 , 512, 32);
+    auto nn = new NeuralNet(featuresDim, labels, 0, 512, 32);
     nn->train(input, targets, labels * samplesLabels, 100);
 
     delete[] mean;
