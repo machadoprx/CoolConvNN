@@ -11,10 +11,6 @@ class Layer {
 
 private:
 
-    Matrix *weights{}, *output{}, *outputNormalized{}, *gamma{}, *beta{};
-
-    Matrix *runningMean{}, *runningVariance{}, *deviationInv{};
-
     bool hidden;
 
     bool frozen = false;
@@ -30,6 +26,10 @@ private:
     static Matrix *getBatchNormDerivative(Matrix *dOut, Layer* prev);
 
 public:
+
+    Matrix *weights{}, *output{}, *outputNormalized{}, *gamma{}, *beta{};
+
+    Matrix *runningMean{}, *runningVariance{}, *deviationInv{};
 
     Layer(int inputDimension, int outputDimension, bool hidden);
 

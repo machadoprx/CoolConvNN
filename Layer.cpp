@@ -45,8 +45,6 @@ Layer::Layer(int inputDimension, int outputDimension, bool hidden, double* weigh
     }
 
     memcpy(this->weights->data, weights, sizeof(double) * inputDimension * outputDimension);
-
-
 }
 
 Layer::~Layer() {

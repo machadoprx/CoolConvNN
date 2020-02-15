@@ -8,13 +8,15 @@ NeuralNet::NeuralNet(int featuresDimension,
                     int outputDimension,
                     int additionalHiddenLayers,
                     int layersDimension,
-                    int batchSize){
+                    int batchSize,
+                    double learningRate){
 
     this->featuresDimension      = featuresDimension;
     this->outputDimension        = outputDimension;
     this->additionalHiddenLayers = additionalHiddenLayers;
     this->layersDimension        = layersDimension;
     this->batchSize              = batchSize;
+    this->learningRate           = learningRate;
 
     layers.push_back(new Layer(featuresDimension, layersDimension, true));
     for (int i = 0; i < additionalHiddenLayers; i++) {
@@ -35,35 +37,33 @@ NeuralNet::NeuralNet(const char *path) {
     fread(&featuresDimension, sizeof(int), 1, f);
     fread(&layersDimension, sizeof(int), 1, f);
     fread(&outputDimension, sizeof(int), 1, f);
+    fread(&batchSize, sizeof(int), 1, f);
 
     auto inputLayer = new Layer(featuresDimension, layersDimension, true);
-    fread(inputLayer->getWeights()->data, sizeof(double) * featuresDimension * layersDimension, 1, f);
-    fread(inputLayer->getGamma()->data, sizeof(double) * layersDimension, 1, f);
-    fread(inputLayer->getBeta()->data, sizeof(double) * layersDimension, 1, f);
-    fread(inputLayer->getRunningMean()->data, sizeof(double) * layersDimension, 1, f);
-    fread(inputLayer->getRunningVariance()->data, sizeof(double) * layersDimension, 1, f);
+    fread(inputLayer->weights->data, sizeof(double) * featuresDimension * layersDimension, 1, f);
+    fread(inputLayer->gamma->data, sizeof(double) * layersDimension, 1, f);
+    fread(inputLayer->beta->data, sizeof(double) * layersDimension, 1, f);
+    fread(inputLayer->runningMean->data, sizeof(double) * layersDimension, 1, f);
+    fread(inputLayer->runningVariance->data, sizeof(double) * layersDimension, 1, f);
     layers.push_back(inputLayer);
 
     for (int i = 0; i < additionalHiddenLayers; i++) {
 
-        auto *hiddenLayer = new Layer(layersDimension, layersDimension, true);
-        fread(hiddenLayer->getWeights()->data, sizeof(double) * layersDimension * layersDimension, 1, f);
-        fread(hiddenLayer->getGamma()->data, sizeof(double) * layersDimension, 1, f);
-        fread(hiddenLayer->getBeta()->data, sizeof(double) * layersDimension, 1, f);
-        fread(hiddenLayer->getRunningMean()->data, sizeof(double) * layersDimension, 1, f);
-        fread(hiddenLayer->getRunningVariance()->data, sizeof(double) * layersDimension, 1, f);
+        auto hiddenLayer = new Layer(layersDimension, layersDimension, true);
+        fread(hiddenLayer->weights->data, sizeof(double) * layersDimension * layersDimension, 1, f);
+        fread(hiddenLayer->gamma->data, sizeof(double) * layersDimension, 1, f);
+        fread(hiddenLayer->beta->data, sizeof(double) * layersDimension, 1, f);
+        fread(hiddenLayer->runningMean->data, sizeof(double) * layersDimension, 1, f);
+        fread(hiddenLayer->runningVariance->data, sizeof(double) * layersDimension, 1, f);
         layers.push_back(hiddenLayer);
 
     }
 
     auto outputLayer = new Layer(layersDimension, outputDimension, false);
-    fread(outputLayer->getWeights()->data, sizeof(double) * layersDimension * outputDimension, 1, f);
-    fread(outputLayer->getGamma()->data, sizeof(double) * outputDimension, 1, f);
-    fread(outputLayer->getBeta()->data, sizeof(double) * outputDimension, 1, f);
-    fread(outputLayer->getRunningMean()->data, sizeof(double) * outputDimension, 1, f);
-    fread(outputLayer->getRunningVariance()->data, sizeof(double) * outputDimension, 1, f);
+    fread(outputLayer->weights->data, sizeof(double) * layersDimension * outputDimension, 1, f);
     layers.push_back(outputLayer);
 
+    fclose(f);
 }
 
 NeuralNet::~NeuralNet() {
@@ -84,30 +84,29 @@ void NeuralNet::saveState(const char *path) {
     fwrite(&featuresDimension, sizeof(int), 1, f);
     fwrite(&layersDimension, sizeof(int), 1, f);
     fwrite(&outputDimension, sizeof(int), 1, f);
+    fwrite(&batchSize, sizeof(int), 1, f);
 
     auto inputLayer = layers.at(0);
-    fwrite(inputLayer->getWeights()->data, sizeof(double) * featuresDimension * layersDimension, 1, f);
-    fwrite(inputLayer->getGamma()->data, sizeof(double) * layersDimension, 1, f);
-    fwrite(inputLayer->getBeta()->data, sizeof(double) * layersDimension, 1, f);
-    fwrite(inputLayer->getRunningMean()->data, sizeof(double) * layersDimension, 1, f);
-    fwrite(inputLayer->getRunningVariance()->data, sizeof(double) * layersDimension, 1, f);
+    fwrite(inputLayer->weights->data, sizeof(double) * featuresDimension * layersDimension, 1, f);
+    fwrite(inputLayer->gamma->data, sizeof(double) * layersDimension, 1, f);
+    fwrite(inputLayer->beta->data, sizeof(double) * layersDimension, 1, f);
+    fwrite(inputLayer->runningMean->data, sizeof(double) * layersDimension, 1, f);
+    fwrite(inputLayer->runningVariance->data, sizeof(double) * layersDimension, 1, f);
 
     int i = 1;
     for (; i < (int)layers.size() - 1; i++) {
         auto hiddenLayer = layers.at(i);
-        fwrite(hiddenLayer->getWeights()->data, sizeof(double) * layersDimension * layersDimension, 1, f);
-        fwrite(hiddenLayer->getGamma()->data, sizeof(double) * layersDimension, 1, f);
-        fwrite(hiddenLayer->getBeta()->data, sizeof(double) * layersDimension, 1, f);
-        fwrite(hiddenLayer->getRunningMean()->data, sizeof(double) * layersDimension, 1, f);
-        fwrite(hiddenLayer->getRunningVariance()->data, sizeof(double) * layersDimension, 1, f);
+        fwrite(hiddenLayer->weights->data, sizeof(double) * layersDimension * layersDimension, 1, f);
+        fwrite(hiddenLayer->gamma->data, sizeof(double) * layersDimension, 1, f);
+        fwrite(hiddenLayer->beta->data, sizeof(double) * layersDimension, 1, f);
+        fwrite(hiddenLayer->runningMean->data, sizeof(double) * layersDimension, 1, f);
+        fwrite(hiddenLayer->runningVariance->data, sizeof(double) * layersDimension, 1, f);
     }
 
     auto outputLayer = layers.at(i);
-    fwrite(outputLayer->getWeights()->data, sizeof(double) * layersDimension * outputDimension, 1, f);
-    fwrite(outputLayer->getGamma()->data, sizeof(double) * outputDimension, 1, f);
-    fwrite(outputLayer->getBeta()->data, sizeof(double) * outputDimension, 1, f);
-    fwrite(outputLayer->getRunningMean()->data, sizeof(double) * outputDimension, 1, f);
-    fwrite(outputLayer->getRunningVariance()->data, sizeof(double) * outputDimension, 1, f);
+    fwrite(outputLayer->weights->data, sizeof(double) * layersDimension * outputDimension, 1, f);
+
+    fclose(f);
 
 }
 
@@ -172,14 +171,13 @@ double NeuralNet::getRegulationLoss(){
 
 void NeuralNet::shuffleDataFisherYates(double** &data, int* labels, int samples) {
 
-    srand(time(NULL));
+    std::srand(std::time(nullptr));
     double *tmpPointer;
-    //auto tmpData = new double[featuresDimension];
     int tmpLabel, randomIndex;
 
     for (int i = samples - 1; i >= 1; i--) {
 
-        randomIndex = rand() % (i + 1);
+        randomIndex = std::rand() % (i + 1);
         tmpPointer = data[i];
         tmpLabel = labels[i];
 
@@ -269,15 +267,14 @@ void NeuralNet::train(double** &dataSet, int* &labels, int samples, int epochs){
             }
 
             auto batch = new Matrix(batchLength, featuresDimension);
-            int *batchLabels = new int[batchLength];
+            auto batchLabels = new int[batchLength];
 
             int x = 0;
             for (int i = dataIndex; i < dataIndex + batchLength; i++) {
                 for (int j = 0; j < featuresDimension; j++) {
                     batch->data[x * featuresDimension + j] = dataSet[i][j];
                 }
-                batchLabels[x] = labels[i];
-                x++;
+                batchLabels[x++] = labels[i];
             }
 
             //forward step
@@ -305,4 +302,8 @@ void NeuralNet::train(double** &dataSet, int* &labels, int samples, int epochs){
         double lossMean = loss / numberOfBatches;
         std::cout << "epoch: " << e << " loss: " << lossMean << '\n';
     }
+}
+
+void NeuralNet::setLearningRate(double value) {
+    this->learningRate = value;
 }

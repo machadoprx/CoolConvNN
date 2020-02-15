@@ -1,59 +1,51 @@
 #include <iostream>
 #include "NeuralNet.h"
+#include "png2array/png2array.h"
 
-double **loadData(const char* path, double* &mean, double* &deviation, int &labels, int &samplesPerLabels, int &featuresDimension) {
-
-    FILE *fp = fopen(path, "rb");
-    double **data;
-
-    fread(&labels, sizeof(int), 1, fp);
-    fread(&samplesPerLabels, sizeof(int), 1, fp);
-    fread(&featuresDimension, sizeof(int), 1, fp);
-
-    mean = new double[featuresDimension];
-    deviation = new double[featuresDimension];
-    data = new double*[labels * samplesPerLabels];
-
-    for (int i = 0; i < labels * samplesPerLabels; i++) {
-        data[i] = new double[featuresDimension];
-    }
-
-    fread(mean, sizeof(double) * featuresDimension, 1, fp);
-    fread(deviation, sizeof(double) * featuresDimension, 1, fp);
-
-    for (int i = 0; i < labels * samplesPerLabels; i++) {
-        fread(data[i], sizeof(double) * featuresDimension, 1, fp);
-    }
-
-    fclose(fp);
-    return data;
-}
-
-int *genTargets(int labels, int samplesPerLabels) {
-
-    auto targets = new int[labels * samplesPerLabels];
-
-    for (int i = 0; i < labels; i++) {
-        for (int j = 0; j < samplesPerLabels; j++) {
-            targets[i * samplesPerLabels + j] = i;
-        }
-    }
-
-    return targets;
-}
-
-int main() {
+int main(int argc, char const *argv[]) {
 
     const char *path = "/home/vmachado/Documents/cppdata.dat";
+    const char *pathNN = "/home/vmachado/Documents/NeuralNetcpp2.dat";
+    const char *dataPath = "/home/vmachado/Documents/quickdraw2";
+
+    //processData(dataPath, 1000, 28, 15, path);
+
     int labels, samplesLabels, featuresDim;
     double *mean, *deviation, **input;
 
-    input = loadData(path, mean, deviation, labels, samplesLabels, featuresDim);
-    int *targets = genTargets(labels, samplesLabels);
+    loadData(path, input, mean, deviation, labels, samplesLabels, featuresDim);
+    auto targets = genTargets(labels, samplesLabels);
 
-    auto nn = new NeuralNet(featuresDim, labels, 0, 512, 32);
-    nn->train(input, targets, labels * samplesLabels, 100);
+    int w, h;
+    //const char * vp = "/home/vmachado/Documents/quiquidrawtest/testapple.png";
+    std::string validatePath = std::string(argv[7]);
+    auto sample = decodeTwoSteps(validatePath, w, h);
+    auto test = new Matrix(1, w * h);
+    for (int i = 0; i < w * h; i++) {
+        test->data[i] = (sample[i] - mean[i]) / deviation[i];
+    }
 
+    NeuralNet *nn;
+    if (atoi(argv[1]) == 1) {
+        nn = new NeuralNet(pathNN);
+        nn->setLearningRate(atof(argv[4]));
+    }
+    else {
+        nn = new NeuralNet(featuresDim, labels, atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), atof(argv[5]));
+    }
+    
+    nn->train(input, targets, labels * samplesLabels, atoi(argv[6]));
+    nn->saveState(pathNN);
+
+    auto result = nn->forwardStep(test, true);
+
+    std::cout << "\n";
+    for (int i = 0; i < labels; i++) {
+        std::cout << "label: " << i << " prob: " << (int)(result->data[i] * 100) << "\n";
+    }
+
+    delete result;
+    delete[] sample;
     delete[] mean;
     delete[] deviation;
     delete[] targets;

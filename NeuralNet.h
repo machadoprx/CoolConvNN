@@ -9,12 +9,13 @@
 #include <ctime>
 #include <fstream>
 #include <iostream>
+#include <cstdlib>
 
 class NeuralNet {
 
 public:
     NeuralNet(int featuresDimension, int outputDimension, int additionalHiddenLayers, int layersDimension,
-              int batchSize);
+              int batchSize, double learningRate);
 
     explicit NeuralNet(const char *path);
 
@@ -22,7 +23,11 @@ public:
 
     void saveState(const char *path);
 
+    Matrix *forwardStep(Matrix *batch, bool validation);
+
     void train(double** &dataSet, int* &labels, int samples, int epochs);
+
+    void setLearningRate(double value);
 
 private:
 
@@ -32,7 +37,7 @@ private:
     int layersDimension{};
     int batchSize{};
     double lambdaReg = 1e-3;
-    double learningRate = 0.1;
+    double learningRate = 0.01;
     std::vector<Layer*> layers;
 
     double getRegulationLoss();
@@ -44,8 +49,6 @@ private:
     static Matrix *getProbDerivative(Matrix *prob, int const *labels);
 
     void backPropagationStep(Matrix *prob, Matrix *batch, int const *labels);
-
-    Matrix *forwardStep(Matrix *batch, bool validation);
 
     static double getDataLoss(Matrix *correctProb);
 };
