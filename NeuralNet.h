@@ -19,6 +19,8 @@ public:
 
     explicit NeuralNet(const char *path);
 
+    NeuralNet();
+    
     ~NeuralNet();
 
     void saveState(const char *path);

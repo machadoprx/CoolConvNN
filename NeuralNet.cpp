@@ -4,6 +4,8 @@
 
 #include "NeuralNet.h"
 
+NeuralNet::NeuralNet() {};
+
 NeuralNet::NeuralNet(int featuresDimension,
                     int outputDimension,
                     int additionalHiddenLayers,
@@ -193,6 +195,7 @@ Matrix* NeuralNet::forwardStep(Matrix* batch, bool validation) {
 
     int layersSize = (int)layers.size() - 1;
     Layer *current = layers.at(0), *previous;
+
     current->feedForward(batch, validation);
 
     for (int i = 1; i < layersSize; i++) {

@@ -2,58 +2,86 @@
 #include "NeuralNet.h"
 #include "png2array/png2array.h"
 
+using namespace std;
+
 int main(int argc, char const *argv[]) {
 
-    const char *path = "/home/vmachado/Documents/cppdata.dat";
-    const char *pathNN = "/home/vmachado/Documents/NeuralNetcpp2.dat";
-    const char *dataPath = "/home/vmachado/Documents/quickdraw2";
+    const char *data_file = "data_processed.dat";
+    const char *nn_file = "nn_state.dat";
+    const char *mode = argv[1];
 
-    //processData(dataPath, 1000, 28, 15, path);
-
-    int labels, samplesLabels, featuresDim;
-    double *mean, *deviation, **input;
-
-    loadData(path, input, mean, deviation, labels, samplesLabels, featuresDim);
-    auto targets = genTargets(labels, samplesLabels);
-
-    int w, h;
-    //const char * vp = "/home/vmachado/Documents/quiquidrawtest/testapple.png";
-    std::string validatePath = std::string(argv[7]);
-    auto sample = decodeTwoSteps(validatePath, w, h);
-    auto test = new Matrix(1, w * h);
-    for (int i = 0; i < w * h; i++) {
-        test->data[i] = (sample[i] - mean[i]) / deviation[i];
+    if (strcmp(mode, "getdata") == 0) {
+        int samplesPerLabel = atoi(argv[2]);
+        int width = atoi(argv[3]);
+        int labels = atoi(argv[4]);
+        const char *source_folder = argv[5];
+        processData(source_folder, samplesPerLabel, width, labels, data_file);
+        exit(0);
     }
+    else if (strcmp(mode, "new") == 0 || strcmp(mode, "continue") == 0) {
 
-    NeuralNet *nn;
-    if (atoi(argv[1]) == 1) {
-        nn = new NeuralNet(pathNN);
-        nn->setLearningRate(atof(argv[4]));
+        int labels, samplesPerLabels, featuresDimension;
+        double *mean, *deviation, **input;
+
+        loadData(data_file, input, mean, deviation, labels, samplesPerLabels, featuresDimension);
+        auto targets = genTargets(labels, samplesPerLabels);
+
+        NeuralNet *nn;
+        if (strcmp(mode, "new") == 0) {
+            int hiddenLayers = atoi(argv[2]);
+            int layersDimension = atoi(argv[3]);
+            int batches = atoi(argv[4]);
+            double learningRate = atof(argv[5]);
+            int epochs = atoi(argv[6]);
+            nn = new NeuralNet(featuresDimension, labels, hiddenLayers, layersDimension, batches, learningRate);
+            nn->train(input, targets, labels * samplesPerLabels, epochs);
+        }
+        else {
+            double learningRate = atof(argv[2]);
+            int epochs = atoi(argv[3]);
+            nn = new NeuralNet(nn_file);
+            nn->setLearningRate(learningRate);
+            nn->train(input, targets, labels * samplesPerLabels, epochs);
+        }
+
+        nn->saveState(nn_file);
+
+        delete nn;
+        delete[] mean;
+        delete[] deviation;
+        delete[] targets;
+        for (int i = 0; i < labels * samplesPerLabels; i++) {
+            delete[] input[i];
+        }
+        delete[] input;
     }
-    else {
-        nn = new NeuralNet(featuresDim, labels, atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), atof(argv[5]));
+    else if (strcmp(mode, "test") == 0) {
+
+        int w, h;
+        const char *test_path = argv[2];
+
+        int labels, samplesPerLabels, featuresDimension;
+        double *mean, *deviation, **input;
+        loadData(data_file, input, mean, deviation, labels, samplesPerLabels, featuresDimension);
+        for (int i = 0; i < labels * samplesPerLabels; i++) {
+            delete[] input[i];
+        }
+        delete[] input;
+
+        auto sample = decodeTwoSteps(test_path, w, h);
+        auto test = new Matrix(1, w * h);
+        for (int i = 0; i < w * h; i++) {
+            test->data[i] = (sample[i] - mean[i]) / deviation[i];
+        }
+        auto nn = new NeuralNet(nn_file);
+        auto result = nn->forwardStep(test, true);
+
+        for (int i = 0; i < labels; i++) {
+            std::cout << "label: " << i << " prob: " << (int)(result->data[i] * 100) << "\n";
+        }
+        delete nn;
+        delete[] mean;
+        delete[] deviation;
     }
-    
-    nn->train(input, targets, labels * samplesLabels, atoi(argv[6]));
-    nn->saveState(pathNN);
-
-    auto result = nn->forwardStep(test, true);
-
-    std::cout << "\n";
-    for (int i = 0; i < labels; i++) {
-        std::cout << "label: " << i << " prob: " << (int)(result->data[i] * 100) << "\n";
-    }
-
-    delete result;
-    delete[] sample;
-    delete[] mean;
-    delete[] deviation;
-    delete[] targets;
-    for (int i = 0; i < labels * samplesLabels; i++) {
-        delete[] input[i];
-    }
-    delete[] input;
-    delete nn;
-
     return 0;
 }
