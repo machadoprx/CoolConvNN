@@ -125,17 +125,23 @@ Matrix* NeuralNet::getCorrectProb(Matrix* prob, int const *labels){
 
 Matrix* NeuralNet::getProbDerivative(Matrix* prob, int const *labels){
 
-    int rows = prob->rows, columns = prob->columns, currRow = 0;
+    int rows = prob->rows, columns = prob->columns;
     auto dProb = prob->copy();
 
-    for (int i = 0; i < rows * columns; i++) {
+    int stage = rows / THREADS;
+    
+    #pragma omp parallel for
+    for (int t = 0; t < THREADS; t++) {
+        int part = stage * t;
+        for (int i = part; i < part + stage; i++) {
+            int row = i * columns;
+            dProb->data[i * columns + labels[i]] -= 1;
 
-        if (i % columns == 0) {
-            dProb->data[i + labels[currRow]] -= 1;
-            currRow++;
+            for (int j = 0; j < columns; j++) {
+                int index = row + j;
+                dProb->data[index] = dProb->data[index] / rows;
+            }
         }
-
-        dProb->data[i] = dProb->data[i] / rows;
     }
 
     return dProb;
@@ -257,6 +263,7 @@ void NeuralNet::train(double** &dataSet, int* &labels, int samples, int epochs){
 
         int dataIndex = 0;
         double loss = 0;
+
         // shuffle dataset
         shuffleDataFisherYates(dataSet, labels, samples);
 

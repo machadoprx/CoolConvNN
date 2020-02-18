@@ -13,6 +13,8 @@
 #include <cassert>
 #include <random>
 #include <chrono>
+#include <iterator>
+#define THREADS 8
 
 class Matrix {
 

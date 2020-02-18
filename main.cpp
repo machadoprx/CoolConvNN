@@ -1,11 +1,16 @@
 #include <iostream>
 #include "NeuralNet.h"
+#include "omp.h"
 #include "png2array/png2array.h"
 
 using namespace std;
 
 int main(int argc, char const *argv[]) {
 
+    assert(THREADS % 2 == 0);
+
+    omp_set_num_threads(THREADS);
+    
     const char *data_file = "data_processed.dat";
     const char *nn_file = "nn_state.dat";
     const char *mode = argv[1];
@@ -31,6 +36,9 @@ int main(int argc, char const *argv[]) {
             int hiddenLayers = atoi(argv[2]);
             int layersDimension = atoi(argv[3]);
             int batches = atoi(argv[4]);
+
+            assert(batches % 2 == 0 && batches >= THREADS);
+
             double learningRate = atof(argv[5]);
             int epochs = atoi(argv[6]);
             nn = new NeuralNet(featuresDimension, labels, hiddenLayers, layersDimension, batches, learningRate);
@@ -69,7 +77,7 @@ int main(int argc, char const *argv[]) {
         delete[] input;
 
         auto sample = decodeTwoSteps(test_path, w, h);
-        auto test = new Matrix(1, w * h);
+        auto test = new Matrix(32, w * h);
         for (int i = 0; i < w * h; i++) {
             test->data[i] = (sample[i] - mean[i]) / deviation[i];
         }

@@ -149,23 +149,37 @@ Matrix* Layer::getBatchNormDerivative(Matrix* dOut, Layer* prev) {
     memset(dBatch2, 0, sizeof(double) * columns);
     memset(dBatch3, 0, sizeof(double) * columns);
 
-    for (int i = 0; i < rows * columns; i++) {
-
-        int j = i % columns;
-        double elem = dOut->data[i] * prevGamma->data[j];
-        dBatch1->data[i] = elem * rows;
-        dBatch2[j] += elem;
-        dBatch3[j] += elem * oNormalized->data[i];
-
+    int stage = rows / THREADS;
+    
+    #pragma omp parallel for
+    for (int t = 0; t < THREADS; t++) {
+        int part = stage * t;
+        for (int i = part; i < part + stage; i++) {
+            int row = i * columns;
+            for (int j = 0; j < columns; j++) {
+                int index = row + j;
+                double elem = dOut->data[index] * prevGamma->data[j];
+                dBatch1->data[index] = elem * rows;
+                dBatch2[j] += elem;
+                dBatch3[j] += elem * oNormalized->data[index];
+            }
+        }
     }
-
-    for (int i = 0; i < rows * columns; i++) {
-
-        int j = i % columns;
-        dBatch1->data[i] = dBatch1->data[i] - dBatch2[j];
-        dBatch1->data[i] = dBatch1->data[i] - (oNormalized->data[i] * dBatch3[j]);
-        dBatch0->data[i] = dBatch1->data[i] * prevDeviationInv->data[j] * (1.0 / (double) rows);
+    
+    #pragma omp parallel for
+    for (int t = 0; t < THREADS; t++) {
+        int part = stage * t;
+        for (int i = part; i < part + stage; i++) {
+            int row = i * columns;
+            for (int j = 0; j < columns; j++) {
+                int index = row + j;
+                dBatch1->data[index] = dBatch1->data[index] - dBatch2[j];
+                dBatch1->data[index] = dBatch1->data[index] - (oNormalized->data[index] * dBatch3[j]);
+                dBatch0->data[index] = dBatch1->data[index] * prevDeviationInv->data[j] * (1.0 / (double) rows);
+            }
+        }
     }
+    
 
     delete oNormalized;
     delete prevDeviationInv;

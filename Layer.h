@@ -19,7 +19,7 @@ private:
 
     void trainingOutput();
 
-    static double ReLU(double);
+    double ReLU(double);
 
     void updateRunningStatus(Matrix *mean, Matrix *variance);
 
