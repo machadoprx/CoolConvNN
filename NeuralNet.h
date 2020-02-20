@@ -46,11 +46,11 @@ private:
 
     static void shuffleDataFisherYates(double** &data, int* labels, int samples);
 
-    static Matrix *getCorrectProb(Matrix *prob, int const *labels);
+    static Matrix *getCorrectProb(Matrix *prob, int *labels);
 
-    static Matrix *getProbDerivative(Matrix *prob, int const *labels);
+    static Matrix *getProbDerivative(Matrix *prob, int *labels);
 
-    void backPropagationStep(Matrix *prob, Matrix *batch, int const *labels);
+    void backPropagationStep(Matrix *prob, Matrix *batch, int *labels);
 
     static double getDataLoss(Matrix *correctProb);
 };

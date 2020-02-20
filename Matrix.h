@@ -14,6 +14,7 @@
 #include <random>
 #include <chrono>
 #include <iterator>
+#include <omp.h>
 #define THREADS 8
 
 class Matrix {

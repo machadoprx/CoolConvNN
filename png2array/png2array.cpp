@@ -19,7 +19,7 @@ double *decodeTwoSteps(std::string filename, int &w, int &h) {
     double *pixels = new double[width * height];
     w = width, h = height;
 
-    for (int i = 0; i < width * height; i++) {
+    for (int i = 0; i < (int)(width * height); i++) {
         int r = image.at((i * 4) + 0);
         int g = image.at((i * 4) + 1);
         int b = image.at((i * 4) + 2);
@@ -126,7 +126,7 @@ void saveLabelNames(std::string namesOut) {
 
     std::ofstream out(namesOut);
 
-    for (int i = 0; i < labelNames.size(); i++) {
+    for (int i = 0; i < (int)labelNames.size(); i++) {
         out << i << " " << labelNames[i] << std::endl;
     }
 

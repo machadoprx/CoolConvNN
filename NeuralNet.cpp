@@ -112,7 +112,7 @@ void NeuralNet::saveState(const char *path) {
 
 }
 
-Matrix* NeuralNet::getCorrectProb(Matrix* prob, int const *labels){
+Matrix* NeuralNet::getCorrectProb(Matrix* prob, int *labels){
 
     auto correctProb = new Matrix(prob->rows, 1);
 
@@ -123,25 +123,22 @@ Matrix* NeuralNet::getCorrectProb(Matrix* prob, int const *labels){
     return correctProb;
 }
 
-Matrix* NeuralNet::getProbDerivative(Matrix* prob, int const *labels){
+Matrix* NeuralNet::getProbDerivative(Matrix* prob, int *labels){
 
     int rows = prob->rows, columns = prob->columns;
     auto dProb = new Matrix(prob->rows, prob->columns);
     
-    #pragma omp parallel num_threads(THREADS) default(shared) 
+    #pragma omp parallel num_threads(THREADS)
     {
-        
-        int i, index;
-
-        #pragma omp for private(i, index) nowait
-        for (i = 0; i < rows; i++) {
+        #pragma omp for nowait
+        for (int i = 0; i < rows; i++) {
             
-            index = i * columns;
-            dProb->data[index + labels[i]] -= 1;
-
+            int row = i * columns;
+            dProb->data[row + labels[i]] = -1.0;
+            //#pragma omp for nowait // labels % THREADS must be 0?
             for (int j = 0; j < columns; j++) {
-                dProb->data[index] = (prob->data[index] + dProb->data[index]) / rows;
-                index++;
+                int index = row + j;
+                dProb->data[index] = (dProb->data[index] + prob->data[index]) / rows;
             }
         }
     }
@@ -181,22 +178,24 @@ double NeuralNet::getRegulationLoss(){
 
 void NeuralNet::shuffleDataFisherYates(double** &data, int* labels, int samples) {
 
-    std::srand(std::time(nullptr));
-    double *tmpPointer;
-    int tmpLabel, randomIndex;
+    //#pragma omp parallel num_threads(THREADS)
+    //{
+        //std::srand(int(time(NULL)) ^ omp_get_thread_num());
+        //#pragma omp for
+        for (int i = samples - 1; i >= 1; i--) {
 
-    for (int i = samples - 1; i >= 1; i--) {
+            int randomIndex = std::rand() % (i + 1);
+            double *tmpPointer = data[i];
+            int tmpLabel = labels[i];
 
-        randomIndex = std::rand() % (i + 1);
-        tmpPointer = data[i];
-        tmpLabel = labels[i];
+            data[i] = data[randomIndex];
+            labels[i] = labels[randomIndex];
 
-        data[i] = data[randomIndex];
-        labels[i] = labels[randomIndex];
+            data[randomIndex] = tmpPointer;
+            labels[randomIndex] = tmpLabel;
+        }
+    //}
 
-        data[randomIndex] = tmpPointer;
-        labels[randomIndex] = tmpLabel;
-    }
 }
 
 Matrix* NeuralNet::forwardStep(Matrix* batch, bool validation) {
@@ -227,7 +226,7 @@ Matrix* NeuralNet::forwardStep(Matrix* batch, bool validation) {
     return prob;
 }
 
-void NeuralNet::backPropagationStep(Matrix* prob, Matrix* batch, int const *labels) {
+void NeuralNet::backPropagationStep(Matrix* prob, Matrix* batch, int *labels) {
 
     int layersSize = (int) layers.size() - 1;
     auto dCurrO = getProbDerivative(prob, labels);

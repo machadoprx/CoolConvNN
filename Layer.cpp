@@ -149,41 +149,35 @@ Matrix* Layer::getBatchNormDerivative(Matrix* dOut, Layer* prev) {
     memset(dBatch2, 0, sizeof(double) * columns);
     memset(dBatch3, 0, sizeof(double) * columns);
 
-    #pragma omp parallel num_threads(THREADS) default(shared) 
+    #pragma omp parallel num_threads(THREADS)
     {
+        for (int i = 0; i < rows; i++) {
         
-        int i, index;
+            int row = i * columns;
 
-        #pragma omp for private(i, index) nowait
-        for (i = 0; i < rows; i++) {
-        
-            index = i * columns;
-
+            #pragma omp for nowait
             for (int j = 0; j < columns; j++) {
+                int index = row + j;
                 double elem = dOut->data[index] * prevGamma->data[j];
                 dBatch1->data[index] = elem * rows;
                 dBatch2[j] += elem;
                 dBatch3[j] += elem * oNormalized->data[index];
-                index++;
             }
         }
     }
 
-    #pragma omp parallel num_threads(THREADS) default(shared) 
+    #pragma omp parallel num_threads(THREADS)
     {
+        for (int i = 0; i < rows; i++) {
         
-        int i, index;
+            int row = i * columns;
 
-        #pragma omp for private(i, index) nowait
-        for (i = 0; i < rows; i++) {
-        
-            index = i * columns;
-
+            #pragma omp for nowait
             for (int j = 0; j < columns; j++) {
+                int index = row + j;
                 dBatch1->data[index] = dBatch1->data[index] - dBatch2[j];
                 dBatch1->data[index] = dBatch1->data[index] - (oNormalized->data[index] * dBatch3[j]);
                 dBatch0->data[index] = dBatch1->data[index] * prevDeviationInv->data[j] * (1.0 / (double) rows);
-                index++;
             }
         }
     }    

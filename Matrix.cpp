@@ -26,15 +26,13 @@ Matrix* Matrix::transposed() {
         return R;
     }
 
-    #pragma omp parallel num_threads(THREADS) default(shared)
+    #pragma omp parallel num_threads(THREADS)
     {
-        int i, row;
+        for (int i = 0; i < rows; i++) {
+            
+            int row = i * columns; 
 
-        #pragma omp for private(i, row) nowait
-        for (i = 0; i < rows; i++) {
-            
-            row = i * columns; 
-            
+            #pragma omp for nowait
             for (int j = 0; j < columns; j++) {
                 R->data[j * R->columns + i] = data[row + j];
             }
@@ -48,34 +46,32 @@ Matrix* Matrix::normalized() {
 
     auto R = new Matrix(rows, columns);
 
-    #pragma omp parallel num_threads(THREADS) default(shared)
+    #pragma omp parallel num_threads(THREADS)
     {
-        int i, index;
-        double sum, max;
+        #pragma omp for nowait
+        for (int i = 0; i < rows; i++) {
 
-        #pragma omp for private(i, index, sum, max) nowait
-        for (i = 0; i < rows; i++) {
+            int index = i * columns;
+            double sum = 0, max = data[index];
 
-            int j;
-            index = i * columns + 1;
-            sum = 0, max = data[i * columns];
-
-            for (j = 1; j < columns; j++) {
+            for (int j = 0; j < columns; j++) {
                 if (data[index] > max) {
                     max = data[index];
                 }
                 index++;
             }
-            
+
             index = i * columns;
-            for (j = 0; j < columns; j++) {
+
+            for (int j = 0; j < columns; j++) {
                 R->data[index] = exp(data[index] - max);
                 sum += R->data[index];
                 index++;
             }
 
             index = i * columns;
-            for (j = 0; j < columns; j++) {
+
+            for (int j = 0; j < columns; j++) {
                 R->data[index] = R->data[index] / sum;
                 index++;
             }
@@ -103,12 +99,10 @@ Matrix* Matrix::sum(Matrix* W, double scalar) {
 
     auto R = new Matrix(rows, columns);
 
-    #pragma omp parallel num_threads(THREADS) default(shared)
+    #pragma omp parallel num_threads(THREADS)
     {
-        int i;
-
-        #pragma omp for private(i) nowait
-        for (i = 0; i < rows * columns; i++) {
+        #pragma omp for nowait
+        for (int i = 0; i < rows * columns; i++) {
             R->data[i] = data[i] + (W->data[i] * scalar);
         }
     }
@@ -122,12 +116,10 @@ Matrix* Matrix::elemMul(Matrix* W) {
 
     auto R = new Matrix(rows, columns);
 
-    #pragma omp parallel num_threads(THREADS) default(shared)
+    #pragma omp parallel num_threads(THREADS)
     {
-        int i;
-
-        #pragma omp for private(i) nowait
-        for (i = 0; i < rows * columns; i++) {
+        #pragma omp for nowait
+        for (int i = 0; i < rows * columns; i++) {
             R->data[i] = data[i] * W->data[i];
         }
     }
@@ -142,18 +134,15 @@ Matrix* Matrix::elemMulVector(Matrix* W, Matrix* W1) { // 1
 
     auto R = new Matrix(rows, columns);
     
-    #pragma omp parallel num_threads(THREADS) default(shared)
+    #pragma omp parallel num_threads(THREADS)
     {
-        int i, index;
+        for (int i = 0; i < rows; i++) {
+            
+            int row = i * columns;
 
-        #pragma omp for private(i, index) nowait
-        for (i = 0; i < rows; i++) {
-            
-            index = i * columns;
-            
+            #pragma omp for nowait
             for (int j = 0; j < columns; j++) {
-                R->data[index] = (data[index] * W->data[j]) + W1->data[j];
-                index++;
+                R->data[row + j] = (data[row + j] * W->data[j]) + W1->data[j];
             }
         }
     }
@@ -167,18 +156,15 @@ Matrix* Matrix::elemMulVector(Matrix* W) {
 
     auto R = new Matrix(rows, columns);
 
-    #pragma omp parallel num_threads(THREADS) default(shared)
+    #pragma omp parallel num_threads(THREADS)
     {
-        int i, index;
-
-        #pragma omp for private(i, index) nowait
-        for (i = 0; i < rows; i++) {
+        for (int i = 0; i < rows; i++) {
             
-            index = i * columns;
+            int row = i * columns;
             
+            #pragma omp for nowait
             for (int j = 0; j < columns; j++) {
-                R->data[index] = (data[index] * W->data[j]);
-                index++;
+                R->data[row + j] = (data[row + j] * W->data[j]);
             }
         }
     }
@@ -191,16 +177,13 @@ Matrix* Matrix::mean0Axis() {
     auto T = transposed();
     auto mean = new Matrix(1, columns);
 
-    #pragma omp parallel num_threads(THREADS) default(shared)
+    #pragma omp parallel num_threads(THREADS)
     {
-        int i, row;
-        double sum;
-        
-        #pragma omp for private(i, row, sum)
-        for (i = 0; i < T->rows; i++) {
-            
-            sum = 0;
-            row = i * T->columns;
+        #pragma omp for nowait
+        for (int i = 0; i < T->rows; i++) {
+    
+            double sum = 0;
+            int row = i * T->columns;
             
             for (int j = 0; j < T->columns; j++) {
                 sum += T->data[row + j];
@@ -219,20 +202,16 @@ Matrix* Matrix::variance0Axis() {
     auto T = transposed();
     auto variance = new Matrix(1, columns);
 
-    #pragma omp parallel num_threads(THREADS) default(shared)
+    #pragma omp parallel num_threads(THREADS)
     {
-        int i, index;
-        double sum;
-
-        #pragma omp for private(i, index, sum) nowait
-        for (i = 0; i < T->rows; i++) {
+        #pragma omp for nowait
+        for (int i = 0; i < T->rows; i++) {
             
-            sum = 0;
-            index = i * T->columns;
+            double sum = 0;
+            int row = i * T->columns;
 
             for (int j = 0; j < T->columns; j++) {
-                sum += T->data[index] * T->data[index];
-                index++;
+                sum += T->data[row + j] * T->data[row + j];
             }
             variance->data[i] = sum / (double) rows;
         }
@@ -247,18 +226,13 @@ Matrix* Matrix::centralized(Matrix* desiredMean) {
 
     auto R = new Matrix(rows, columns);
 
-    #pragma omp parallel num_threads(THREADS) default(shared)
+    #pragma omp parallel num_threads(THREADS)
     {
-        int i;
-        
-        #pragma omp for private(i)
-        for (i = 0; i < rows; i++) {
-
-            int index = i * columns;
-
+        for (int i = 0; i < rows; i++) {
+            int row = i * columns;
+            #pragma omp for nowait
             for (int j = 0; j < columns; j++) {
-                R->data[index] = data[index] - desiredMean->data[j];
-                index++;
+                R->data[row + j] = data[row + j] - desiredMean->data[j];
             }
         }
     }
@@ -270,15 +244,11 @@ Matrix* Matrix::sumRows() { //profile
 
     auto R = new Matrix(1, columns);
 
-    #pragma omp parallel num_threads(THREADS) default(shared)
+    #pragma omp parallel num_threads(THREADS)
     {
-        int i;
-        
-        #pragma omp for private(i)
-        for (i = 0; i < rows; i++) {
-
+        for (int i = 0; i < rows; i++) {
             int row = i * columns;
-
+            #pragma omp for nowait
             for (int j = 0; j < columns; j++) {
                 R->data[j] += data[row + j];
             }
@@ -295,12 +265,10 @@ void Matrix::randomize() {
 
     std::normal_distribution<double> distribution (0.0, sqrt(2.0 / rows));
 
-    #pragma omp parallel num_threads(THREADS) default(shared)
+    #pragma omp parallel num_threads(THREADS)
     {
-        int i;
-
-        #pragma omp for private(i) nowait
-        for (i = 0; i < rows * columns; i++) {
+        #pragma omp for nowait
+        for (int i = 0; i < rows * columns; i++) {
             data[i] = distribution(generator);
         }
     }
@@ -308,11 +276,18 @@ void Matrix::randomize() {
 
 double Matrix::sumElements() {
 
-    double sum = 0;
+    double sum = 0, local = 0;
 
-    for (int i = 0; i < rows * columns; i++) {
-        sum += data[i];
+    #pragma omp parallel num_threads(THREADS)
+    {
+        #pragma omp for nowait
+        for (int i = 0; i < rows * columns; i++) {
+            local += data[i];
+        }
+        #pragma omp critical
+        sum += local;
     }
+
     return sum;
 }
 
@@ -321,12 +296,10 @@ Matrix* Matrix::invDeviation(Matrix* desiredVar) {
     auto R = new Matrix(1, desiredVar->columns);
     double e = 0.00000001;
 
-    #pragma omp parallel num_threads(THREADS) default(shared)
+    #pragma omp parallel num_threads(THREADS)
     {
-        int i;
-
-        #pragma omp for private(i) nowait
-        for (i = 0; i < desiredVar->columns; i++) {
+        #pragma omp for nowait
+        for (int i = 0; i < desiredVar->columns; i++) {
             R->data[i] = 1. / sqrt(desiredVar->data[i] + e);
         }
     }
@@ -340,12 +313,10 @@ Matrix* Matrix::ReLUDerivative(Matrix* W) { //profile
 
     auto R = new Matrix(rows, columns);
 
-    #pragma omp parallel num_threads(THREADS) default(shared)
+    #pragma omp parallel num_threads(THREADS)
     {
-        int i;
-
-        #pragma omp for private(i) nowait
-        for (i = 0; i < rows * columns; i++) {
+        #pragma omp for nowait
+        for (int i = 0; i < rows * columns; i++) {
             R->data[i] = data[i];
             if (W->data[i] < 0) {
                 R->data[i] = 0;
