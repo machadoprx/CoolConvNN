@@ -126,20 +126,22 @@ Matrix* NeuralNet::getCorrectProb(Matrix* prob, int const *labels){
 Matrix* NeuralNet::getProbDerivative(Matrix* prob, int const *labels){
 
     int rows = prob->rows, columns = prob->columns;
-    auto dProb = prob->copy();
-
-    int stage = rows / THREADS;
+    auto dProb = new Matrix(prob->rows, prob->columns);
     
-    #pragma omp parallel for
-    for (int t = 0; t < THREADS; t++) {
-        int part = stage * t;
-        for (int i = part; i < part + stage; i++) {
-            int row = i * columns;
-            dProb->data[i * columns + labels[i]] -= 1;
+    #pragma omp parallel num_threads(THREADS) default(shared) 
+    {
+        
+        int i, index;
+
+        #pragma omp for private(i, index) nowait
+        for (i = 0; i < rows; i++) {
+            
+            index = i * columns;
+            dProb->data[index + labels[i]] -= 1;
 
             for (int j = 0; j < columns; j++) {
-                int index = row + j;
-                dProb->data[index] = dProb->data[index] / rows;
+                dProb->data[index] = (prob->data[index] + dProb->data[index]) / rows;
+                index++;
             }
         }
     }

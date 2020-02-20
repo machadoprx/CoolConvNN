@@ -144,49 +144,54 @@ Matrix* Layer::getBatchNormDerivative(Matrix* dOut, Layer* prev) {
 
     auto dBatch0 = new Matrix(dOut->rows, dOut->columns);
     auto dBatch1 = new Matrix(dOut->rows, dOut->columns);
-    auto dBatch2 = new double[dOut->columns];
-    auto dBatch3 = new double[dOut->columns];
+    double dBatch2[dOut->columns];
+    double dBatch3[dOut->columns];
     memset(dBatch2, 0, sizeof(double) * columns);
     memset(dBatch3, 0, sizeof(double) * columns);
 
-    int stage = rows / THREADS;
-    
-    #pragma omp parallel for
-    for (int t = 0; t < THREADS; t++) {
-        int part = stage * t;
-        for (int i = part; i < part + stage; i++) {
-            int row = i * columns;
+    #pragma omp parallel num_threads(THREADS) default(shared) 
+    {
+        
+        int i, index;
+
+        #pragma omp for private(i, index) nowait
+        for (i = 0; i < rows; i++) {
+        
+            index = i * columns;
+
             for (int j = 0; j < columns; j++) {
-                int index = row + j;
                 double elem = dOut->data[index] * prevGamma->data[j];
                 dBatch1->data[index] = elem * rows;
                 dBatch2[j] += elem;
                 dBatch3[j] += elem * oNormalized->data[index];
+                index++;
             }
         }
     }
-    
-    #pragma omp parallel for
-    for (int t = 0; t < THREADS; t++) {
-        int part = stage * t;
-        for (int i = part; i < part + stage; i++) {
-            int row = i * columns;
+
+    #pragma omp parallel num_threads(THREADS) default(shared) 
+    {
+        
+        int i, index;
+
+        #pragma omp for private(i, index) nowait
+        for (i = 0; i < rows; i++) {
+        
+            index = i * columns;
+
             for (int j = 0; j < columns; j++) {
-                int index = row + j;
                 dBatch1->data[index] = dBatch1->data[index] - dBatch2[j];
                 dBatch1->data[index] = dBatch1->data[index] - (oNormalized->data[index] * dBatch3[j]);
                 dBatch0->data[index] = dBatch1->data[index] * prevDeviationInv->data[j] * (1.0 / (double) rows);
+                index++;
             }
         }
-    }
-    
+    }    
 
     delete oNormalized;
     delete prevDeviationInv;
     delete prevGamma;
     delete dBatch1;
-    delete[] dBatch2;
-    delete[] dBatch3;
 
     return dBatch0;
 }
