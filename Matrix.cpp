@@ -142,7 +142,8 @@ Matrix* Matrix::elemMulVector(Matrix* W, Matrix* W1) { // 1
 
             #pragma omp for nowait
             for (int j = 0; j < columns; j++) {
-                R->data[row + j] = (data[row + j] * W->data[j]) + W1->data[j];
+                int index = row + j;
+                R->data[index] = (data[index] * W->data[j]) + W1->data[j];
             }
         }
     }
@@ -164,7 +165,8 @@ Matrix* Matrix::elemMulVector(Matrix* W) {
             
             #pragma omp for nowait
             for (int j = 0; j < columns; j++) {
-                R->data[row + j] = (data[row + j] * W->data[j]);
+                int index = row + j;
+                R->data[index] = (data[index] * W->data[j]);
             }
         }
     }
@@ -211,7 +213,8 @@ Matrix* Matrix::variance0Axis() {
             int row = i * T->columns;
 
             for (int j = 0; j < T->columns; j++) {
-                sum += T->data[row + j] * T->data[row + j];
+                int index = row + j;
+                sum += T->data[index] * T->data[index];
             }
             variance->data[i] = sum / (double) rows;
         }
@@ -232,7 +235,8 @@ Matrix* Matrix::centralized(Matrix* desiredMean) {
             int row = i * columns;
             #pragma omp for nowait
             for (int j = 0; j < columns; j++) {
-                R->data[row + j] = data[row + j] - desiredMean->data[j];
+                int index = row + j;
+                R->data[index] = data[index] - desiredMean->data[j];
             }
         }
     }
@@ -273,19 +277,18 @@ void Matrix::randomize() {
         }
     }
 }
+    #include <iostream>
 
 double Matrix::sumElements() {
 
-    double sum = 0, local = 0;
+    double sum = 0;
 
     #pragma omp parallel num_threads(THREADS)
     {
-        #pragma omp for nowait
+        #pragma omp for reduction (+:sum)
         for (int i = 0; i < rows * columns; i++) {
-            local += data[i];
+            sum += data[i];
         }
-        #pragma omp critical
-        sum += local;
     }
 
     return sum;

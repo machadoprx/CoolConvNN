@@ -82,10 +82,15 @@ void Layer::updateRunningStatus(Matrix* mean, Matrix* variance) {
 
     double momentum = 0.9;
 
-    for (int i = 0; i < mean->columns; i++) {
-        runningMean->data[i] = (momentum * runningMean->data[i]) + (1 - momentum) * mean->data[i];
-        runningVariance->data[i] = (momentum * runningVariance->data[i]) + (1 - momentum) * variance->data[i];
+    #pragma omp parallel num_threads(THREADS)
+    {
+        #pragma omp for nowait
+        for (int i = 0; i < mean->columns; i++) {
+            runningMean->data[i] = (momentum * runningMean->data[i]) + (1 - momentum) * mean->data[i];
+            runningVariance->data[i] = (momentum * runningVariance->data[i]) + (1 - momentum) * variance->data[i];
+        }
     }
+
 
 }
 
@@ -119,10 +124,14 @@ void Layer::feedForward(Matrix* input, bool validation){
     if (hidden) {
 
         int len = output->rows * output->columns;
-
-        for (int i = 0; i < len; i++) {
-            output->data[i] = ReLU(output->data[i]);
+        #pragma omp parallel num_threads(THREADS)
+        {
+            #pragma omp for nowait
+            for (int i = 0; i < len; i++) {
+                output->data[i] = ReLU(output->data[i]);
+            }
         }
+
 
         if (validation) {
             validationOutput();
@@ -175,8 +184,8 @@ Matrix* Layer::getBatchNormDerivative(Matrix* dOut, Layer* prev) {
             #pragma omp for nowait
             for (int j = 0; j < columns; j++) {
                 int index = row + j;
-                dBatch1->data[index] = dBatch1->data[index] - dBatch2[j];
-                dBatch1->data[index] = dBatch1->data[index] - (oNormalized->data[index] * dBatch3[j]);
+                dBatch1->data[index] -= dBatch2[j];
+                dBatch1->data[index] -= (oNormalized->data[index] * dBatch3[j]);
                 dBatch0->data[index] = dBatch1->data[index] * prevDeviationInv->data[j] * (1.0 / (double) rows);
             }
         }
@@ -259,9 +268,13 @@ void Layer::updateGammaBeta(Matrix* dGamma, Matrix* dBeta, double learningRate) 
     assert(dGamma->rows == 1 && dBeta->rows == 1);
     assert ((gamma->columns == dGamma->columns ) && (beta->columns  == dBeta->columns));
 
-    for (int i = 0; i < dGamma->columns; i++) {
-        gamma->data[i] -= learningRate * dGamma->data[i];
-        beta->data[i] -= learningRate * dBeta->data[i];
+    #pragma omp parallel num_threads(THREADS)
+    {
+        #pragma omp for nowait
+        for (int i = 0; i < dGamma->columns; i++) {
+            gamma->data[i] -= learningRate * dGamma->data[i];
+            beta->data[i] -= learningRate * dBeta->data[i];
+        }
     }
 }
 

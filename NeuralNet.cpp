@@ -150,12 +150,15 @@ double NeuralNet::getDataLoss(Matrix* correctProb){
 
     double loss = 0;
 
-    for (int i = 0; i < correctProb->rows; i++) {
-        loss += correctProb->data[i];
+    #pragma omp parallel num_threads(THREADS)
+    {
+        #pragma omp for reduction(+:loss)
+        for (int i = 0; i < correctProb->rows; i++) {
+            loss += correctProb->data[i];
+        }
     }
-    loss = loss / correctProb->rows;
 
-    return loss;
+    return loss / correctProb->rows;
 }
 
 double NeuralNet::getRegulationLoss(){
