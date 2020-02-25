@@ -124,6 +124,7 @@ void Layer::feedForward(Matrix* input, bool validation){
     if (hidden) {
 
         int len = output->rows * output->columns;
+        
         #pragma omp parallel num_threads(THREADS)
         {
             #pragma omp for nowait
@@ -160,13 +161,14 @@ Matrix* Layer::getBatchNormDerivative(Matrix* dOut, Layer* prev) {
 
     #pragma omp parallel num_threads(THREADS)
     {
+        #pragma omp for nowait collapse(2)
         for (int i = 0; i < rows; i++) {
         
-            int row = i * columns;
+            //int row = i * columns;
 
-            #pragma omp for nowait
+            //#pragma omp for nowait
             for (int j = 0; j < columns; j++) {
-                int index = row + j;
+                int index = i * columns + j;
                 double elem = dOut->data[index] * prevGamma->data[j];
                 dBatch1->data[index] = elem * rows;
                 dBatch2[j] += elem;
@@ -177,13 +179,14 @@ Matrix* Layer::getBatchNormDerivative(Matrix* dOut, Layer* prev) {
 
     #pragma omp parallel num_threads(THREADS)
     {
+        #pragma omp for nowait collapse(2)
         for (int i = 0; i < rows; i++) {
         
-            int row = i * columns;
+            //int row = i * columns;
 
-            #pragma omp for nowait
+            //#pragma omp for nowait
             for (int j = 0; j < columns; j++) {
-                int index = row + j;
+                int index = i * columns + j;
                 dBatch1->data[index] -= dBatch2[j];
                 dBatch1->data[index] -= (oNormalized->data[index] * dBatch3[j]);
                 dBatch0->data[index] = dBatch1->data[index] * prevDeviationInv->data[j] * (1.0 / (double) rows);

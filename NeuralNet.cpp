@@ -182,8 +182,8 @@ double NeuralNet::getRegulationLoss(){
 void NeuralNet::shuffleDataFisherYates(double** &data, int* labels, int samples) {
 
     //#pragma omp parallel num_threads(THREADS)
-    //{
-        //std::srand(int(time(NULL)) ^ omp_get_thread_num());
+    {
+        std::srand(int(time(NULL))); //^ omp_get_thread_num());
         //#pragma omp for
         for (int i = samples - 1; i >= 1; i--) {
 
@@ -197,7 +197,7 @@ void NeuralNet::shuffleDataFisherYates(double** &data, int* labels, int samples)
             data[randomIndex] = tmpPointer;
             labels[randomIndex] = tmpLabel;
         }
-    //}
+    }
 
 }
 
@@ -283,12 +283,14 @@ void NeuralNet::train(double** &dataSet, int* &labels, int samples, int epochs){
             auto batch = new Matrix(batchLength, featuresDimension);
             auto batchLabels = new int[batchLength];
 
-            int x = 0;
-            for (int i = dataIndex; i < dataIndex + batchLength; i++) {
-                for (int j = 0; j < featuresDimension; j++) {
-                    batch->data[x * featuresDimension + j] = dataSet[i][j];
+            #pragma omp parallel num_threads(THREADS)
+            {
+                #pragma omp for nowait
+                for (int i = 0; i < batchLength; i++) {
+                    double *ptr = batch->data + (i * featuresDimension);
+                    memcpy(ptr, dataSet[dataIndex + i], sizeof(double) * featuresDimension);
+                    batchLabels[i] = labels[dataIndex + i];
                 }
-                batchLabels[x++] = labels[i];
             }
 
             //forward step

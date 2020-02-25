@@ -28,13 +28,10 @@ Matrix* Matrix::transposed() {
 
     #pragma omp parallel num_threads(THREADS)
     {
+        #pragma omp for nowait collapse(2)
         for (int i = 0; i < rows; i++) {
-            
-            int row = i * columns; 
-
-            #pragma omp for nowait
             for (int j = 0; j < columns; j++) {
-                R->data[j * R->columns + i] = data[row + j];
+                R->data[j * R->columns + i] = data[i * columns + j];
             }
         }
     }
@@ -136,13 +133,14 @@ Matrix* Matrix::elemMulVector(Matrix* W, Matrix* W1) { // 1
     
     #pragma omp parallel num_threads(THREADS)
     {
+        #pragma omp for nowait collapse(2)
         for (int i = 0; i < rows; i++) {
             
-            int row = i * columns;
+            //int row = i * columns;
 
-            #pragma omp for nowait
+            //#pragma omp for nowait
             for (int j = 0; j < columns; j++) {
-                int index = row + j;
+                int index = i * columns + j;
                 R->data[index] = (data[index] * W->data[j]) + W1->data[j];
             }
         }
@@ -159,13 +157,14 @@ Matrix* Matrix::elemMulVector(Matrix* W) {
 
     #pragma omp parallel num_threads(THREADS)
     {
+        #pragma omp for nowait collapse(2)
         for (int i = 0; i < rows; i++) {
             
-            int row = i * columns;
+            //int row = i * columns;
             
-            #pragma omp for nowait
+            //#pragma omp for nowait
             for (int j = 0; j < columns; j++) {
-                int index = row + j;
+                int index = i * columns + j;
                 R->data[index] = (data[index] * W->data[j]);
             }
         }
@@ -231,11 +230,12 @@ Matrix* Matrix::centralized(Matrix* desiredMean) {
 
     #pragma omp parallel num_threads(THREADS)
     {
+        #pragma omp for nowait collapse(2)
         for (int i = 0; i < rows; i++) {
-            int row = i * columns;
-            #pragma omp for nowait
+            //int row = i * columns;
+            //#pragma omp for nowait
             for (int j = 0; j < columns; j++) {
-                int index = row + j;
+                int index = i * columns + j;
                 R->data[index] = data[index] - desiredMean->data[j];
             }
         }
@@ -250,11 +250,12 @@ Matrix* Matrix::sumRows() { //profile
 
     #pragma omp parallel num_threads(THREADS)
     {
+        #pragma omp for nowait collapse(2)
         for (int i = 0; i < rows; i++) {
-            int row = i * columns;
-            #pragma omp for nowait
+            //int row = i * columns;
+            //#pragma omp for nowait
             for (int j = 0; j < columns; j++) {
-                R->data[j] += data[row + j];
+                R->data[j] += data[i * columns + j];
             }
         }
     }
@@ -285,7 +286,7 @@ double Matrix::sumElements() {
 
     #pragma omp parallel num_threads(THREADS)
     {
-        #pragma omp for reduction (+:sum)
+        #pragma omp for nowait reduction (+:sum)
         for (int i = 0; i < rows * columns; i++) {
             sum += data[i];
         }
@@ -335,7 +336,7 @@ Matrix* Matrix::iam2cool(int filterSize, int stride) {
     int rRows = floor((rows - filterSize / stride) + 1);
     int rCols = floor((columns - filterSize / stride) + 1);
 
-    Matrix *R = new Matrix(filterSize * filterSize, rRows * rCols);
+    auto R = new Matrix(filterSize * filterSize, rRows * rCols);
     
     int startX = 0, startY = 0;
 
@@ -374,14 +375,29 @@ void Matrix::set(Matrix *W) {
 
     assert(W->rows == rows && W->columns == columns);
 
-    memcpy(data, W->data, rows * columns * sizeof(double));
-
+    #pragma omp parallel num_threads(THREADS)
+    {
+        #pragma omp for nowait
+        for (int i = 0; i < rows; i++) {
+            double *ptrDst = data + (i * columns);
+            double *ptrSrc = W->data + (i * columns);
+            memcpy(ptrDst, ptrSrc, sizeof(double) * columns);
+        }
+    }
 }
 
 Matrix* Matrix::copy() {
 
     auto R = new Matrix(rows, columns);
-    memcpy(R->data, data, rows * columns * sizeof(double));
 
+    #pragma omp parallel num_threads(THREADS)
+    {
+        #pragma omp for nowait
+        for (int i = 0; i < rows; i++) {
+            double *ptrSrc = data + (i * columns);
+            double *ptrDst = R->data + (i * columns);
+            memcpy(ptrDst, ptrSrc, sizeof(double) * columns);
+        }
+    }
     return R;
 }
