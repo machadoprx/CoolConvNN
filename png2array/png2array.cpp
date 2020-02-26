@@ -3,7 +3,7 @@
 namespace fs = std::filesystem;
 std::map<int, std::string> labelNames;
 
-double *decodeTwoSteps(std::string filename, int &w, int &h) {
+float *decodeTwoSteps(std::string filename, int &w, int &h) {
     
     std::vector<unsigned char> png;
     std::vector<unsigned char> image; //the raw pixels
@@ -16,30 +16,30 @@ double *decodeTwoSteps(std::string filename, int &w, int &h) {
     //if there's an error, display it
     if(error) std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << std::endl;
 
-    double *pixels = new double[width * height];
+    float *pixels = new float[width * height];
     w = width, h = height;
 
     for (int i = 0; i < (int)(width * height); i++) {
         int r = image.at((i * 4) + 0);
         int g = image.at((i * 4) + 1);
         int b = image.at((i * 4) + 2);
-        double gray = ((r * 0.299) + (g * 0.587) + (b * 0.114));
+        float gray = ((r * 0.299) + (g * 0.587) + (b * 0.114));
         pixels[i] = gray;
     }
 
     return pixels;
 }
 
-void normalizeData(double** &raw, double* &mean, double* &deviation, int samples, int featureSize) {
+void normalizeData(float** &raw, float* &mean, float* &deviation, int samples, int featureSize) {
 
-    double e = 0.0000001;
+    float e = .00001f;
     
-    mean = new double[featureSize];
-    deviation = new double[featureSize];
+    mean = new float[featureSize];
+    deviation = new float[featureSize];
 
     for (int j = 0; j < featureSize; j++) {
 
-        double featureSum = 0;
+        float featureSum = 0;
 
         for (int i = 0; i < samples; i++) {
             featureSum += raw[i][j];
@@ -48,7 +48,7 @@ void normalizeData(double** &raw, double* &mean, double* &deviation, int samples
         mean[j] = featureSum / samples;
 
         // mean subtraction
-        double featureVariance = 0;
+        float featureVariance = 0;
 
         for (int i = 0; i < samples; i++) {
 
@@ -68,11 +68,11 @@ void normalizeData(double** &raw, double* &mean, double* &deviation, int samples
     }
 }
 
-double **png2data(std::string dataPath, int labels, int samplesPerLabel) {
+float **png2data(std::string dataPath, int labels, int samplesPerLabel) {
 
     int index = 0;
     int label = 0;
-    double **raw = new double*[labels * samplesPerLabel];
+    float **raw = new float*[labels * samplesPerLabel];
 
     for (const auto & entry : fs::directory_iterator(dataPath)){
  
@@ -104,7 +104,7 @@ double **png2data(std::string dataPath, int labels, int samplesPerLabel) {
     return raw;
 }
 
-void saveData(const char* outputPath, double** &data, double* &mean, double* &deviation, int labels, int samplesPerLabel, int featuresSize) {
+void saveData(const char* outputPath, float** &data, float* &mean, float* &deviation, int labels, int samplesPerLabel, int featuresSize) {
 
     FILE *f = fopen(outputPath, "wb");
     
@@ -112,11 +112,11 @@ void saveData(const char* outputPath, double** &data, double* &mean, double* &de
     fwrite(&samplesPerLabel, sizeof(int), 1, f);
     fwrite(&featuresSize, sizeof(int), 1, f);
 
-    fwrite(mean, sizeof(double) * featuresSize, 1, f);
-    fwrite(deviation, sizeof(double) * featuresSize, 1, f);
+    fwrite(mean, sizeof(float) * featuresSize, 1, f);
+    fwrite(deviation, sizeof(float) * featuresSize, 1, f);
 
     for (int i = 0; i < labels * samplesPerLabel; i++) {
-        fwrite(data[i], sizeof(double) * featuresSize, 1, f);
+        fwrite(data[i], sizeof(float) * featuresSize, 1, f);
     }
 
     fclose(f);
@@ -135,10 +135,10 @@ void saveLabelNames(std::string namesOut) {
 
 void processData(const char *dataPath, int samplesPerLabel, int size, int labels, const char *outPath) {
 
-    double **rawData = png2data(dataPath, labels, samplesPerLabel);
+    float **rawData = png2data(dataPath, labels, samplesPerLabel);
 
-    double *mean = nullptr;
-    double *deviation = nullptr;
+    float *mean = nullptr;
+    float *deviation = nullptr;
     normalizeData(rawData, mean, deviation, labels * samplesPerLabel, size * size);
 
     saveData(outPath, rawData, mean, deviation, labels, samplesPerLabel, size * size);
@@ -156,7 +156,7 @@ void processData(const char *dataPath, int samplesPerLabel, int size, int labels
 
 }
 
-void loadData(const char* path, double** &data, double* &mean, double* &deviation, int &labels, int &samplesPerLabels, int &featuresDimension) {
+void loadData(const char* path, float** &data, float* &mean, float* &deviation, int &labels, int &samplesPerLabels, int &featuresDimension) {
 
     FILE *fp = fopen(path, "rb");
 
@@ -164,19 +164,19 @@ void loadData(const char* path, double** &data, double* &mean, double* &deviatio
     fread(&samplesPerLabels, sizeof(int), 1, fp);
     fread(&featuresDimension, sizeof(int), 1, fp);
 
-    mean = new double[featuresDimension];
-    deviation = new double[featuresDimension];
-    data = new double*[labels * samplesPerLabels];
+    mean = new float[featuresDimension];
+    deviation = new float[featuresDimension];
+    data = new float*[labels * samplesPerLabels];
 
     for (int i = 0; i < labels * samplesPerLabels; i++) {
-        data[i] = new double[featuresDimension];
+        data[i] = new float[featuresDimension];
     }
 
-    fread(mean, sizeof(double) * featuresDimension, 1, fp);
-    fread(deviation, sizeof(double) * featuresDimension, 1, fp);
+    fread(mean, sizeof(float) * featuresDimension, 1, fp);
+    fread(deviation, sizeof(float) * featuresDimension, 1, fp);
 
     for (int i = 0; i < labels * samplesPerLabels; i++) {
-        fread(data[i], sizeof(double) * featuresDimension, 1, fp);
+        fread(data[i], sizeof(float) * featuresDimension, 1, fp);
     }
 
     fclose(fp);

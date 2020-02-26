@@ -7,10 +7,8 @@ using namespace std;
 
 int main(int argc, char const *argv[]) {
 
-    assert(THREADS % 2 == 0);
+    //assert(THREADS % 2 == 0);
 
-    omp_set_num_threads(THREADS);
-    
     const char *data_file = "data_processed.dat";
     const char *nn_file = "nn_state.dat";
     const char *mode = argv[1];
@@ -26,7 +24,7 @@ int main(int argc, char const *argv[]) {
     else if (strcmp(mode, "new") == 0 || strcmp(mode, "continue") == 0) {
 
         int labels, samplesPerLabels, featuresDimension;
-        double *mean, *deviation, **input;
+        float *mean, *deviation, **input;
 
         loadData(data_file, input, mean, deviation, labels, samplesPerLabels, featuresDimension);
         auto targets = genTargets(labels, samplesPerLabels);
@@ -39,13 +37,13 @@ int main(int argc, char const *argv[]) {
 
             assert(batches % 2 == 0 && batches >= THREADS);
 
-            double learningRate = atof(argv[5]);
+            float learningRate = atof(argv[5]);
             int epochs = atoi(argv[6]);
             nn = new NeuralNet(featuresDimension, labels, hiddenLayers, layersDimension, batches, learningRate);
             nn->train(input, targets, labels * samplesPerLabels, epochs);
         }
         else {
-            double learningRate = atof(argv[2]);
+            float learningRate = atof(argv[2]);
             int epochs = atoi(argv[3]);
             nn = new NeuralNet(nn_file);
             nn->setLearningRate(learningRate);
@@ -69,7 +67,7 @@ int main(int argc, char const *argv[]) {
         const char *test_path = argv[2];
 
         int labels, samplesPerLabels, featuresDimension;
-        double *mean, *deviation, **input;
+        float *mean, *deviation, **input;
         loadData(data_file, input, mean, deviation, labels, samplesPerLabels, featuresDimension);
         for (int i = 0; i < labels * samplesPerLabels; i++) {
             delete[] input[i];
@@ -88,6 +86,7 @@ int main(int argc, char const *argv[]) {
             std::cout << "label: " << i << " prob: " << (int)(result->data[i] * 100) << "\n";
         }
         delete nn;
+        delete result;
         delete[] mean;
         delete[] deviation;
     }

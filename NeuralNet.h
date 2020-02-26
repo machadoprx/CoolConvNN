@@ -15,7 +15,7 @@ class NeuralNet {
 
 public:
     NeuralNet(int featuresDimension, int outputDimension, int additionalHiddenLayers, int layersDimension,
-              int batchSize, double learningRate);
+              int batchSize, float learningRate);
 
     explicit NeuralNet(const char *path);
 
@@ -27,9 +27,9 @@ public:
 
     Matrix *forwardStep(Matrix *batch, bool validation);
 
-    void train(double** &dataSet, int* &labels, int samples, int epochs);
+    void train(float** &dataSet, int* &labels, int samples, int epochs);
 
-    void setLearningRate(double value);
+    void setLearningRate(float value);
 
 private:
 
@@ -38,13 +38,13 @@ private:
     int additionalHiddenLayers{};
     int layersDimension{};
     int batchSize{};
-    double lambdaReg = 1e-3;
-    double learningRate = 0.01;
+    float lambdaReg = 1e-3;
+    float learningRate = 0.01;
     std::vector<Layer*> layers;
 
-    double getRegulationLoss();
+    float getRegulationLoss();
 
-    static void shuffleDataFisherYates(double** &data, int* labels, int samples);
+    static void shuffleDataFisherYates(float** &data, int* labels, int samples);
 
     static Matrix *getCorrectProb(Matrix *prob, int *labels);
 
@@ -52,7 +52,9 @@ private:
 
     void backPropagationStep(Matrix *prob, Matrix *batch, int *labels);
 
-    static double getDataLoss(Matrix *correctProb);
+    void prepareBatch(float** &dataSet, int* &labels, int batchLength, int dataIndex, Matrix *batch, int *batchLabels);
+
+    static float getDataLoss(Matrix *correctProb);
 };
 
 

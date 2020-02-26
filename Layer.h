@@ -19,7 +19,7 @@ private:
 
     void trainingOutput();
 
-    double ReLU(double);
+    float ReLU(float);
 
     void updateRunningStatus(Matrix *mean, Matrix *variance);
 
@@ -33,8 +33,8 @@ public:
 
     Layer(int inputDimension, int outputDimension, bool hidden);
 
-    Layer(int inputDimension, int outputDimension, bool hidden, double *weights, double *gamma, double *beta,
-          double *runningMean, double *runningVariance);
+    Layer(int inputDimension, int outputDimension, bool hidden, float *weights, float *gamma, float *beta,
+          float *runningMean, float *runningVariance);
 
     ~Layer();
 
@@ -58,11 +58,11 @@ public:
 
     void feedForward(Matrix *input, bool validation);
 
-    void updateWeights(Matrix *dWeights, double learningRate);
+    void updateWeights(Matrix *dWeights, float learningRate);
 
-    void updateGammaBeta(Matrix *dGamma, Matrix *dBeta, double learningRate);
+    void updateGammaBeta(Matrix *dGamma, Matrix *dBeta, float learningRate);
 
-    Matrix *backPropagation(Matrix *dOut, Matrix *input, Layer* previous, double learningRate, double lambdaReg);
+    Matrix *backPropagation(Matrix *dOut, Matrix* &dWeights, Matrix* &dGamma, Matrix* &dBeta, Matrix *input, Layer* previous, float lambdaReg);
 
 };
 

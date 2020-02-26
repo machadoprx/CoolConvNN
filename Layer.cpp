@@ -26,8 +26,8 @@ Layer::Layer(int inputDimension, int outputDimension, bool hidden) {
 
 }
 
-Layer::Layer(int inputDimension, int outputDimension, bool hidden, double* weights, double* gamma, double* beta,
-            double* runningMean, double* runningVariance) {
+Layer::Layer(int inputDimension, int outputDimension, bool hidden, float* weights, float* gamma, float* beta,
+            float* runningMean, float* runningVariance) {
 
     this->hidden = hidden;
     this->weights = new Matrix(inputDimension, outputDimension);
@@ -38,13 +38,13 @@ Layer::Layer(int inputDimension, int outputDimension, bool hidden, double* weigh
         this->runningMean = new Matrix(1, outputDimension);
         this->runningVariance = new Matrix(1, outputDimension);
 
-        memcpy(this->gamma->data, gamma, sizeof(double) * outputDimension);
-        memcpy(this->beta->data, beta, sizeof(double) * outputDimension);
-        memcpy(this->runningMean->data, runningMean, sizeof(double) * outputDimension);
-        memcpy(this->runningVariance->data, runningVariance, sizeof(double) * outputDimension);
+        memcpy(this->gamma->data, gamma, sizeof(float) * outputDimension);
+        memcpy(this->beta->data, beta, sizeof(float) * outputDimension);
+        memcpy(this->runningMean->data, runningMean, sizeof(float) * outputDimension);
+        memcpy(this->runningVariance->data, runningVariance, sizeof(float) * outputDimension);
     }
 
-    memcpy(this->weights->data, weights, sizeof(double) * inputDimension * outputDimension);
+    memcpy(this->weights->data, weights, sizeof(float) * inputDimension * outputDimension);
 }
 
 Layer::~Layer() {
@@ -58,7 +58,7 @@ Layer::~Layer() {
     delete deviationInv;
 }
 
-double Layer::ReLU(double x){
+float Layer::ReLU(float x){
     return x > 0 ? x : 0;
 }
 
@@ -80,7 +80,7 @@ void Layer::validationOutput() {
 
 void Layer::updateRunningStatus(Matrix* mean, Matrix* variance) {
 
-    double momentum = 0.9;
+    float momentum = 0.9;
 
     #pragma omp parallel num_threads(THREADS)
     {
@@ -152,27 +152,24 @@ Matrix* Layer::getBatchNormDerivative(Matrix* dOut, Layer* prev) {
     auto prevDeviationInv = prev->getDeviationInv();
     auto prevGamma = prev->getGamma();
 
+    auto dPart = new Matrix(rows, columns);
     auto dBatch0 = new Matrix(dOut->rows, dOut->columns);
     auto dBatch1 = new Matrix(dOut->rows, dOut->columns);
-    double dBatch2[dOut->columns];
-    double dBatch3[dOut->columns];
-    memset(dBatch2, 0, sizeof(double) * columns);
-    memset(dBatch3, 0, sizeof(double) * columns);
+    float *dBatch2 = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * columns);
+    float *dBatch3 = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * columns);
+    memset(dBatch2, 0, sizeof(float) * columns);
+    memset(dBatch3, 0, sizeof(float) * columns);
 
     #pragma omp parallel num_threads(THREADS)
     {
         #pragma omp for nowait collapse(2)
         for (int i = 0; i < rows; i++) {
-        
-            //int row = i * columns;
-
-            //#pragma omp for nowait
             for (int j = 0; j < columns; j++) {
                 int index = i * columns + j;
-                double elem = dOut->data[index] * prevGamma->data[j];
-                dBatch1->data[index] = elem * rows;
-                dBatch2[j] += elem;
-                dBatch3[j] += elem * oNormalized->data[index];
+                dPart->data[index] = dOut->data[index] * prevGamma->data[j];
+                dBatch1->data[index] = dPart->data[index] * rows;
+                dBatch2[j] += dPart->data[index];
+                dBatch3[j] += dPart->data[index] * oNormalized->data[index];
             }
         }
     }
@@ -181,41 +178,36 @@ Matrix* Layer::getBatchNormDerivative(Matrix* dOut, Layer* prev) {
     {
         #pragma omp for nowait collapse(2)
         for (int i = 0; i < rows; i++) {
-        
-            //int row = i * columns;
-
-            //#pragma omp for nowait
             for (int j = 0; j < columns; j++) {
                 int index = i * columns + j;
                 dBatch1->data[index] -= dBatch2[j];
                 dBatch1->data[index] -= (oNormalized->data[index] * dBatch3[j]);
-                dBatch0->data[index] = dBatch1->data[index] * prevDeviationInv->data[j] * (1.0 / (double) rows);
+                dBatch0->data[index] = dBatch1->data[index] * prevDeviationInv->data[j] * (1.0 / (float) rows);
             }
         }
-    }    
+    }
 
     delete oNormalized;
     delete prevDeviationInv;
     delete prevGamma;
     delete dBatch1;
+    delete dPart;
+    free(dBatch2);
+    free(dBatch3);
 
     return dBatch0;
 }
 
-Matrix* Layer::backPropagation(Matrix *dOut, Matrix *input, Layer* previous, double learningRate, double lambdaReg) {
+Matrix* Layer::backPropagation(Matrix *dOut, Matrix* &dWeights, Matrix* &dGamma, Matrix* &dBeta, Matrix *input, Layer* previous, float lambdaReg) {
 
     auto inputT = input->transposed();
 
     // Current weights derivative with L2 regularization
     auto dW = inputT->multiply(dOut);
-    auto dWReg = dW->sum(weights, lambdaReg);
-
-    // update current layer weights
-    updateWeights(dWReg, learningRate);
+    dWeights = dW->sum(weights, lambdaReg);
 
     delete inputT;
     delete dW;
-    delete dWReg;
 
     if(previous == nullptr) {
         return nullptr;
@@ -227,15 +219,8 @@ Matrix* Layer::backPropagation(Matrix *dOut, Matrix *input, Layer* previous, dou
     // gamma and beta derivative for batch norm
     auto inputNorm = previous->getOutputNormalized();
     auto dGammaPartial = dInput->elemMul(inputNorm);
-    auto dGamma = dGammaPartial->sumRows();
-    auto dBeta = dInput->sumRows();
-
-    // update previous layer batch norm weights
-    previous->updateGammaBeta(dGamma, dBeta, learningRate);
-
-    delete dGammaPartial;
-    delete dGamma;
-    delete dBeta;
+    dGamma = dGammaPartial->sumRows();
+    dBeta = dInput->sumRows();
 
     // get input layer final derivative
     auto dInputNorm = getBatchNormDerivative(dInput, previous);
@@ -244,6 +229,7 @@ Matrix* Layer::backPropagation(Matrix *dOut, Matrix *input, Layer* previous, dou
     auto dInputReLU = dInputNorm->ReLUDerivative(input);
 
     //clear
+    delete dGammaPartial;
     delete dInputNorm;
     delete inputNorm;
     delete dInput;
@@ -252,7 +238,7 @@ Matrix* Layer::backPropagation(Matrix *dOut, Matrix *input, Layer* previous, dou
     return dInputReLU;
 }
 
-void Layer::updateWeights(Matrix* dWeights, double learningRate){
+void Layer::updateWeights(Matrix* dWeights, float learningRate){
 
     if(frozen)
         return;
@@ -263,7 +249,7 @@ void Layer::updateWeights(Matrix* dWeights, double learningRate){
     delete newWeights;
 }
 
-void Layer::updateGammaBeta(Matrix* dGamma, Matrix* dBeta, double learningRate) {
+void Layer::updateGammaBeta(Matrix* dGamma, Matrix* dBeta, float learningRate) {
 
     if(frozen)
         return;

@@ -5,7 +5,6 @@
 #ifndef NNCPP_EXEC_MATRIX_H
 #define NNCPP_EXEC_MATRIX_H
 
-
 #include <cstring>
 #include <array>
 #include <cmath>
@@ -14,8 +13,9 @@
 #include <random>
 #include <chrono>
 #include <iterator>
-#include <omp.h>
+
 #define THREADS 8
+#define CACHE_LINE 64
 
 class Matrix {
 
@@ -25,7 +25,7 @@ public:
 
     int rows{}, columns{};
 
-    double *data{};
+    float *data{};
 
     Matrix(int rows, int columns);
 
@@ -43,7 +43,7 @@ public:
 
     Matrix *multiply(Matrix *W);
 
-    Matrix *sum(Matrix *W, double scalar);
+    Matrix *sum(Matrix *W, float scalar);
 
     Matrix *elemMul(Matrix *W);
 
@@ -55,7 +55,7 @@ public:
 
     Matrix *copy();
 
-    double sumElements();
+    float sumElements();
 
     void randomize();
 

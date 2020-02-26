@@ -8,13 +8,13 @@ Matrix::Matrix(int rows, int columns) {
 
     this->rows = rows;
     this->columns = columns;
-    this->data = new double[rows * columns];
-    memset(this->data, 0, sizeof(double) * rows * columns);
+    this->data = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * rows * columns);
+    memset(this->data, 0, sizeof(float) * rows * columns);
 
 }
 
 Matrix::~Matrix() {
-    delete []data;
+    free(data);
 }
 
 Matrix* Matrix::transposed() {
@@ -22,7 +22,7 @@ Matrix* Matrix::transposed() {
     auto R = new Matrix(columns, rows);
 
     if (columns == 1 || rows == 1) {
-        std::memcpy(R->data, data, rows * columns * sizeof(double));
+        std::memcpy(R->data, data, rows * columns * sizeof(float));
         return R;
     }
 
@@ -48,8 +48,8 @@ Matrix* Matrix::normalized() {
         #pragma omp for nowait
         for (int i = 0; i < rows; i++) {
 
-            int index = i * columns;
-            double sum = 0, max = data[index];
+            int row = i * columns, index = row;
+            float sum = 0, max = data[index];
 
             for (int j = 0; j < columns; j++) {
                 if (data[index] > max) {
@@ -58,7 +58,7 @@ Matrix* Matrix::normalized() {
                 index++;
             }
 
-            index = i * columns;
+            index = row;
 
             for (int j = 0; j < columns; j++) {
                 R->data[index] = exp(data[index] - max);
@@ -66,7 +66,7 @@ Matrix* Matrix::normalized() {
                 index++;
             }
 
-            index = i * columns;
+            index = row;
 
             for (int j = 0; j < columns; j++) {
                 R->data[index] = R->data[index] / sum;
@@ -84,13 +84,13 @@ Matrix* Matrix::multiply(Matrix* W) {
 
     auto R = new Matrix(rows, W->columns);
 
-    cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
-            rows, W->columns, columns, 1.0, data, columns, W->data, W->columns, 0, R->data, W->columns);
+    cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+            rows, W->columns, columns, 1.0, data, columns, W->data, W->columns, 0, R->data, R->columns);
 
     return R;
 }
 
-Matrix* Matrix::sum(Matrix* W, double scalar) {
+Matrix* Matrix::sum(Matrix* W, float scalar) {
 
     assert((rows == W->rows) && (columns == W->columns));
 
@@ -135,10 +135,6 @@ Matrix* Matrix::elemMulVector(Matrix* W, Matrix* W1) { // 1
     {
         #pragma omp for nowait collapse(2)
         for (int i = 0; i < rows; i++) {
-            
-            //int row = i * columns;
-
-            //#pragma omp for nowait
             for (int j = 0; j < columns; j++) {
                 int index = i * columns + j;
                 R->data[index] = (data[index] * W->data[j]) + W1->data[j];
@@ -159,10 +155,6 @@ Matrix* Matrix::elemMulVector(Matrix* W) {
     {
         #pragma omp for nowait collapse(2)
         for (int i = 0; i < rows; i++) {
-            
-            //int row = i * columns;
-            
-            //#pragma omp for nowait
             for (int j = 0; j < columns; j++) {
                 int index = i * columns + j;
                 R->data[index] = (data[index] * W->data[j]);
@@ -183,14 +175,14 @@ Matrix* Matrix::mean0Axis() {
         #pragma omp for nowait
         for (int i = 0; i < T->rows; i++) {
     
-            double sum = 0;
+            float sum = 0;
             int row = i * T->columns;
             
             for (int j = 0; j < T->columns; j++) {
                 sum += T->data[row + j];
             }
 
-            mean->data[i] = sum / (double) rows;
+            mean->data[i] = sum / (float) rows;
         }
     }
 
@@ -208,14 +200,14 @@ Matrix* Matrix::variance0Axis() {
         #pragma omp for nowait
         for (int i = 0; i < T->rows; i++) {
             
-            double sum = 0;
+            float sum = 0;
             int row = i * T->columns;
 
             for (int j = 0; j < T->columns; j++) {
                 int index = row + j;
                 sum += T->data[index] * T->data[index];
             }
-            variance->data[i] = sum / (double) rows;
+            variance->data[i] = sum / (float) rows;
         }
     }
 
@@ -232,8 +224,6 @@ Matrix* Matrix::centralized(Matrix* desiredMean) {
     {
         #pragma omp for nowait collapse(2)
         for (int i = 0; i < rows; i++) {
-            //int row = i * columns;
-            //#pragma omp for nowait
             for (int j = 0; j < columns; j++) {
                 int index = i * columns + j;
                 R->data[index] = data[index] - desiredMean->data[j];
@@ -252,8 +242,6 @@ Matrix* Matrix::sumRows() { //profile
     {
         #pragma omp for nowait collapse(2)
         for (int i = 0; i < rows; i++) {
-            //int row = i * columns;
-            //#pragma omp for nowait
             for (int j = 0; j < columns; j++) {
                 R->data[j] += data[i * columns + j];
             }
@@ -268,7 +256,7 @@ void Matrix::randomize() {
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
 
-    std::normal_distribution<double> distribution (0.0, sqrt(2.0 / rows));
+    std::normal_distribution<float> distribution (0.0, sqrt(2.0 / rows));
 
     #pragma omp parallel num_threads(THREADS)
     {
@@ -280,9 +268,9 @@ void Matrix::randomize() {
 }
     #include <iostream>
 
-double Matrix::sumElements() {
+float Matrix::sumElements() {
 
-    double sum = 0;
+    float sum = 0;
 
     #pragma omp parallel num_threads(THREADS)
     {
@@ -298,7 +286,7 @@ double Matrix::sumElements() {
 Matrix* Matrix::invDeviation(Matrix* desiredVar) {
 
     auto R = new Matrix(1, desiredVar->columns);
-    double e = 0.00000001;
+    float e = .00001f;
 
     #pragma omp parallel num_threads(THREADS)
     {
@@ -321,9 +309,11 @@ Matrix* Matrix::ReLUDerivative(Matrix* W) { //profile
     {
         #pragma omp for nowait
         for (int i = 0; i < rows * columns; i++) {
-            R->data[i] = data[i];
             if (W->data[i] < 0) {
                 R->data[i] = 0;
+            }
+            else {
+                R->data[i] = data[i];
             }
         }
     }
@@ -333,8 +323,8 @@ Matrix* Matrix::ReLUDerivative(Matrix* W) { //profile
 
 Matrix* Matrix::iam2cool(int filterSize, int stride) {
 
-    int rRows = floor((rows - filterSize / stride) + 1);
-    int rCols = floor((columns - filterSize / stride) + 1);
+    int rRows = ((rows - filterSize) / stride) + 1;
+    int rCols = ((columns - filterSize) / stride) + 1;
 
     auto R = new Matrix(filterSize * filterSize, rRows * rCols);
     
@@ -378,10 +368,8 @@ void Matrix::set(Matrix *W) {
     #pragma omp parallel num_threads(THREADS)
     {
         #pragma omp for nowait
-        for (int i = 0; i < rows; i++) {
-            double *ptrDst = data + (i * columns);
-            double *ptrSrc = W->data + (i * columns);
-            memcpy(ptrDst, ptrSrc, sizeof(double) * columns);
+        for (int i = 0; i < rows * columns; i++) {
+            data[i] = W->data[i];
         }
     }
 }
@@ -393,10 +381,8 @@ Matrix* Matrix::copy() {
     #pragma omp parallel num_threads(THREADS)
     {
         #pragma omp for nowait
-        for (int i = 0; i < rows; i++) {
-            double *ptrSrc = data + (i * columns);
-            double *ptrDst = R->data + (i * columns);
-            memcpy(ptrDst, ptrSrc, sizeof(double) * columns);
+        for (int i = 0; i < rows * columns; i++) {
+            R->data[i] = data[i];
         }
     }
     return R;
