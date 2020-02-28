@@ -27,7 +27,7 @@ NeuralNet::NeuralNet(int featuresDimension,
     layers.push_back(new Layer(layersDimension, outputDimension, false));
 }
 
-NeuralNet::NeuralNet(const char *path) {
+NeuralNet::NeuralNet(const char *path) { // array alignment
 
     FILE *f = fopen(path, "rb");
 
@@ -96,7 +96,7 @@ void NeuralNet::saveState(const char *path) {
     fwrite(inputLayer->runningVariance->data, sizeof(float) * layersDimension, 1, f);
 
     int i = 1;
-    for (; i < (int)layers.size() - 1; i++) {
+    for (; i < (int) layers.size() - 1; i++) {
         auto hiddenLayer = layers.at(i);
         fwrite(hiddenLayer->weights->data, sizeof(float) * layersDimension * layersDimension, 1, f);
         fwrite(hiddenLayer->gamma->data, sizeof(float) * layersDimension, 1, f);
@@ -116,8 +116,12 @@ Matrix* NeuralNet::getCorrectProb(Matrix* prob, int *labels){
 
     auto correctProb = new Matrix(prob->rows, 1);
 
-    for (int i = 0; i < prob->rows; i++) {
-        correctProb->data[i] = (-1) * log(prob->data[i * prob->columns + labels[i]]);
+    #pragma omp parallel num_threads(THREADS)
+    {
+        #pragma omp for nowait
+        for (int i = 0; i < prob->rows; i++) {
+            correctProb->data[i] = (-1) * log(prob->data[i * prob->columns + labels[i]]);
+        }
     }
 
     return correctProb;
@@ -133,12 +137,12 @@ Matrix* NeuralNet::getProbDerivative(Matrix* prob, int *labels){
         #pragma omp for nowait
         for (int i = 0; i < rows; i++) {
             
-            int row = i * columns;
-            dProb->data[row + labels[i]] = -1.0;
-            //#pragma omp for nowait // labels % THREADS must be 0?
+            int index = i * columns;
+            dProb->data[index + labels[i]] = -1.0;
+
             for (int j = 0; j < columns; j++) {
-                int index = row + j;
                 dProb->data[index] = (dProb->data[index] + prob->data[index]) / rows;
+                index++;
             }
         }
     }
@@ -166,14 +170,11 @@ float NeuralNet::getRegulationLoss(){
     float regLoss = 0;
 
     for (auto & layer : layers) {
-
-        Matrix *weights = layer->getWeights();
-        Matrix *w2 = weights->elemMul(weights);
-
-        regLoss += 0.5 * lambdaReg * w2->sumElements();
-
+        auto weights = layer->getWeights();
+        auto temp = weights->elemMul(weights);
+        regLoss += 0.5 * lambdaReg * temp->sumElements();
         delete weights;
-        delete w2;
+        delete temp;
     }
 
     return regLoss;
@@ -181,24 +182,20 @@ float NeuralNet::getRegulationLoss(){
 
 void NeuralNet::shuffleDataFisherYates(float** &data, int* labels, int samples) {
 
-    //#pragma omp parallel num_threads(THREADS)
-    {
-        std::srand(int(time(NULL))); //^ omp_get_thread_num());
-        //#pragma omp for
-        for (int i = samples - 1; i >= 1; i--) {
+    int randomIndex, tmpLabel;
+    float *tmpPointer;
+    std::srand(int(time(NULL)));
+    for (int i = samples - 1; i >= 1; i--) {
+        randomIndex = std::rand() % (i + 1);
+        tmpPointer = data[i];
+        tmpLabel = labels[i];
 
-            int randomIndex = std::rand() % (i + 1);
-            float *tmpPointer = data[i];
-            int tmpLabel = labels[i];
+        data[i] = data[randomIndex];
+        labels[i] = labels[randomIndex];
 
-            data[i] = data[randomIndex];
-            labels[i] = labels[randomIndex];
-
-            data[randomIndex] = tmpPointer;
-            labels[randomIndex] = tmpLabel;
-        }
+        data[randomIndex] = tmpPointer;
+        labels[randomIndex] = tmpLabel;
     }
-
 }
 
 Matrix* NeuralNet::forwardStep(Matrix* batch, bool validation) {
@@ -259,6 +256,8 @@ void NeuralNet::backPropagationStep(Matrix* prob, Matrix* batch, int *labels) {
 
     current = layers.at(0);
     current->backPropagation(dCurrO, dWeights, dGamma, dBeta, batch, nullptr, lambdaReg);
+
+    // update current layer weights
     current->updateWeights(dWeights, learningRate);
 
     delete dWeights;
@@ -270,9 +269,10 @@ void NeuralNet::prepareBatch(float** &dataSet, int* &labels, int batchLength, in
     {
         #pragma omp for nowait
         for (int i = 0; i < batchLength; i++) {
+            int index = i * featuresDimension;
             for (int j = 0; j < featuresDimension; j++) {
-                int index = i * featuresDimension + j;
                 batch->data[index] = dataSet[dataIndex + i][j];
+                index++;
             }
             batchLabels[i] = labels[dataIndex + i];
         }
@@ -298,12 +298,13 @@ void NeuralNet::train(float** &dataSet, int* &labels, int samples, int epochs){
         for (int k = 0; k < numberOfBatches; k++) {
 
             // prepare batch
-            int batchLength = batchSize;
-
-            if (dataIndex + batchSize >= samples){
+            int batchLength;
+            if (dataIndex + batchSize >= samples) {
                 batchLength = samples - dataIndex;
             }
-
+            else {
+                batchLength = batchSize;
+            }
             auto batch = new Matrix(batchLength, featuresDimension);
             auto batchLabels = new int[batchLength];
 
@@ -316,7 +317,6 @@ void NeuralNet::train(float** &dataSet, int* &labels, int samples, int epochs){
             auto correctProb = getCorrectProb(score, batchLabels);
 
             // compute loss
-            // L = 1/n * sum (loss) + for each layer(1/2 * lambda * sum (layer weight @ layer weight))
             loss += getDataLoss(correctProb) + getRegulationLoss();
 
             // backpropagation step
@@ -331,8 +331,7 @@ void NeuralNet::train(float** &dataSet, int* &labels, int samples, int epochs){
             delete score;
             delete correctProb;
         }
-        float lossMean = loss / numberOfBatches;
-        std::cout << "epoch: " << e << " loss: " << lossMean << '\n';
+        std::cout << "epoch: " << e << " loss: " << loss / numberOfBatches << '\n';
     }
 }
 

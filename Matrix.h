@@ -64,11 +64,6 @@ public:
     void set(Matrix *W);
 
     Matrix *ReLUDerivative(Matrix *W);
-
-    Matrix *iam2cool(int filterSize, int stride);
-
-    Matrix *cool2ami(int filters, int batchSize);
 };
-
 
 #endif //NNCPP_EXEC_MATRIX_H

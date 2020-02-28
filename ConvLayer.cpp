@@ -1,13 +1,13 @@
 #include "ConvLayer.h"
 
-ConvLayer::ConvLayer(int N, int stride, int size, int depth, int padding) {
+ConvLayer::ConvLayer(int N, int stride, int ksize, int depth, int padding) {
 
     this->N = N;
     this->stride = stride;
-    this->size = size;
+    this->ksize = ksize;
     this->padding = padding;
 
-    filters = new Matrix(size * size * depth, N);
+    filters = new Matrix(ksize * ksize * depth, N);
 
 }
 // im2col: Nx(size * size * depth)

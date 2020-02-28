@@ -13,8 +13,6 @@ private:
 
     bool hidden;
 
-    bool frozen = false;
-
     void validationOutput();
 
     void trainingOutput();

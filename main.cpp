@@ -7,7 +7,7 @@ using namespace std;
 
 int main(int argc, char const *argv[]) {
 
-    //assert(THREADS % 2 == 0);
+    assert(THREADS % 2 == 0);
 
     const char *data_file = "data_processed.dat";
     const char *nn_file = "nn_state.dat";
