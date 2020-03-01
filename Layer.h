@@ -17,8 +17,6 @@ private:
 
     void trainingOutput();
 
-    float ReLU(float);
-
     void updateRunningStatus(Matrix *mean, Matrix *variance);
 
     static Matrix *getBatchNormDerivative(Matrix *dOut, Layer* prev);

@@ -355,3 +355,7 @@ Matrix* Matrix::copy() {
     }
     return R;
 }
+
+float Matrix::ReLU(float x) {
+    return x > 0 ? x : 0;
+}

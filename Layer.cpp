@@ -68,10 +68,6 @@ Layer::~Layer() {
     delete deviationInv;
 }
 
-float Layer::ReLU(float x){
-    return x > 0 ? x : 0;
-}
-
 void Layer::validationOutput() {
 
     auto outputCentered = output->centralized(runningMean);
@@ -136,7 +132,7 @@ void Layer::feedForward(Matrix* input, bool validation){
         {
             #pragma omp for nowait
             for (int i = 0; i < output->rows * output->columns; i++) {
-                output->data[i] = ReLU(output->data[i]);
+                output->data[i] = Matrix::ReLU(output->data[i]);
             }
         }
         if (validation) {

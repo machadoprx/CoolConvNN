@@ -1,12 +1,17 @@
 #include "Matrix.h"
+#include "image.h"
 
 class ConvLayer {
 
     public:
-        ConvLayer(int filters, int stride, int ksize, int depth, int padding);
+        ConvLayer(int outputChannels, int stride, int filterSize, int depth, int padding, int inputWidth, int inputHeight);
+        void feedForward(Matrix *input);
+        //void backPropagation(Matrix *dOut, )
 
     private:
-        int N{}, stride{}, ksize{}, padding{}, depth{};
-        Matrix *filters{};
+        int outputChannels{}, stride{}, filterSize{}, padding{}, inputChannels{}, inputWidth{}, inputHeight{}, oldVolume{};
+        Matrix *filters{}, *bias{}, *output;
 
+        void BiasAndReLU(Matrix *conv, int size);
+        void fillOutput(Matrix *convolution, int offset, int size);
 };
