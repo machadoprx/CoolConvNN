@@ -20,11 +20,11 @@ NeuralNet::NeuralNet(int featuresDimension,
     this->batchSize              = batchSize;
     this->learningRate           = learningRate;
 
-    layers.push_back(new Layer(featuresDimension, layersDimension, true));
+    layers.push_back(new Layer(featuresDimension, layersDimension, true, true));
     for (int i = 0; i < additionalHiddenLayers; i++) {
-        layers.push_back(new Layer(layersDimension, layersDimension, true));
+        layers.push_back(new Layer(layersDimension, layersDimension, true, false));
     }
-    layers.push_back(new Layer(layersDimension, outputDimension, false));
+    layers.push_back(new Layer(layersDimension, outputDimension, false, false));
 }
 
 NeuralNet::NeuralNet(const char *path) { // array alignment
@@ -35,35 +35,62 @@ NeuralNet::NeuralNet(const char *path) { // array alignment
         throw std::runtime_error("invalid file");
     }
 
+    float *weights = nullptr, *gamma = nullptr, *beta = nullptr, *runningMean = nullptr, *runningVariance = nullptr;
+
     fread(&additionalHiddenLayers, sizeof(int), 1, f);
     fread(&featuresDimension, sizeof(int), 1, f);
     fread(&layersDimension, sizeof(int), 1, f);
     fread(&outputDimension, sizeof(int), 1, f);
     fread(&batchSize, sizeof(int), 1, f);
 
-    auto inputLayer = new Layer(featuresDimension, layersDimension, true);
-    fread(inputLayer->weights->data, sizeof(float) * featuresDimension * layersDimension, 1, f);
-    fread(inputLayer->gamma->data, sizeof(float) * layersDimension, 1, f);
-    fread(inputLayer->beta->data, sizeof(float) * layersDimension, 1, f);
-    fread(inputLayer->runningMean->data, sizeof(float) * layersDimension, 1, f);
-    fread(inputLayer->runningVariance->data, sizeof(float) * layersDimension, 1, f);
-    layers.push_back(inputLayer);
+    weights = new float[featuresDimension * layersDimension];
+    fread(weights, sizeof(float) * layersDimension * featuresDimension, 1, f);
+    layers.push_back(new Layer(featuresDimension, layersDimension, true, true, weights, gamma, beta,
+                    runningMean, runningVariance));
+
+    delete weights;
 
     for (int i = 0; i < additionalHiddenLayers; i++) {
+        
+        weights = new float[layersDimension * layersDimension];
+        gamma = new float[layersDimension];
+        beta = new float[layersDimension];
+        runningMean = new float[layersDimension];
+        runningVariance = new float[layersDimension];
 
-        auto hiddenLayer = new Layer(layersDimension, layersDimension, true);
-        fread(hiddenLayer->weights->data, sizeof(float) * layersDimension * layersDimension, 1, f);
-        fread(hiddenLayer->gamma->data, sizeof(float) * layersDimension, 1, f);
-        fread(hiddenLayer->beta->data, sizeof(float) * layersDimension, 1, f);
-        fread(hiddenLayer->runningMean->data, sizeof(float) * layersDimension, 1, f);
-        fread(hiddenLayer->runningVariance->data, sizeof(float) * layersDimension, 1, f);
-        layers.push_back(hiddenLayer);
-
+        fread(weights, sizeof(float) * layersDimension * layersDimension, 1, f);
+        fread(gamma, sizeof(float) * layersDimension, 1, f);
+        fread(beta, sizeof(float) * layersDimension, 1, f);
+        fread(runningMean, sizeof(float) * layersDimension, 1, f);
+        fread(runningVariance, sizeof(float) * layersDimension, 1, f);
+        layers.push_back(new Layer(layersDimension, layersDimension, true, false, weights, gamma, beta,
+                                runningMean, runningVariance));
+        delete weights;
+        delete gamma;
+        delete beta;
+        delete runningMean;
+        delete runningVariance;
     }
 
-    auto outputLayer = new Layer(layersDimension, outputDimension, false);
-    fread(outputLayer->weights->data, sizeof(float) * layersDimension * outputDimension, 1, f);
-    layers.push_back(outputLayer);
+    weights = new float[outputDimension * layersDimension];
+    gamma = new float[layersDimension];
+    beta = new float[layersDimension];
+    runningMean = new float[layersDimension];
+    runningVariance = new float[layersDimension];
+
+    fread(weights, sizeof(float) * layersDimension * outputDimension, 1, f);
+    fread(gamma, sizeof(float) * layersDimension, 1, f);
+    fread(beta, sizeof(float) * layersDimension, 1, f);
+    fread(runningMean, sizeof(float) * layersDimension, 1, f);
+    fread(runningVariance, sizeof(float) * layersDimension, 1, f);
+    layers.push_back(new Layer(layersDimension, outputDimension, false, false, weights, gamma, beta,
+                                runningMean, runningVariance));
+
+    delete weights;
+    delete gamma;
+    delete beta;
+    delete runningMean;
+    delete runningVariance;
 
     fclose(f);
 }
@@ -82,31 +109,62 @@ void NeuralNet::saveState(const char *path) {
         throw std::runtime_error("invalid file");
     }
 
+    Layer *l;
+    Matrix *weights, *gamma, *beta, *runningMean, *runningVariance;
+
     fwrite(&additionalHiddenLayers, sizeof(int), 1, f);
     fwrite(&featuresDimension, sizeof(int), 1, f);
     fwrite(&layersDimension, sizeof(int), 1, f);
     fwrite(&outputDimension, sizeof(int), 1, f);
     fwrite(&batchSize, sizeof(int), 1, f);
 
-    auto inputLayer = layers.at(0);
-    fwrite(inputLayer->weights->data, sizeof(float) * featuresDimension * layersDimension, 1, f);
-    fwrite(inputLayer->gamma->data, sizeof(float) * layersDimension, 1, f);
-    fwrite(inputLayer->beta->data, sizeof(float) * layersDimension, 1, f);
-    fwrite(inputLayer->runningMean->data, sizeof(float) * layersDimension, 1, f);
-    fwrite(inputLayer->runningVariance->data, sizeof(float) * layersDimension, 1, f);
+    l = layers.at(0);
+    weights = l->getWeights();
+    fwrite(weights->data, sizeof(float) * featuresDimension * layersDimension, 1, f);
+    delete weights;
 
     int i = 1;
     for (; i < (int) layers.size() - 1; i++) {
-        auto hiddenLayer = layers.at(i);
-        fwrite(hiddenLayer->weights->data, sizeof(float) * layersDimension * layersDimension, 1, f);
-        fwrite(hiddenLayer->gamma->data, sizeof(float) * layersDimension, 1, f);
-        fwrite(hiddenLayer->beta->data, sizeof(float) * layersDimension, 1, f);
-        fwrite(hiddenLayer->runningMean->data, sizeof(float) * layersDimension, 1, f);
-        fwrite(hiddenLayer->runningVariance->data, sizeof(float) * layersDimension, 1, f);
+        l = layers.at(i);
+        
+        weights = l->getWeights();
+        gamma = l->getGamma();
+        beta = l->getBeta();
+        runningMean = l->getRunningMean();
+        runningVariance = l->getRunningVariance();
+
+        fwrite(weights->data, sizeof(float) * layersDimension * layersDimension, 1, f);
+        fwrite(gamma->data, sizeof(float) * layersDimension, 1, f);
+        fwrite(beta->data, sizeof(float) * layersDimension, 1, f);
+        fwrite(runningMean->data, sizeof(float) * layersDimension, 1, f);
+        fwrite(runningVariance->data, sizeof(float) * layersDimension, 1, f);
+
+        delete weights;
+        delete gamma;
+        delete beta;
+        delete runningMean;
+        delete runningVariance;
     }
 
-    auto outputLayer = layers.at(i);
-    fwrite(outputLayer->weights->data, sizeof(float) * layersDimension * outputDimension, 1, f);
+    l = layers.at(i);
+
+    weights = l->getWeights();
+    gamma = l->getGamma();
+    beta = l->getBeta();
+    runningMean = l->getRunningMean();
+    runningVariance = l->getRunningVariance();
+
+    fwrite(weights->data, sizeof(float) * layersDimension * outputDimension, 1, f);
+    fwrite(gamma->data, sizeof(float) * layersDimension, 1, f);
+    fwrite(beta->data, sizeof(float) * layersDimension, 1, f);
+    fwrite(runningMean->data, sizeof(float) * layersDimension, 1, f);
+    fwrite(runningVariance->data, sizeof(float) * layersDimension, 1, f);
+
+    delete weights;
+    delete gamma;
+    delete beta;
+    delete runningMean;
+    delete runningVariance;
 
     fclose(f);
 
@@ -200,28 +258,17 @@ void NeuralNet::shuffleDataFisherYates(float** &data, int* labels, int samples) 
 
 Matrix* NeuralNet::forwardStep(Matrix* batch, bool validation) {
 
-    int layersSize = (int)layers.size() - 1;
-    Layer *current = layers.at(0), *previous;
+    int layersSize = (int) layers.size() - 1;
+    auto curr = layers.at(0)->feedForward(batch, validation);
 
-    current->feedForward(batch, validation);
-
-    for (int i = 1; i < layersSize; i++) {
-        previous = current;
-        current = layers.at(i);
-        auto prevO = previous->getOutput();
-        current->feedForward(prevO, validation);
-        delete prevO;
+    for (int i = 1; i <= layersSize; i++) {
+        auto temp = layers.at(i)->feedForward(curr, validation);
+        delete curr;
+        curr = temp;
     }
 
-    previous = current;
-    auto prevO = previous->getOutput();
-    current = layers.at(layersSize);
-    current->feedForward(prevO, validation);
-    delete prevO;
-
-    auto out = current->getOutput();
-    auto prob = out->normalized();
-    delete out;
+    auto prob = curr->normalized();
+    delete curr;
 
     return prob;
 }
@@ -229,39 +276,34 @@ Matrix* NeuralNet::forwardStep(Matrix* batch, bool validation) {
 void NeuralNet::backPropagationStep(Matrix* prob, Matrix* batch, int *labels) {
 
     int layersSize = (int) layers.size() - 1;
-    auto dCurrO = getProbDerivative(prob, labels);
-    Layer *current, *previous;
+    auto dOut = getProbDerivative(prob, labels);
+    Layer *current;
     Matrix *dWeights, *dGamma, *dBeta;
 
     for (int i = layersSize; i >= 1; i--) {
 
         current = layers.at(i);
-        previous = layers.at(i - 1);
-        auto input = previous->getOutput();
-        auto tmp = current->backPropagation(dCurrO, dWeights, dGamma, dBeta, input, previous, lambdaReg);
+        auto tmp = current->backPropagation(dOut, dWeights, dGamma, dBeta, lambdaReg);
 
         // update current layer weights
         current->updateWeights(dWeights, learningRate);
+        current->updateGammaBeta(dGamma, dBeta, learningRate);
 
-        // update current layer weights
-        previous->updateGammaBeta(dGamma, dBeta, learningRate);
-
-        delete input;
-        delete dCurrO;
+        delete dOut;
         delete dGamma;
         delete dBeta;
         delete dWeights;
-        dCurrO = tmp;
+        dOut = tmp;
     }
 
     current = layers.at(0);
-    current->backPropagation(dCurrO, dWeights, dGamma, dBeta, batch, nullptr, lambdaReg);
+    current->backPropagation(dOut, dWeights, dGamma, dBeta, lambdaReg);
 
     // update current layer weights
     current->updateWeights(dWeights, learningRate);
 
     delete dWeights;
-    delete dCurrO;
+    delete dOut;
 }
 
 void NeuralNet::prepareBatch(float** &dataSet, int* &labels, int batchLength, int dataIndex, Matrix *batch, int *batchLabels) {

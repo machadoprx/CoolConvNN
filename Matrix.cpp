@@ -265,14 +265,10 @@ void Matrix::randomize() {
     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
     std::default_random_engine generator(seed);
 
-    std::normal_distribution<float> distribution (0.0, sqrt(2.0 / rows));
+    std::normal_distribution<float> distribution(0.0, sqrt(2.0 / rows));
 
-    #pragma omp parallel num_threads(THREADS)
-    {
-        #pragma omp for nowait
-        for (int i = 0; i < rows * columns; i++) {
-            data[i] = distribution(generator);
-        }
+    for (int i = 0; i < rows * columns; i++) {
+        data[i] = distribution(generator);
     }
 }
 

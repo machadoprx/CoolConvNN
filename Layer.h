@@ -10,37 +10,33 @@
 class Layer {
 
 private:
-
-    bool hidden;
-
-    void validationOutput();
-
-    void trainingOutput();
-
-    void updateRunningStatus(Matrix *mean, Matrix *variance);
-
-    static Matrix *getBatchNormDerivative(Matrix *dOut, Layer* prev);
-
-public:
-
-    Matrix *weights{}, *output{}, *outputNormalized{}, *gamma{}, *beta{};
+    Matrix *weights{}, *gamma{}, *beta{};
 
     Matrix *runningMean{}, *runningVariance{}, *deviationInv{};
 
-    Layer(int inputDimension, int outputDimension, bool hidden);
+    Matrix *input{}, *inputNormalized{};
+    
+    bool hidden, isFirst;
 
-    Layer(int inputDimension, int outputDimension, bool hidden, float *weights, float *gamma, float *beta,
+    void validationInput(Matrix* &rawInput);
+
+    void trainingInput(Matrix* &rawInput);
+
+    void updateRunningStatus(Matrix *mean, Matrix *variance);
+
+    Matrix *getBatchNormDerivative(Matrix *dOut);
+
+public:
+    Layer(int inputDimension, int outputDimension, bool hidden, bool isFirst);
+
+    Layer(int inputDimension, int outputDimension, bool hidden, bool isFirst, float *weights, float *gamma, float *beta,
           float *runningMean, float *runningVariance);
 
     ~Layer();
 
-    Matrix* getOutput();
-
     Matrix *getWeights();
 
     Matrix *getDeviationInv();
-
-    Matrix *getOutputNormalized();
 
     Matrix *getGamma();
 
@@ -52,13 +48,13 @@ public:
 
     void setFrozen(bool frozen);
 
-    void feedForward(Matrix *input, bool validation);
+    Matrix* feedForward(Matrix *rawInput, bool validation);
 
     void updateWeights(Matrix *dWeights, float learningRate);
 
     void updateGammaBeta(Matrix *dGamma, Matrix *dBeta, float learningRate);
 
-    Matrix *backPropagation(Matrix *dOut, Matrix* &dWeights, Matrix* &dGamma, Matrix* &dBeta, Matrix *input, Layer* previous, float lambdaReg);
+    Matrix *backPropagation(Matrix *dOut, Matrix* &dWeights, Matrix* &dGamma, Matrix* &dBeta, float lambdaReg);
 
 };
 

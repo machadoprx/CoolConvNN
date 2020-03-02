@@ -65,7 +65,7 @@ public:
 
     Matrix *ReLUDerivative(Matrix *W);
 
-    static float Matrix::ReLU(float x);
+    static float ReLU(float x);
 };
 
 #endif //NNCPP_EXEC_MATRIX_H
