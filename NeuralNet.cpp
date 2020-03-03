@@ -277,32 +277,15 @@ void NeuralNet::backPropagationStep(Matrix* prob, Matrix* batch, int *labels) {
 
     int layersSize = (int) layers.size() - 1;
     auto dOut = getProbDerivative(prob, labels);
-    Layer *current;
-    Matrix *dWeights, *dGamma, *dBeta;
 
     for (int i = layersSize; i >= 1; i--) {
-
-        current = layers.at(i);
-        auto tmp = current->backPropagation(dOut, dWeights, dGamma, dBeta, lambdaReg);
-
-        // update current layer weights
-        current->updateWeights(dWeights, learningRate);
-        current->updateGammaBeta(dGamma, dBeta, learningRate);
+        auto tmp = layers.at(i)->backPropagation(dOut, lambdaReg, learningRate);
 
         delete dOut;
-        delete dGamma;
-        delete dBeta;
-        delete dWeights;
         dOut = tmp;
     }
+    layers.at(0)->backPropagation(dOut, lambdaReg, learningRate);
 
-    current = layers.at(0);
-    current->backPropagation(dOut, dWeights, dGamma, dBeta, lambdaReg);
-
-    // update current layer weights
-    current->updateWeights(dWeights, learningRate);
-
-    delete dWeights;
     delete dOut;
 }
 

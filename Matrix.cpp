@@ -82,7 +82,6 @@ Matrix* Matrix::normalized() {
 }
 
 Matrix* Matrix::multiply(Matrix* W) {
-
     assert(columns == W->rows);
 
     auto R = new Matrix(rows, W->columns);
@@ -258,6 +257,20 @@ Matrix* Matrix::sumRows() { //profile
     }
 
     return R;
+}
+
+void Matrix::setRow(float *row, int len, int rowPos) { //profile
+
+    assert(len == columns);
+
+    float *ptr = data + (rowPos * columns);
+    #pragma omp parallel num_threads(THREADS)
+    {
+        #pragma omp for nowait
+        for (int i = 0; i < columns; i++) {
+            *(ptr + i) = row[i]; 
+        }
+    }
 }
 
 void Matrix::randomize() {

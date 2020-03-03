@@ -53,7 +53,7 @@ Matrix* iam2cool(float *img, int channels, int width, int height, int filterSize
     int fSize2 = filterSize * filterSize;
     int colChannels = channels * fSize2;
 
-    auto R = new Matrix(channels * fSize2, colWidth * colHeight);
+    auto R = new Matrix(colChannels, colWidth * colHeight);
     
     for (int c = 0; c < colChannels; c++) {
         int wOffset = c % filterSize;

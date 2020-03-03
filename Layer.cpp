@@ -204,14 +204,18 @@ Matrix* Layer::getBatchNormDerivative(Matrix* dInput) {
     return dBatch0;
 }
 
-Matrix* Layer::backPropagation(Matrix *dOut, Matrix* &dWeights, Matrix* &dGamma, Matrix* &dBeta, float lambdaReg) {
+Matrix* Layer::backPropagation(Matrix *dOut, float lambdaReg, float learningRate) {
 
     auto inputT = input->transposed();
 
     // Current weights derivative with L2 regularization
     auto dW = inputT->multiply(dOut);
-    dWeights = dW->sum(weights, lambdaReg);
+    auto dWeights = dW->sum(weights, lambdaReg);
 
+    // update current layer weights
+    updateWeights(dWeights, learningRate);
+    
+    delete dWeights;
     delete inputT;
     delete dW;
 
@@ -224,9 +228,10 @@ Matrix* Layer::backPropagation(Matrix *dOut, Matrix* &dWeights, Matrix* &dGamma,
 
     // gamma and beta derivative for batch norm
     auto dGammaPartial = dInput->elemMul(inputNormalized);
-    dGamma = dGammaPartial->sumRows();
-    dBeta = dInput->sumRows();
-
+    auto dGamma = dGammaPartial->sumRows();
+    auto dBeta = dInput->sumRows();
+    updateGammaBeta(dGamma, dBeta, learningRate);
+    
     // get input layer final derivative
     auto dInputNorm = getBatchNormDerivative(dInput);
 
@@ -234,6 +239,8 @@ Matrix* Layer::backPropagation(Matrix *dOut, Matrix* &dWeights, Matrix* &dGamma,
     auto dInputReLU = dInputNorm->ReLUDerivative(input);
 
     //clear
+    delete dGamma;
+    delete dBeta;
     delete dGammaPartial;
     delete dInputNorm;
     delete dInput;
