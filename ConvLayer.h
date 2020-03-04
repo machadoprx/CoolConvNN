@@ -6,7 +6,7 @@ class ConvLayer {
     public:
         ConvLayer(int outputChannels, int stride, int filterSize, int depth, int padding, 
                     int inputWidth, int inputHeight, bool hidden, bool isFirst);
-        
+        ~ConvLayer();
         Matrix* feedForward(Matrix *rawInput);
         Matrix* backPropagation(Matrix *dOut, float learningRate);
 

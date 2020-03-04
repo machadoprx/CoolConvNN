@@ -83,7 +83,7 @@ Matrix* cool2ami(float *img, int channels, int width, int height, int filterSize
     int colHeight = ((height - filterSize + (2 * pad)) / stride) + 1;
     int colChannels = channels * filterSize * filterSize;
 
-    auto R = new Matrix(channels * filterSize * filterSize, colWidth * colHeight);
+    auto R = new Matrix(channels, width * height);
     
     for (int c = 0; c < colChannels; c++) {
         int wOffset = c % filterSize;
