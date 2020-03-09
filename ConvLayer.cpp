@@ -1,9 +1,8 @@
 #include "ConvLayer.h"
 #include <iostream>
 
-// image format: c * height * width + y * width + x
 ConvLayer::ConvLayer(int inputChannels, int outputChannels, int stride, int filterSize, int padding, 
-                    int inputWidth, int inputHeight, bool hidden, bool isFirst) {
+                    int inputWidth, int inputHeight, bool hidden) {
 
     this->outputChannels = outputChannels; 
     this->stride = stride;
@@ -15,41 +14,14 @@ ConvLayer::ConvLayer(int inputChannels, int outputChannels, int stride, int filt
 
     filters = new Matrix(outputChannels, filterSize * filterSize * inputChannels);
     bias = new Matrix(1, outputChannels);
-    //filters->randomize();
-
-    float f[] = {1, 1, -1,
-                 0, 0, 1,
-                 0, 1, 1,
-                 0, 0, -1,
-                 1, 0, -1,
-                 -1, 1, 0,
-                 0, 1, 1,
-                 0, -1, -1,
-                 -1, 1, 0,
-                 -1, 1, 0,
-                 0, 0, 1,
-                 1, -1, 0,
-                 1, -1, 0,
-                 -1, -1, -1,
-                 0, -1, 0,
-                 0, -1, -1,
-                 -1, 0, 0,
-                 1, 1, 0};
-    
-    for (int i = 0; i < outputChannels * filterSize * filterSize * inputChannels; i++) {
-        filters->data[i] = f[i];
-    }
-    bias->data[0] = 1;
-    bias->data[1] = 0;
+    filters->randomize();
 }
 
 void ConvLayer::BiasAndReLU(Matrix *conv, int size) {
     for (int i = 0; i < outputChannels; i++) {
         int index = i * size; 
         for (int j = 0; j < size; j++) {
-            conv->data[index] += bias->data[i];
-            //conv->data[index] = Matrix::ReLU(conv->data[index]);
-            std::cout << conv->data[index] << '\n';
+            conv->data[index] = Matrix::ReLU(conv->data[index] + bias->data[i]);
             index++;
         }
     }
@@ -68,16 +40,19 @@ Matrix* ConvLayer::feedForward(Matrix *rawInput) {
 
     int colWidth = ((inputWidth - filterSize + (2 * padding)) / stride) + 1;
     int colHeight = ((inputHeight - filterSize + (2 * padding)) / stride) + 1;
+    int inputDim = inputWidth * inputHeight * inputChannels;
     int convFilterSize = colWidth * colHeight;
     int convSize = convFilterSize * outputChannels;
 
     auto output = new Matrix(input->rows, convSize);
 
     for (int i = 0; i < input->rows; i++) {
-        float *img = input->data + (i * inputWidth * inputHeight * inputChannels);
+        float *img = input->data + (i * inputDim);
         auto colInput = iam2cool(img, inputChannels, inputWidth, inputHeight, filterSize, stride, padding);
         auto convolution = filters->multiply(colInput);
-        BiasAndReLU(convolution, convFilterSize);
+        if (hidden) {
+            BiasAndReLU(convolution, convFilterSize);
+        }
         fillOutput(convolution->data, i * convSize, convSize, output);
 
         delete colInput;
@@ -97,7 +72,7 @@ void ConvLayer::updateWeights(Matrix *dWeights, Matrix *dBias, float learningRat
         for (int i = 0; i < outputChannels; i++) {
             int index = i * len;
             for (int i = 0; i < len; i++) {
-                filters->data[index] -= dWeights->data[index];
+                filters->data[index] -= dWeights->data[index] * learningRate;
                 index++;
             }
             bias->data[i] -= dBias->data[i] * learningRate;
@@ -126,19 +101,20 @@ Matrix* ConvLayer::backPropagation(Matrix* dOut, float learningRate) {
         auto colInputT = colInput->transposed();
 
         auto dWeightsRow = dOutRow->multiply(colInputT);
-        auto biasDerivative = dOutRow->sumRows();
+        auto dBiasRow = dOutRow->sumRows();
         
         //update weights
+        updateWeights(dWeightsRow, dBiasRow, learningRate);
 
         delete dWeightsRow;
         delete colInput;
         delete colInputT;
-        delete biasDerivative;
+        delete dBiasRow;
 
         auto filtersT = filters->transposed();
         auto dInput = filtersT->multiply(dOutRow);
         auto dInputReLU = dInput->ReLUDerivative(input);
-        auto dInputImage = cool2ami(dInputReLU->data, 3, inputWidth, inputHeight, filterSize, stride, padding);
+        auto dInputImage = cool2ami(dInputReLU->data, inputChannels, inputWidth, inputHeight, filterSize, stride, padding);
         dInputBatch->setRow(dInputImage->data, inputDim, i);
 
         delete dInputImage;
@@ -154,14 +130,41 @@ Matrix* ConvLayer::backPropagation(Matrix* dOut, float learningRate) {
 ConvLayer::~ConvLayer() {
     delete filters;
     delete bias;
+    delete input;
 }
 
-
+/*
 int main(int argc, char *argv[]) {
-    /*
-        r(int batch, int h, int w, int c, int n, int groups, int size, int stride, int padding, ACTIVATION activation, int batch_normalize, int binary, int xnor, int adam)
-    */
-    //convolutional_layer l = make_convolutional_layer(1, 5, 5, 3, 2, 5, 2, 1, LEAKY, 1, 0, 0, 0);
+    
+    float f[] = {1, 1, -1,
+                 0, 0, 0,
+                 0, 1, -1,
+                 0, -1, 1,
+                 -1, 0, 0,
+                 1, 1, 1,
+                 1, -1, 0,
+                 1, 0, 1,
+                 1, 0, 1,
+                 0, 1, 1,
+                 1, 0, 0,
+                 -1, 0, -1,
+                 0, 1, 0,
+                 1, 0, 1,
+                 1, 0, 0,
+                 1, 1, -1,
+                 0, 1, 1,
+                 -1, 1, 0};
+    
+    for (int i = 0; i < outputChannels * filterSize * filterSize * inputChannels; i++) {
+        filters->data[i] = f[i];
+    }
+    bias->data[0] = 1;
+    bias->data[1] = 0;
+    
+    
+    
+
+
     int inputChannels = 3;
     int width = 5, height = 5;
     int padding = 1;
@@ -169,21 +172,21 @@ int main(int argc, char *argv[]) {
     int size = 3;
     int n = 2;
 
-    float data[] = {0,2,0,1,1,
-                    2,2,2,0,1,
-                    0,0,2,0,0,
+    float data[] = {1,0,2,1,1,
+                    1,2,0,2,2,
+                    2,1,0,2,1,
+                    0,1,0,1,1,
+                    1,1,0,2,0,
+                    1,2,1,0,0,
+                    2,1,2,2,2,
+                    0,1,2,0,2,
+                    2,1,2,0,1,
+                    1,1,1,1,2,
                     1,0,1,0,2,
-                    2,1,0,1,0,
-                    1,0,1,1,1,
-                    1,0,2,0,2,
-                    2,1,1,0,1,
-                    1,2,0,0,0,
-                    1,0,1,1,0,
-                    2,1,0,1,1,
-                    2,2,0,0,0,
-                    1,2,0,2,1,
-                    1,0,0,2,1,
-                    2,0,2,1,1};
+                    1,1,1,1,1,
+                    2,1,1,0,0,
+                    2,0,0,1,2,
+                    0,1,0,2,2};
     
     ConvLayer *l = new ConvLayer(inputChannels, n, stride, size, padding, width, height, true, true);
     Matrix *input = new Matrix(1, width * height * inputChannels);
@@ -207,4 +210,4 @@ int main(int argc, char *argv[]) {
     }
 
     return 0;
-}
+}*/

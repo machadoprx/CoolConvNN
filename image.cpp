@@ -46,7 +46,7 @@ Matrix** splitBatch(Matrix *conv, int batchSize, int colWidth, int colHeight, in
 //From Berkeley Vision's Caffe!
 //https://github.com/BVLC/caffe/blob/master/LICENSE
 
-Matrix* iam2cool(float *img, int channels, int width, int height, int filterSize, int stride, int pad) {
+Matrix* iam2cool(float *im, int channels, int width, int height, int filterSize, int stride, int pad) {
 
     int colWidth = ((width - filterSize + (2 * pad)) / stride) + 1;
     int colHeight = ((height - filterSize + (2 * pad)) / stride) + 1;
@@ -68,8 +68,8 @@ Matrix* iam2cool(float *img, int channels, int width, int height, int filterSize
                     R->data[colIndex] = 0;
                 }
                 else {
-                    int imgIndex = imageCol + width * (imageRow + height * imageChannel);
-                    R->data[colIndex] = img[imgIndex];
+                    int imageIndex = imageCol + width * (imageRow + height * imageChannel);
+                    R->data[colIndex] = im[imageIndex];
                 }
             }
         }
@@ -77,7 +77,7 @@ Matrix* iam2cool(float *img, int channels, int width, int height, int filterSize
     return R;
 }
 
-Matrix* cool2ami(float *img, int channels, int width, int height, int filterSize, int stride, int pad) {
+Matrix* cool2ami(float *cols, int channels, int width, int height, int filterSize, int stride, int pad) {
 
     int colWidth = ((width - filterSize + (2 * pad)) / stride) + 1;
     int colHeight = ((height - filterSize + (2 * pad)) / stride) + 1;
@@ -94,11 +94,12 @@ Matrix* cool2ami(float *img, int channels, int width, int height, int filterSize
                 int imageRow = (hOffset + (x * stride)) - pad;
                 int imageCol = (wOffset + (y * stride)) - pad;
                 int colIndex = (c * colHeight + y) * colWidth + x;
+                int imageIndex = imageCol + width * (imageRow + height * imageChannel);
                 if (imageRow < 0 || imageCol < 0 || imageRow >= height || imageCol >= width) {
                     continue;
                 }
                 else {
-                    R->data[imageCol + width * (imageRow + height * imageChannel)] += img[colIndex];
+                    R->data[imageIndex] += cols[colIndex];
                 }
             }
         }

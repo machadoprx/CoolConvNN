@@ -3,7 +3,7 @@
 
 #include "Matrix.h"
 
-Matrix* iam2cool(float *W, int channels, int width, int height, int filterSize, int stride, int pad);
-Matrix* cool2ami(float *W, int channels, int width, int height, int filterSize, int stride, int pad);
+Matrix* iam2cool(float *im, int channels, int width, int height, int filterSize, int stride, int pad);
+Matrix* cool2ami(float *cols, int channels, int width, int height, int filterSize, int stride, int pad);
 
 #endif //NNCPP_EXEC_IMAGE_H
