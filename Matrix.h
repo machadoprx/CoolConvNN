@@ -42,6 +42,7 @@ public:
     void randomize();
     static Matrix *invDeviation(Matrix *desiredVar);
     void set(Matrix *W);
+    void setArray(float *data);
     void setRow(float *row, int len, int rowPos);
     Matrix *ReLUDerivative(Matrix *W);
     static float ReLU(float x);

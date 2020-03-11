@@ -1,8 +1,7 @@
 #include "ConvLayer.h"
 #include <iostream>
 
-ConvLayer::ConvLayer(int inputChannels, int outputChannels, int stride, int filterSize, int padding, 
-                    int inputWidth, int inputHeight, bool hidden) {
+ConvLayer::ConvLayer(int inputChannels, int outputChannels, int stride, int filterSize, int padding, int inputWidth, int inputHeight) {
 
     this->outputChannels = outputChannels; 
     this->stride = stride;
@@ -50,9 +49,7 @@ Matrix* ConvLayer::feedForward(Matrix *rawInput) {
         float *img = input->data + (i * inputDim);
         auto colInput = iam2cool(img, inputChannels, inputWidth, inputHeight, filterSize, stride, padding);
         auto convolution = filters->multiply(colInput);
-        if (hidden) {
-            BiasAndReLU(convolution, convFilterSize);
-        }
+        BiasAndReLU(convolution, convFilterSize);
         fillOutput(convolution->data, i * convSize, convSize, output);
 
         delete colInput;
@@ -132,82 +129,3 @@ ConvLayer::~ConvLayer() {
     delete bias;
     delete input;
 }
-
-/*
-int main(int argc, char *argv[]) {
-    
-    float f[] = {1, 1, -1,
-                 0, 0, 0,
-                 0, 1, -1,
-                 0, -1, 1,
-                 -1, 0, 0,
-                 1, 1, 1,
-                 1, -1, 0,
-                 1, 0, 1,
-                 1, 0, 1,
-                 0, 1, 1,
-                 1, 0, 0,
-                 -1, 0, -1,
-                 0, 1, 0,
-                 1, 0, 1,
-                 1, 0, 0,
-                 1, 1, -1,
-                 0, 1, 1,
-                 -1, 1, 0};
-    
-    for (int i = 0; i < outputChannels * filterSize * filterSize * inputChannels; i++) {
-        filters->data[i] = f[i];
-    }
-    bias->data[0] = 1;
-    bias->data[1] = 0;
-    
-    
-    
-
-
-    int inputChannels = 3;
-    int width = 5, height = 5;
-    int padding = 1;
-    int stride = 2;
-    int size = 3;
-    int n = 2;
-
-    float data[] = {1,0,2,1,1,
-                    1,2,0,2,2,
-                    2,1,0,2,1,
-                    0,1,0,1,1,
-                    1,1,0,2,0,
-                    1,2,1,0,0,
-                    2,1,2,2,2,
-                    0,1,2,0,2,
-                    2,1,2,0,1,
-                    1,1,1,1,2,
-                    1,0,1,0,2,
-                    1,1,1,1,1,
-                    2,1,1,0,0,
-                    2,0,0,1,2,
-                    0,1,0,2,2};
-    
-    ConvLayer *l = new ConvLayer(inputChannels, n, stride, size, padding, width, height, true, true);
-    Matrix *input = new Matrix(1, width * height * inputChannels);
-    //memcpy(input->data, data, sizeof(float) * width * height * inputChannels);
-    for (int i = 0; i < width * height * inputChannels; i++) {
-        input->data[i] = data[i];
-    }
-    Matrix *test = l->feedForward(input);
-
-    int colWidth = ((width - size + (2 * padding)) / stride) + 1;
-    int colHeight = ((height - size + (2 * padding)) / stride) + 1;
-
-    for (int c = 0; c < n; c++) {
-        for (int i = 0; i < colHeight; i++) {
-            for (int j = 0; j < colWidth; j++) {
-                std::cout << test->data[(c * colHeight + i) * colWidth + j] << ' ';
-            }
-            std::cout << '\n';
-        }
-        std::cout << '\n';
-    }
-
-    return 0;
-}*/

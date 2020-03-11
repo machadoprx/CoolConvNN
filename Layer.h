@@ -10,10 +10,6 @@
 class Layer {
 
 private:
-    Matrix *weights{}, *gamma{}, *beta{};
-    Matrix *runningMean{}, *runningVariance{}, *deviationInv{};
-    Matrix *input{}, *inputNormalized{};
-    bool hidden, isFirst;
     void validationInput(Matrix* &rawInput);
     void trainingInput(Matrix* &rawInput);
     void updateRunningStatus(Matrix *mean, Matrix *variance);
@@ -22,6 +18,10 @@ private:
     void updateGammaBeta(Matrix *dGamma, Matrix *dBeta, float learningRate);
 
 public:
+    Matrix *weights{}, *gamma{}, *beta{};
+    Matrix *runningMean{}, *runningVariance{}, *deviationInv{};
+    Matrix *input{}, *inputNormalized{};
+    bool hidden, isFirst;
     Layer(int inputDimension, int outputDimension, bool hidden, bool isFirst);
     Layer(int inputDimension, int outputDimension, bool hidden, bool isFirst, float *weights, float *gamma, float *beta,
           float *runningMean, float *runningVariance);

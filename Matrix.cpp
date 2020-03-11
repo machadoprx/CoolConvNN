@@ -351,6 +351,17 @@ void Matrix::set(Matrix *W) {
     }
 }
 
+void Matrix::setArray(float *data) {
+
+    #pragma omp parallel num_threads(THREADS)
+    {
+        #pragma omp for nowait
+        for (int i = 0; i < rows * columns; i++) {
+            this->data[i] = data[i];
+        }
+    }
+}
+
 Matrix* Matrix::copy() {
 
     auto R = new Matrix(rows, columns);

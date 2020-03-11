@@ -289,13 +289,13 @@ void NeuralNet::backPropagationStep(Matrix* prob, Matrix* batch, int *labels) {
     delete dOut;
 }
 
-void NeuralNet::prepareBatch(float** &dataSet, int* &labels, int batchLength, int dataIndex, Matrix *batch, int *batchLabels) {
+void NeuralNet::prepareBatch(float** &dataSet, int* &labels, int batchLength, int dataIndex, Matrix *batch, int *batchLabels, int dataDim) {
     #pragma omp parallel num_threads(THREADS)
     {
         #pragma omp for nowait
         for (int i = 0; i < batchLength; i++) {
-            int index = i * featuresDimension;
-            for (int j = 0; j < featuresDimension; j++) {
+            int index = i * dataDim;
+            for (int j = 0; j < dataDim; j++) {
                 batch->data[index] = dataSet[dataIndex + i][j];
                 index++;
             }
@@ -333,7 +333,7 @@ void NeuralNet::train(float** &dataSet, int* &labels, int samples, int epochs){
             auto batch = new Matrix(batchLength, featuresDimension);
             auto batchLabels = new int[batchLength];
 
-            prepareBatch(dataSet, labels, batchLength, dataIndex, batch, batchLabels);
+            prepareBatch(dataSet, labels, batchLength, dataIndex, batch, batchLabels, featuresDimension);
 
             //forward step
             auto score = forwardStep(batch, false);

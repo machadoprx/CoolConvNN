@@ -21,7 +21,7 @@ Matrix* PoolLayer::feedForward(Matrix *rawInput) {
 
     delete[] indexes;
 
-    int inputDim = inputWidth * inputHeight * inputChannels;
+    //int inputDim = inputWidth * inputHeight * inputChannels;
     int newWidth = 1 + (inputWidth + padding - filterSize) / stride;
     int newHeight = 1 + (inputHeight + padding - filterSize) / stride;
     int outputDim = newWidth * newHeight * inputChannels;

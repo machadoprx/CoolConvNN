@@ -1,5 +1,6 @@
 #include <iostream>
 #include "NeuralNet.h"
+#include "ConvNeuralNet.h"
 #include "omp.h"
 #include "png2array/png2array.h"
 
@@ -11,9 +12,32 @@ int main(int argc, char const *argv[]) {
 
     const char *data_file = "data_processed.dat";
     const char *nn_file = "nn_state.dat";
+    const char *param_file = "params.ini";
     const char *mode = argv[1];
 
-    if (strcmp(mode, "getdata") == 0) {
+    int labels, samplesPerLabels, featuresDimension;
+    float *mean, *deviation, **input;
+
+    loadData(data_file, input, mean, deviation, labels, samplesPerLabels, featuresDimension);
+    auto targets = genTargets(labels, samplesPerLabels);
+
+    if (strcmp(mode, "new") == 0) {
+        int epochs = atoi(argv[2]);
+        auto cnn = new ConvNeuralNet(param_file);
+        cnn->train(input, targets, labels * samplesPerLabels, epochs);
+        delete cnn;
+    }
+
+    //delete cnn;
+    delete[] mean;
+    delete[] deviation;
+    delete[] targets;
+    for (int i = 0; i < labels * samplesPerLabels; i++) {
+        delete[] input[i];
+    }
+    delete[] input;
+
+    /*if (strcmp(mode, "getdata") == 0) {
         int samplesPerLabel = atoi(argv[2]);
         int width = atoi(argv[3]);
         int labels = atoi(argv[4]);
@@ -89,6 +113,6 @@ int main(int argc, char const *argv[]) {
         delete result;
         delete[] mean;
         delete[] deviation;
-    }
+    }*/
     return 0;
 }
