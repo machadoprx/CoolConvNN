@@ -26,12 +26,7 @@ void ConvLayer::BiasAndReLU(Matrix *conv, int size) {
     }
 }
 
-void ConvLayer::fillOutput(float *convolution, int offset, int size, Matrix *output) {
-    for (int i = 0; i < size; i++) {
-        output->data[i + offset] = convolution[i];
-    }
-}
-
+#include <iostream>
 Matrix* ConvLayer::feedForward(Matrix *rawInput) {
 
     delete input;
@@ -50,7 +45,7 @@ Matrix* ConvLayer::feedForward(Matrix *rawInput) {
         auto colInput = iam2cool(img, inputChannels, inputWidth, inputHeight, filterSize, stride, padding);
         auto convolution = filters->multiply(colInput);
         BiasAndReLU(convolution, convFilterSize);
-        fillOutput(convolution->data, i * convSize, convSize, output);
+        memcpy(output->data + (i * convSize), convolution->data, convSize * sizeof(float));
 
         delete colInput;
         delete convolution;
@@ -80,22 +75,24 @@ void ConvLayer::updateWeights(Matrix *dWeights, Matrix *dBias, float learningRat
 
 Matrix* ConvLayer::backPropagation(Matrix* dOut, float learningRate) {
 
+    assert(dOut->rows == input->rows);
+
     int colWidth = ((inputWidth - filterSize + (2 * padding)) / stride) + 1;
     int colHeight = ((inputHeight - filterSize + (2 * padding)) / stride) + 1;
     int inputDim = inputWidth * inputHeight * inputChannels;
-    int outputDim = outputChannels * colWidth * colHeight;
+    int outputDim = colWidth * colHeight * outputChannels;
 
     auto dInputBatch = new Matrix(input->rows, inputDim);
 
     for (int i = 0; i < input->rows; i++) {
 
-        float *inputData = input->data + (i * inputDim);
+        float *img = input->data + (i * inputDim);
+        auto colInput = iam2cool(img, inputChannels, inputWidth, inputHeight, filterSize, stride, padding);
+        auto colInputT = colInput->transposed();
 
         auto dOutRow = new Matrix(outputChannels, colWidth * colHeight); // fill
-        fillOutput(dOut->data, i * outputDim, outputDim, dOutRow);
 
-        auto colInput = iam2cool(inputData, inputChannels, inputWidth, inputHeight, filterSize, stride, padding);
-        auto colInputT = colInput->transposed();
+        memcpy(dOutRow->data, dOut->data + (i * outputDim), outputDim * sizeof(float));
 
         auto dWeightsRow = dOutRow->multiply(colInputT);
         auto dBiasRow = dOutRow->sumRows();
@@ -104,22 +101,23 @@ Matrix* ConvLayer::backPropagation(Matrix* dOut, float learningRate) {
         updateWeights(dWeightsRow, dBiasRow, learningRate);
 
         delete dWeightsRow;
-        delete colInput;
         delete colInputT;
         delete dBiasRow;
 
         auto filtersT = filters->transposed();
         auto dInput = filtersT->multiply(dOutRow);
-        auto dInputReLU = dInput->ReLUDerivative(input);
+        auto dInputReLU = dInput->ReLUDerivative(colInput);
         auto dInputImage = cool2ami(dInputReLU->data, inputChannels, inputWidth, inputHeight, filterSize, stride, padding);
         dInputBatch->setRow(dInputImage->data, inputDim, i);
 
+        delete colInput;
         delete dInputImage;
         delete filtersT;
         delete dInput;
         delete dInputReLU;
         delete dOutRow;
     }
+
 
     return dInputBatch;
 }

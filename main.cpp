@@ -11,7 +11,7 @@ int main(int argc, char const *argv[]) {
     assert(THREADS % 2 == 0);
 
     const char *data_file = "data_processed.dat";
-    const char *nn_file = "nn_state.dat";
+    //const char *nn_file = "nn_state.dat";
     const char *param_file = "params.ini";
     const char *mode = argv[1];
 

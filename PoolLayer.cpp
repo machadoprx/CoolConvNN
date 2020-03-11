@@ -11,23 +11,16 @@ PoolLayer::PoolLayer(int stride, int filterSize, int depth, int padding, int inp
     this->inputHeight = inputHeight;
 }
 
-void PoolLayer::fillOutput(float *input, int offset, int size, Matrix *output) {
-    for (int i = 0; i < size; i++) {
-        output->data[i + offset] = input[i];
-    }
-}
-
 Matrix* PoolLayer::feedForward(Matrix *rawInput) {
 
     delete[] indexes;
 
-    //int inputDim = inputWidth * inputHeight * inputChannels;
     int newWidth = 1 + (inputWidth + padding - filterSize) / stride;
     int newHeight = 1 + (inputHeight + padding - filterSize) / stride;
     int outputDim = newWidth * newHeight * inputChannels;
     int offSet = -padding / 2; // stride
 
-    auto indexes = new int[rawInput->rows * outputDim];
+    indexes = new int[rawInput->rows * outputDim];
     auto output = new Matrix(rawInput->rows, outputDim);
 
     for (int b = 0; b < rawInput->rows; b++) {
@@ -61,15 +54,17 @@ Matrix* PoolLayer::feedForward(Matrix *rawInput) {
 }
 
 Matrix* PoolLayer::backPropagation(Matrix* dOut) {
+
+    int inDim = inputHeight * inputWidth * inputChannels;
     int newWidth = 1 + (inputWidth + padding - filterSize) / stride;
     int newHeight = 1 + (inputHeight + padding - filterSize) / stride;
-    int outDim = newWidth * newHeight * inputChannels;
-    auto R = new Matrix(dOut->rows, outDim);
+    int outputDim = newWidth * newHeight * inputChannels;
+
+    auto R = new Matrix(dOut->rows, inDim);
     
-    for (int i = 0; i < outDim * dOut->rows; ++i) {
+    for (int i = 0; i < outputDim * dOut->rows; ++i) {
         R->data[ indexes[i] ] += dOut->data[i];
     }
-
     return R;
 }
 

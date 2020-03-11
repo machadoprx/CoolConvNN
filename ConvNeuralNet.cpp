@@ -185,15 +185,15 @@ Matrix* ConvNeuralNet::forwardStep(Matrix* batch, bool validation) {
     Matrix *tmp = convLayers.at(0)->feedForward(batch);
     Matrix *curr = poolLayers.at(0)->feedForward(tmp);
     delete tmp;
-
-    for (auto i = 1; i < convLayers.size(); i++) {
+    
+    for (auto i = 1; i < (int)convLayers.size(); i++) {
         tmp = convLayers.at(i)->feedForward(curr);
         delete curr;
         curr = poolLayers.at(i)->feedForward(tmp);
         delete tmp;
     }
 
-    for (auto i = 0; i < fcLayers.size(); i++) {
+    for (auto i = 0; i < (int)fcLayers.size(); i++) {
         tmp = fcLayers.at(i)->feedForward(curr, validation);
         delete curr;
         curr = tmp;
@@ -209,17 +209,16 @@ void ConvNeuralNet::backPropagationStep(Matrix* prob, Matrix* batch, int *labels
 
     auto dOut = NeuralNet::getProbDerivative(prob, labels);
 
-    for (auto i = fcLayers.size() - 1; i >= 0; i--) {
+    for (int i = fcLayers.size() - 1; i >= 0; --i) {
         auto tmp = fcLayers.at(i)->backPropagation(dOut, lambdaReg, learningRate);
 
         delete dOut;
         dOut = tmp;
     }
-
-    for (auto i = convLayers.size() - 1; i >= 0; i--) {
+    
+    for (int i = convLayers.size() - 1; i >= 0; --i) {
         auto tmp = poolLayers.at(i)->backPropagation(dOut);
         delete dOut;
-
         dOut = convLayers.at(i)->backPropagation(tmp, learningRate);
         delete tmp;
     }

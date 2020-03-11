@@ -11,5 +11,4 @@ class PoolLayer {
     private:
         int outputChannels{}, stride{}, filterSize{}, padding{}, inputChannels{}, inputWidth{}, inputHeight{};
         int *indexes{};
-        void fillOutput(float *input, int offset, int size, Matrix *output);
 };

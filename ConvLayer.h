@@ -8,11 +8,10 @@ class ConvLayer {
         ~ConvLayer();
         Matrix* feedForward(Matrix *rawInput);
         Matrix* backPropagation(Matrix *dOut, float learningRate);
-        Matrix *filters{}, *bias{}, *input;
+        Matrix *filters{}, *bias{}, *input{};
         int outputChannels{}, stride{}, filterSize{}, padding{}, inputChannels{}, inputWidth{}, inputHeight{};
 
     private:
         void BiasAndReLU(Matrix *conv, int size);
-        void fillOutput(float *convolution, int offset, int size, Matrix *output);
         void updateWeights(Matrix *dWeights, Matrix *dBias, float learningRate); 
 };
