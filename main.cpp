@@ -1,5 +1,4 @@
 #include <iostream>
-#include "NeuralNet.h"
 #include "ConvNeuralNet.h"
 #include "omp.h"
 #include "png2array/png2array.h"
@@ -11,33 +10,11 @@ int main(int argc, char const *argv[]) {
     assert(THREADS % 2 == 0);
 
     const char *data_file = "data_processed.dat";
-    //const char *nn_file = "nn_state.dat";
+    const char *cnn_file = "cnn_state2.dat";
     const char *param_file = "params.ini";
     const char *mode = argv[1];
 
-    int labels, samplesPerLabels, featuresDimension;
-    float *mean, *deviation, **input;
-
-    loadData(data_file, input, mean, deviation, labels, samplesPerLabels, featuresDimension);
-    auto targets = genTargets(labels, samplesPerLabels);
-
-    if (strcmp(mode, "new") == 0) {
-        int epochs = atoi(argv[2]);
-        auto cnn = new ConvNeuralNet(param_file);
-        cnn->train(input, targets, labels * samplesPerLabels, epochs);
-        delete cnn;
-    }
-
-    //delete cnn;
-    delete[] mean;
-    delete[] deviation;
-    delete[] targets;
-    for (int i = 0; i < labels * samplesPerLabels; i++) {
-        delete[] input[i];
-    }
-    delete[] input;
-
-    /*if (strcmp(mode, "getdata") == 0) {
+    if (strcmp(mode, "getdata") == 0) {
         int samplesPerLabel = atoi(argv[2]);
         int width = atoi(argv[3]);
         int labels = atoi(argv[4]);
@@ -46,37 +23,27 @@ int main(int argc, char const *argv[]) {
         exit(0);
     }
     else if (strcmp(mode, "new") == 0 || strcmp(mode, "continue") == 0) {
-
         int labels, samplesPerLabels, featuresDimension;
         float *mean, *deviation, **input;
 
         loadData(data_file, input, mean, deviation, labels, samplesPerLabels, featuresDimension);
         auto targets = genTargets(labels, samplesPerLabels);
 
-        NeuralNet *nn;
         if (strcmp(mode, "new") == 0) {
-            int hiddenLayers = atoi(argv[2]);
-            int layersDimension = atoi(argv[3]);
-            int batches = atoi(argv[4]);
-
-            assert(batches % 2 == 0 && batches >= THREADS);
-
-            float learningRate = atof(argv[5]);
-            int epochs = atoi(argv[6]);
-            nn = new NeuralNet(featuresDimension, labels, hiddenLayers, layersDimension, batches, learningRate);
-            nn->train(input, targets, labels * samplesPerLabels, epochs);
+            int epochs = atoi(argv[2]);
+            auto cnn = new ConvNeuralNet(param_file);
+            cnn->train(input, targets, labels * samplesPerLabels, epochs);
+            cnn->saveState(cnn_file);
+            delete cnn;
         }
         else {
-            float learningRate = atof(argv[2]);
-            int epochs = atoi(argv[3]);
-            nn = new NeuralNet(nn_file);
-            nn->setLearningRate(learningRate);
-            nn->train(input, targets, labels * samplesPerLabels, epochs);
+            int epochs = atoi(argv[2]);
+            auto cnn = new ConvNeuralNet(param_file, cnn_file);
+            cnn->train(input, targets, labels * samplesPerLabels, epochs);
+            cnn->saveState(cnn_file);
+            delete cnn;
         }
 
-        nn->saveState(nn_file);
-
-        delete nn;
         delete[] mean;
         delete[] deviation;
         delete[] targets;
@@ -103,16 +70,16 @@ int main(int argc, char const *argv[]) {
         for (int i = 0; i < w * h; i++) {
             test->data[i] = (sample[i] - mean[i]) / deviation[i];
         }
-        auto nn = new NeuralNet(nn_file);
-        auto result = nn->forwardStep(test, true);
+        auto cnn = new ConvNeuralNet(param_file, cnn_file);
+        auto result = cnn->forwardStep(test, true);
 
         for (int i = 0; i < labels; i++) {
             std::cout << "label: " << i << " prob: " << (int)(result->data[i] * 100) << "\n";
         }
-        delete nn;
+        delete cnn;
         delete result;
         delete[] mean;
         delete[] deviation;
-    }*/
+    }
     return 0;
 }

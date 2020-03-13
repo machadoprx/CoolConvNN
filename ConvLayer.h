@@ -10,8 +10,9 @@ class ConvLayer {
         Matrix* backPropagation(Matrix *dOut, float learningRate);
         Matrix *filters{}, *bias{}, *input{};
         int outputChannels{}, stride{}, filterSize{}, padding{}, inputChannels{}, inputWidth{}, inputHeight{};
+        int colWidth{}, colHeight{}, colChannels{}, inputDim{}, outputDim{}, colInputDim{};
 
     private:
-        void BiasAndReLU(Matrix *conv, int size);
+        void BiasAndReLU(Matrix *conv);
         void updateWeights(Matrix *dWeights, Matrix *dBias, float learningRate); 
 };

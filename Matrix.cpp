@@ -379,3 +379,13 @@ Matrix* Matrix::copy() {
 float Matrix::ReLU(float x) {
     return x > 0 ? x : 0;
 }
+
+void Matrix::mcopy(float *dest, float *src, int size) {
+    #pragma omp parallel num_threads(THREADS)
+    {
+        #pragma omp for nowait
+        for (int i = 0; i < size; i++) {
+            dest[i] = src[i];
+        }
+    }
+}

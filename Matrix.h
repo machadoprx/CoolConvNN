@@ -46,6 +46,7 @@ public:
     void setRow(float *row, int len, int rowPos);
     Matrix *ReLUDerivative(Matrix *W);
     static float ReLU(float x);
+    static void mcopy(float *dest, float *src, int size);
 };
 
 #endif //NNCPP_EXEC_MATRIX_H

@@ -159,8 +159,8 @@ void ConvNeuralNet::saveState(const char* weightsFileName) {
     fwrite(layer->runningMean->data, sizeof(float) * fcFeaturesDim, 1, weightsFile);
     fwrite(layer->runningVariance->data, sizeof(float) * fcFeaturesDim, 1, weightsFile);
 
-    int i = 0;
-    for (; i < fcAdditionalHidden; i++) {
+    int i = 1;
+    for (; i < (int) fcLayers.size() - 1; i++) {
         layer = fcLayers.at(i);
         fwrite(layer->weights->data, sizeof(float) * fcLayersDim * fcLayersDim, 1, weightsFile);
         fwrite(layer->gamma->data, sizeof(float) * fcLayersDim, 1, weightsFile);
@@ -215,7 +215,7 @@ void ConvNeuralNet::backPropagationStep(Matrix* prob, Matrix* batch, int *labels
         delete dOut;
         dOut = tmp;
     }
-    
+
     for (int i = convLayers.size() - 1; i >= 0; --i) {
         auto tmp = poolLayers.at(i)->backPropagation(dOut);
         delete dOut;
