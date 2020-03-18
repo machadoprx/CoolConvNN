@@ -60,7 +60,7 @@ void normalizeData(float** &raw, float* &mean, float* &deviation, int samples, i
         featureVariance = featureVariance / samples;
 
         // divide by standard deviation
-        deviation[j] = sqrt(featureVariance + e);
+        deviation[j] = sqrtf(featureVariance + e);
 
         for (int i = 0; i < samples; i++) {
             raw[i][j] = raw[i][j] / deviation[j];
@@ -94,7 +94,7 @@ float **png2data(std::string dataPath, int labels, int samplesPerLabel) {
                 }
         
             }
-            std::cout << index << " " << entry.path().filename().string() << '\n';
+            std::cout << entry.path().filename().string() << " computation done.\n";
             label++;
         }
     }

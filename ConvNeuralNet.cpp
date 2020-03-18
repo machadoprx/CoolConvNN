@@ -182,18 +182,19 @@ void ConvNeuralNet::saveState(const char* weightsFileName) {
 
 Matrix* ConvNeuralNet::forwardStep(Matrix* batch, bool validation) {
 
+    int i;
     Matrix *tmp = convLayers.at(0)->feedForward(batch);
     Matrix *curr = poolLayers.at(0)->feedForward(tmp);
     delete tmp;
     
-    for (auto i = 1; i < (int)convLayers.size(); i++) {
+    for (i = 1; i < (int)convLayers.size(); i++) {
         tmp = convLayers.at(i)->feedForward(curr);
         delete curr;
         curr = poolLayers.at(i)->feedForward(tmp);
         delete tmp;
     }
 
-    for (auto i = 0; i < (int)fcLayers.size(); i++) {
+    for (i = 0; i < (int)fcLayers.size(); i++) {
         tmp = fcLayers.at(i)->feedForward(curr, validation);
         delete curr;
         curr = tmp;
@@ -206,39 +207,25 @@ Matrix* ConvNeuralNet::forwardStep(Matrix* batch, bool validation) {
 }
 
 void ConvNeuralNet::backPropagationStep(Matrix* prob, Matrix* batch, int *labels) {
-
+    
+    int i;
+    Matrix *tmp;
     auto dOut = NeuralNet::getProbDerivative(prob, labels);
 
-    for (int i = fcLayers.size() - 1; i >= 0; --i) {
-        auto tmp = fcLayers.at(i)->backPropagation(dOut, lambdaReg, learningRate);
-
+    for (i = fcLayers.size() - 1; i >= 0; --i) {
+        tmp = fcLayers.at(i)->backPropagation(dOut, lambdaReg, learningRate);
         delete dOut;
         dOut = tmp;
     }
 
-    for (int i = convLayers.size() - 1; i >= 0; --i) {
-        auto tmp = poolLayers.at(i)->backPropagation(dOut);
+    for (i = convLayers.size() - 1; i >= 0; --i) {
+        tmp = poolLayers.at(i)->backPropagation(dOut);
         delete dOut;
         dOut = convLayers.at(i)->backPropagation(tmp, learningRate);
         delete tmp;
     }
 
     delete dOut;
-}
-
-float ConvNeuralNet::getRegulationLoss(){
-
-    float regLoss = 0;
-
-    for (auto & layer : fcLayers) {
-        auto weights = layer->getWeights();
-        auto temp = weights->elemMul(weights);
-        regLoss += 0.5 * lambdaReg * temp->sumElements();
-        delete weights;
-        delete temp;
-    }
-
-    return regLoss;
 }
 
 void ConvNeuralNet::train(float** &dataSet, int* &labels, int samples, int epochs){
@@ -282,7 +269,7 @@ void ConvNeuralNet::train(float** &dataSet, int* &labels, int samples, int epoch
             auto correctProb = NeuralNet::getCorrectProb(score, batchLabels);
 
             // compute loss
-            loss += NeuralNet::getDataLoss(correctProb) + getRegulationLoss();
+            loss += NeuralNet::getDataLoss(correctProb) + NeuralNet::getRegulationLoss(fcLayers, lambdaReg);
 
             // backpropagation step
             backPropagationStep(score, batch, batchLabels);

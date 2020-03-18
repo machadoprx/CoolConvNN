@@ -31,7 +31,6 @@ private:
     std::vector<ConvLayer*> convLayers;
     std::vector<PoolLayer*> poolLayers;
 
-    float getRegulationLoss();
     void backPropagationStep(Matrix *prob, Matrix *batch, int *labels);
 };
 

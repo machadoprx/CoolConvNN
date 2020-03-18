@@ -174,11 +174,11 @@ Matrix* NeuralNet::getCorrectProb(Matrix* prob, int *labels){
 
     auto correctProb = new Matrix(prob->rows, 1);
 
-    #pragma omp parallel num_threads(THREADS)
+    #pragma omp parallel
     {
         #pragma omp for nowait
         for (int i = 0; i < prob->rows; i++) {
-            correctProb->data[i] = (-1) * log(prob->data[i * prob->columns + labels[i]]);
+            correctProb->data[i] = (-1.0f) * logf(prob->data[i * prob->columns + labels[i]]);
         }
     }
 
@@ -190,16 +190,16 @@ Matrix* NeuralNet::getProbDerivative(Matrix* prob, int *labels){
     int rows = prob->rows, columns = prob->columns;
     auto dProb = new Matrix(prob->rows, prob->columns);
     
-    #pragma omp parallel num_threads(THREADS)
+    #pragma omp parallel
     {
         #pragma omp for nowait
         for (int i = 0; i < rows; i++) {
             
             int index = i * columns;
-            dProb->data[index + labels[i]] = -1.0;
+            dProb->data[index + labels[i]] = -1.0f;
 
             for (int j = 0; j < columns; j++) {
-                dProb->data[index] = (dProb->data[index] + prob->data[index]) / rows;
+                dProb->data[index] = (dProb->data[index] + prob->data[index]) / (float)rows;
                 index++;
             }
         }
@@ -210,11 +210,11 @@ Matrix* NeuralNet::getProbDerivative(Matrix* prob, int *labels){
 
 float NeuralNet::getDataLoss(Matrix* correctProb){
 
-    float loss = 0;
+    float loss = .0f;
 
-    #pragma omp parallel num_threads(THREADS)
+    #pragma omp parallel
     {
-        #pragma omp for reduction(+:loss)
+        #pragma omp for reduction (+:loss) schedule(static)
         for (int i = 0; i < correctProb->rows; i++) {
             loss += correctProb->data[i];
         }
@@ -223,14 +223,14 @@ float NeuralNet::getDataLoss(Matrix* correctProb){
     return loss / correctProb->rows;
 }
 
-float NeuralNet::getRegulationLoss(){
+float NeuralNet::getRegulationLoss(std::vector<Layer*> la, float lambda){
 
-    float regLoss = 0;
+    float regLoss = .0f;
 
-    for (auto & layer : layers) {
+    for (auto & layer : la) {
         auto weights = layer->getWeights();
         auto temp = weights->elemMul(weights);
-        regLoss += 0.5 * lambdaReg * temp->sumElements();
+        regLoss += 0.5f * lambda * temp->sumElements();
         delete weights;
         delete temp;
     }
@@ -290,7 +290,7 @@ void NeuralNet::backPropagationStep(Matrix* prob, Matrix* batch, int *labels) {
 }
 
 void NeuralNet::prepareBatch(float** &dataSet, int* &labels, int batchLength, int dataIndex, Matrix *batch, int *batchLabels, int dataDim) {
-    #pragma omp parallel num_threads(THREADS)
+    #pragma omp parallel
     {
         #pragma omp for nowait
         for (int i = 0; i < batchLength; i++) {
@@ -342,7 +342,7 @@ void NeuralNet::train(float** &dataSet, int* &labels, int samples, int epochs){
             auto correctProb = getCorrectProb(score, batchLabels);
 
             // compute loss
-            loss += getDataLoss(correctProb) + getRegulationLoss();
+            loss += getDataLoss(correctProb) + getRegulationLoss(layers, lambdaReg);
 
             // backpropagation step
             backPropagationStep(score, batch, batchLabels);

@@ -7,8 +7,9 @@ using namespace std;
 
 int main(int argc, char const *argv[]) {
 
-    assert(THREADS % 2 == 0);
-
+    int nProcessors = omp_get_max_threads();
+    omp_set_num_threads(nProcessors);
+    
     const char *data_file = "data_processed.dat";
     const char *cnn_file = "cnn_state2.dat";
     const char *param_file = "params.ini";
@@ -28,7 +29,11 @@ int main(int argc, char const *argv[]) {
 
         loadData(data_file, input, mean, deviation, labels, samplesPerLabels, featuresDimension);
         auto targets = genTargets(labels, samplesPerLabels);
-
+        
+        std::cout << "Features Dimension: " << featuresDimension << '\n';
+        std::cout << "Number of labels: " << labels << '\n';
+        std::cout << "Samples/Label: " << samplesPerLabels << "\n\n";
+        
         if (strcmp(mode, "new") == 0) {
             int epochs = atoi(argv[2]);
             auto cnn = new ConvNeuralNet(param_file);

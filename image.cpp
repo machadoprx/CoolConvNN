@@ -1,48 +1,5 @@
 #include "image.h"
 
-/*Matrix* concatenateBatch(Matrix **im2col, int batchSize, int colWidth, int colHeight, int colChannels) {
-
-    int concIndex = 0;
-    int columns = colWidth * colHeight;
-    int rows = colChannels;
-
-    Matrix *conc = new Matrix(rows, columns * batchSize);
-
-    for (int i = 0; i < rows; i++) {
-        for (int n = 0; n < batchSize; n++) {
-            int index = i * columns;
-            for (int j = 0; j < columns; j++) {
-                conc->data[concIndex++] = im2col[n]->data[index++];
-            }
-        }
-    }
-
-    return conc;
-}
-
-Matrix** splitBatch(Matrix *conv, int batchSize, int colWidth, int colHeight, int filtersN) {
-
-    // output form same as image:
-    // image[i] = Matrix(3, width * height)
-    // out[i] = Matrix(filtersN, colW * colH)
-
-    Matrix **splitted = new Matrix*[batchSize];
-    for (int i = 0; i < batchSize; i++) {
-        splitted[i] = new Matrix(filtersN, colWidth * colHeight);
-    }
-    // Matrix(channels * filterSize * filterSize, colWidth * colHeight);
-
-    for (int i = 0; i < rows; i++) {
-        for (int n = 0; n < batchSize; n++) {
-            for (int j = 0; j < columns; j++) {
-                conc->data[concIndex++] = conv[n]->data[i * columns + j];
-            }
-        }
-    }
-
-    return conv;
-}*/
-
 //From Berkeley Vision's Caffe!
 //https://github.com/BVLC/caffe/blob/master/LICENSE
 
@@ -50,7 +7,7 @@ Matrix* iam2cool(float *im, int channels, int width, int height, int filterSize,
 
     auto R = new Matrix(colChannels, colWidth * colHeight);
     
-    #pragma omp parallel num_threads(THREADS)
+    #pragma omp parallel
     {
         #pragma omp for nowait
         for (int c = 0; c < colChannels; c++) {
@@ -81,7 +38,7 @@ Matrix* cool2ami(float *cols, int channels, int width, int height, int filterSiz
 
     auto R = new Matrix(channels, width * height);
     
-    #pragma omp parallel num_threads(THREADS)
+    #pragma omp parallel
     {
         #pragma omp for nowait
         for (int c = 0; c < colChannels; c++) {

@@ -18,11 +18,11 @@ Layer::Layer(int inputDimension, int outputDimension, bool hidden, bool isFirst)
         runningVariance = new Matrix(1, inputDimension);
 
         for (int j = 0; j < inputDimension; j++) {
-            gamma->data[j] = 1.;
+            gamma->data[j] = 1.f;
         }
     }
 
-    weights->randomize();
+    weights->randomize(0.0f, sqrtf(2.0f / (float)inputDimension));
 }
 
 Layer::Layer(int inputDimension, int outputDimension, bool hidden, bool isFirst, float* weights, float* gamma, float* beta,
@@ -38,7 +38,7 @@ Layer::Layer(int inputDimension, int outputDimension, bool hidden, bool isFirst,
         this->runningMean = new Matrix(1, inputDimension);
         this->runningVariance = new Matrix(1, inputDimension);
 
-        #pragma omp parallel num_threads(THREADS)
+        #pragma omp parallel
         {
             #pragma omp for nowait
             for (int i = 0; i < inputDimension; i++) {
@@ -50,7 +50,7 @@ Layer::Layer(int inputDimension, int outputDimension, bool hidden, bool isFirst,
         }
     }
 
-    #pragma omp parallel num_threads(THREADS)
+    #pragma omp parallel
     {
         #pragma omp for nowait
         for (int i = 0; i < inputDimension * outputDimension; i++) {
@@ -70,45 +70,19 @@ Layer::~Layer() {
     delete deviationInv;
 }
 
-void Layer::validationInput(Matrix* &rawInput) {
-
-    auto inputCentered = rawInput->centralized(runningMean);
-    deviationInv = Matrix::invDeviation(runningVariance);
-    inputNormalized = inputCentered->elemMulVector(deviationInv);
-    input = inputNormalized->elemMulVector(gamma, beta);
-
-    delete inputCentered;
-}
-
 void Layer::updateRunningStatus(Matrix* mean, Matrix* variance) {
 
-    float momentum = 0.9;
+    float momentum = 0.9f;
+    float nmomentum = 1.0f - momentum;
 
-    #pragma omp parallel num_threads(THREADS)
+    #pragma omp parallel
     {
         #pragma omp for nowait
         for (int i = 0; i < mean->columns; i++) {
-            runningMean->data[i] = (momentum * runningMean->data[i]) + (1 - momentum) * mean->data[i];
-            runningVariance->data[i] = (momentum * runningVariance->data[i]) + (1 - momentum) * variance->data[i];
+            runningMean->data[i] = (momentum * runningMean->data[i]) + (nmomentum * mean->data[i]);
+            runningVariance->data[i] = (momentum * runningVariance->data[i]) + (nmomentum * variance->data[i]);
         }
     }
-}
-
-void Layer::trainingInput(Matrix* &rawInput) {
-
-    auto mean = rawInput->mean0Axis();
-    auto variance = rawInput->variance0Axis(); // do i should use centered output or untouched for variance calc
-    auto inputCentered = rawInput->centralized(mean);
-
-    updateRunningStatus(mean, variance);
-
-    deviationInv = Matrix::invDeviation(variance);
-    inputNormalized = inputCentered->elemMulVector(deviationInv);
-    input = inputNormalized->elemMulVector(gamma, beta);
-
-    delete inputCentered;
-    delete mean;
-    delete variance;
 }
 
 Matrix* Layer::feedForward(Matrix* rawInput, bool validation){
@@ -120,12 +94,23 @@ Matrix* Layer::feedForward(Matrix* rawInput, bool validation){
         delete deviationInv;
         delete inputNormalized;
 
-        if (validation) {
-            validationInput(rawInput);
+        if (!validation) {
+            auto mean = rawInput->mean0Axis();
+            auto variance = rawInput->variance0Axis(mean);
+            updateRunningStatus(mean, variance);
+            deviationInv = Matrix::invDeviation(variance);
+            inputNormalized = rawInput->normalized2(mean, deviationInv);
+
+            delete mean;
+            delete variance;
         }
+        
         else {
-            trainingInput(rawInput);
+            deviationInv = Matrix::invDeviation(runningVariance);
+            inputNormalized = rawInput->normalized2(runningMean, deviationInv);
         }
+
+        input = inputNormalized->elemMulVector(gamma, beta);
     }
     else {
         input = rawInput->copy();
@@ -134,11 +119,11 @@ Matrix* Layer::feedForward(Matrix* rawInput, bool validation){
     auto output = input->multiply(weights);
 
     if (hidden) {
-        #pragma omp parallel num_threads(THREADS)
+        #pragma omp parallel
         {
             #pragma omp for nowait
             for (int i = 0; i < output->rows * output->columns; i++) {
-                output->data[i] = Matrix::ReLU(output->data[i]);
+                output->data[i] = (output->data[i] > .0f) ? output->data[i] : .0f;
             }
         }
     }
@@ -152,56 +137,50 @@ Matrix* Layer::getBatchNormDerivative(Matrix* dInput) {
 
     int rows = dInput->rows, columns = dInput->columns;
 
-    auto dPart = new Matrix(rows, columns);
-    auto dBatch0 = new Matrix(rows, columns);
-    auto dBatch1 = new Matrix(rows, columns);
-    float *dBatch2 = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * columns);
-    float *dBatch3 = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * columns);
+    auto R = new Matrix(rows, columns);
 
-    #pragma omp parallel num_threads(THREADS)
+    float *dPart1 = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * columns);
+    float *dPart2 = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * columns);
+
+    float rowsInv = 1.0f / (float)rows;
+
+    #pragma omp parallel
     {
-        #pragma omp for nowait
+        #pragma omp for
         for (int i = 0; i < columns; i++) {
-            dBatch2[i] = 0;
-            dBatch3[i] = 0;
+            dPart1[i] = .0f;
+            dPart2[i] = .0f;
         }
-    }
 
-    #pragma omp parallel num_threads(THREADS)
-    {
+        #pragma omp for
+        for (int i = 0; i < rows; i++) {
+            int index = i * columns;
+            float elem;
+            for (int j = 0; j < columns; j++) {
+                elem = dInput->data[index] * gamma->data[j];
+                dPart1[j] += elem;
+                dPart2[j] += elem * inputNormalized->data[index];
+                R->data[index] = elem * rows;
+                index++;
+            }
+        }
+
         #pragma omp for nowait
         for (int i = 0; i < rows; i++) {
             int index = i * columns;
             for (int j = 0; j < columns; j++) {
-                dPart->data[index] = dInput->data[index] * gamma->data[j];
-                dBatch1->data[index] = dPart->data[index] * rows;
-                dBatch2[j] += dPart->data[index];
-                dBatch3[j] += dPart->data[index] * inputNormalized->data[index];
+                R->data[index] -= dPart1[j];
+                R->data[index] -= (inputNormalized->data[index] * dPart2[j]);
+                R->data[index] = R->data[index] * (deviationInv->data[j] * rowsInv);
                 index++;
             }
         }
     }
 
-    #pragma omp parallel num_threads(THREADS)
-    {
-        #pragma omp for nowait
-        for (int i = 0; i < rows; i++) {
-            int index = i * columns;
-            for (int j = 0; j < columns; j++) {
-                dBatch1->data[index] -= dBatch2[j];
-                dBatch1->data[index] -= inputNormalized->data[index] * dBatch3[j];
-                dBatch0->data[index] = dBatch1->data[index] * deviationInv->data[j] * (1.0 / (float) rows);
-                index++;
-            }
-        }
-    }
+    free(dPart1);
+    free(dPart2);
 
-    delete dBatch1;
-    delete dPart;
-    free(dBatch2);
-    free(dBatch3);
-
-    return dBatch0;
+    return R;
 }
 
 Matrix* Layer::backPropagation(Matrix *dOut, float lambdaReg, float learningRate) {
@@ -250,26 +229,18 @@ Matrix* Layer::backPropagation(Matrix *dOut, float lambdaReg, float learningRate
 }
 
 void Layer::updateWeights(Matrix* dWeights, float learningRate){
-
-    auto newWeights = weights->sum(dWeights, (-1) * learningRate);
-    weights->set(newWeights);
-
+    auto newWeights = weights->sum(dWeights, (-1.0f) * learningRate);
+    Matrix::mcopy(weights->data, newWeights->data, weights->rows * weights->columns);
     delete newWeights;
 }
 
 void Layer::updateGammaBeta(Matrix* dGamma, Matrix* dBeta, float learningRate) {
-
-    assert(dGamma->rows == 1 && dBeta->rows == 1);
-    assert ((gamma->columns == dGamma->columns ) && (beta->columns  == dBeta->columns));
-
-    #pragma omp parallel num_threads(THREADS)
-    {
-        #pragma omp for nowait
-        for (int i = 0; i < dGamma->columns; i++) {
-            gamma->data[i] -= learningRate * dGamma->data[i];
-            beta->data[i] -= learningRate * dBeta->data[i];
-        }
-    }
+    auto newGamma = gamma->sum(dGamma, (-1.0f) * learningRate);
+    auto newBeta = beta->sum(dBeta, (-1.0f) * learningRate);
+    Matrix::mcopy(gamma->data, newGamma->data, newGamma->rows * newGamma->columns);
+    Matrix::mcopy(beta->data, newBeta->data, newBeta->rows * newBeta->columns);
+    delete newGamma;
+    delete newBeta;
 }
 
 Matrix* Layer::getWeights() {

@@ -10,5 +10,6 @@ class PoolLayer {
 
     private:
         int outputChannels{}, stride{}, filterSize{}, padding{}, inputChannels{}, inputWidth{}, inputHeight{};
+        int newWidth{}, newHeight{}, outputDim{}, inputDim{};
         int *indexes{};
 };

@@ -14,7 +14,6 @@
 #include <chrono>
 #include <iterator>
 
-#define THREADS 8
 #define CACHE_LINE 64
 
 class Matrix {
@@ -24,27 +23,34 @@ private:
 public:
     int rows{}, columns{};
     float *data{};
+
     Matrix(int rows, int columns);
     ~Matrix();
+    
     Matrix *transposed();
     Matrix *normalized();
+    Matrix *normalized2(Matrix *mean, Matrix *deviationInv);
     Matrix *sumRows();
-    Matrix *variance0Axis();
+    Matrix* sumColumns();
+    Matrix *variance0Axis(Matrix *mean);
     Matrix *mean0Axis();
     Matrix *multiply(Matrix *W);
     Matrix *sum(Matrix *W, float scalar);
     Matrix *elemMul(Matrix *W);
     Matrix *elemMulVector(Matrix *W, Matrix *W1);
     Matrix *elemMulVector(Matrix *W);
-    Matrix *centralized(Matrix *desiredMean);
+    Matrix *ReLUDerivative(Matrix *W);
     Matrix *copy();
+    
     float sumElements();
-    void randomize();
-    static Matrix *invDeviation(Matrix *desiredVar);
+    
+    void randomize(float mean, float deviation);
     void set(Matrix *W);
     void setArray(float *data);
-    void setRow(float *row, int len, int rowPos);
-    Matrix *ReLUDerivative(Matrix *W);
+    void setRow(float *row, int rowPos);
+    void accumulate(Matrix *W);
+
+    static Matrix *invDeviation(Matrix *variance);
     static float ReLU(float x);
     static void mcopy(float *dest, float *src, int size);
 };

@@ -28,7 +28,7 @@ public:
     static Matrix *getProbDerivative(Matrix *prob, int *labels);
     static float getDataLoss(Matrix *correctProb);
     static void prepareBatch(float** &dataSet, int* &labels, int batchLength, int dataIndex, Matrix *batch, int *batchLabels, int dataDim);
-
+    static float getRegulationLoss(std::vector<Layer*> la, float lambda);
 
 private:
     int featuresDimension{};
@@ -36,10 +36,11 @@ private:
     int additionalHiddenLayers{};
     int layersDimension{};
     int batchSize{};
+
     float lambdaReg = 1e-3;
     float learningRate = 0.01;
+    
     std::vector<Layer*> layers;
-    float getRegulationLoss();
     void backPropagationStep(Matrix *prob, Matrix *batch, int *labels);
 };
 

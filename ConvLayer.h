@@ -14,5 +14,5 @@ class ConvLayer {
 
     private:
         void BiasAndReLU(Matrix *conv);
-        void updateWeights(Matrix *dWeights, Matrix *dBias, float learningRate); 
+        void updateWeights(Matrix *dWeights, Matrix *dBias, float learningRate, int batchSize); 
 };
