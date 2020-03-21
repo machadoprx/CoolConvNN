@@ -81,6 +81,40 @@ Matrix* Matrix::normalized() {
     return R;
 }
 
+void Matrix::normalize() {
+    #pragma omp parallel
+    {
+        #pragma omp for nowait
+        for (int i = 0; i < rows; i++) {
+
+            int row = i * columns, index = row, j;
+            float sum = 0, max = -999999.0f;
+
+            for (j = 0; j < columns; j++) {
+                if (data[index] > max) {
+                    max = data[index];
+                }
+                index++;
+            }
+
+            index = row;
+
+            for (j = 0; j < columns; j++) {
+                data[index] = expf(data[index] - max);
+                sum += data[index];
+                index++;
+            }
+
+            index = row;
+
+            for (j = 0; j < columns; j++) {
+                data[index] = data[index] / sum;
+                index++;
+            }
+        }
+    }
+}
+
 Matrix* Matrix::multiply(Matrix* W) {
     auto R = new Matrix(rows, W->columns);
 
@@ -105,6 +139,19 @@ Matrix* Matrix::sum(Matrix* W, float scalar) {
     }
 
     return R;
+}
+
+void Matrix::apply_sum(Matrix* W, float scalar) {
+
+    assert((rows == W->rows) && (columns == W->columns));
+
+    #pragma omp parallel
+    {
+        #pragma omp for nowait
+        for (int i = 0; i < rows * columns; i++) {
+            data[i] += (W->data[i] * scalar);
+        }
+    }
 }
 
 Matrix* Matrix::elemMul(Matrix* W) {
@@ -240,6 +287,20 @@ Matrix* Matrix::normalized2(Matrix *mean, Matrix *deviationInv) {
     return R;
 }
 
+void Matrix::normalize2(Matrix *mean, Matrix *deviationInv) {
+    #pragma omp parallel
+    {
+        #pragma omp for nowait
+        for (int i = 0; i < rows; i++) {
+            int index = i * columns;
+            for (int j = 0; j < columns; j++) {
+                data[index] = (data[index] - mean->data[j]) * deviationInv->data[j];
+                index++;
+            }
+        }
+    }
+}
+
 Matrix* Matrix::sumRows() { //profile
 
     auto R = new Matrix(1, columns);
@@ -347,6 +408,19 @@ Matrix* Matrix::ReLUDerivative(Matrix* W) { //profile
     }
 
     return R;
+}
+
+void Matrix::apply_reluderivative(Matrix* W) { //profile
+
+    assert(W->rows == rows && W->columns == columns);
+
+    #pragma omp parallel
+    {
+        #pragma omp for nowait
+        for (int i = 0; i < rows * columns; i++) {
+            data[i] = (W->data[i] < .0f) ? .0f : data[i];
+        }
+    }
 }
 
 void Matrix::accumulate(Matrix *W) {

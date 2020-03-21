@@ -15,6 +15,8 @@ int main(int argc, char const *argv[]) {
     const char *param_file = "params.ini";
     const char *mode = argv[1];
 
+    //cout << "add transposed shit to cache, add transpose without d\n";
+
     if (strcmp(mode, "getdata") == 0) {
         int samplesPerLabel = atoi(argv[2]);
         int width = atoi(argv[3]);
@@ -71,7 +73,7 @@ int main(int argc, char const *argv[]) {
         delete[] input;
 
         auto sample = decodeTwoSteps(test_path, w, h);
-        auto test = new Matrix(32, w * h);
+        auto test = new Matrix(1, w * h);
         for (int i = 0; i < w * h; i++) {
             test->data[i] = (sample[i] - mean[i]) / deviation[i];
         }
@@ -79,7 +81,7 @@ int main(int argc, char const *argv[]) {
         auto result = cnn->forwardStep(test, true);
 
         for (int i = 0; i < labels; i++) {
-            std::cout << "label: " << i << " prob: " << (int)(result->data[i] * 100) << "\n";
+            std::cout << "label: " << i << " prob: " << (result->data[i] * 100.0f) << "\n";
         }
         delete cnn;
         delete result;

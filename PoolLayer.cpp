@@ -25,7 +25,7 @@ Matrix* PoolLayer::feedForward(Matrix *rawInput) {
 
     #pragma omp parallel
     {
-        #pragma omp for nowait
+        #pragma omp for collapse(4) nowait
         for (int b = 0; b < rawInput->rows; b++) {
             for (int c = 0; c < inputChannels; c++) {
                 for(int h = 0; h < newHeight; h++) {

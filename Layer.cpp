@@ -2,7 +2,6 @@
 // Created by vmachado on 2/11/20.
 //
 
-#include <iostream>
 #include "Layer.h"
 
 Layer::Layer(int inputDimension, int outputDimension, bool hidden, bool isFirst) {
@@ -188,15 +187,14 @@ Matrix* Layer::backPropagation(Matrix *dOut, float lambdaReg, float learningRate
     auto inputT = input->transposed();
 
     // Current weights derivative with L2 regularization
-    auto dW = inputT->multiply(dOut);
-    auto dWeights = dW->sum(weights, lambdaReg);
+    auto dWeights = inputT->multiply(dOut);
+    dWeights->apply_sum(weights, lambdaReg);
 
     // update current layer weights
     updateWeights(dWeights, learningRate);
     
     delete dWeights;
     delete inputT;
-    delete dW;
 
     if(isFirst) {
         return nullptr;
@@ -215,32 +213,25 @@ Matrix* Layer::backPropagation(Matrix *dOut, float lambdaReg, float learningRate
     auto dInputNorm = getBatchNormDerivative(dInput);
 
     // get relu derivative
-    auto dInputReLU = dInputNorm->ReLUDerivative(input);
+    dInputNorm->apply_reluderivative(input);
 
     //clear
     delete dGamma;
     delete dBeta;
     delete dGammaPartial;
-    delete dInputNorm;
     delete dInput;
     delete WT;
 
-    return dInputReLU;
+    return dInputNorm;
 }
 
 void Layer::updateWeights(Matrix* dWeights, float learningRate){
-    auto newWeights = weights->sum(dWeights, (-1.0f) * learningRate);
-    Matrix::mcopy(weights->data, newWeights->data, weights->rows * weights->columns);
-    delete newWeights;
+    weights->apply_sum(dWeights, (-1.0f) * learningRate);
 }
 
 void Layer::updateGammaBeta(Matrix* dGamma, Matrix* dBeta, float learningRate) {
-    auto newGamma = gamma->sum(dGamma, (-1.0f) * learningRate);
-    auto newBeta = beta->sum(dBeta, (-1.0f) * learningRate);
-    Matrix::mcopy(gamma->data, newGamma->data, newGamma->rows * newGamma->columns);
-    Matrix::mcopy(beta->data, newBeta->data, newBeta->rows * newBeta->columns);
-    delete newGamma;
-    delete newBeta;
+    gamma->apply_sum(dGamma, (-1.0f) * learningRate);
+    beta->apply_sum(dBeta, (-1.0f) * learningRate);
 }
 
 Matrix* Layer::getWeights() {

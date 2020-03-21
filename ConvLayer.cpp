@@ -1,5 +1,4 @@
 #include "ConvLayer.h"
-#include <iostream>
 
 ConvLayer::ConvLayer(int inputChannels, int outputChannels, int stride, int filterSize, int padding, int inputWidth, int inputHeight) {
 
@@ -81,7 +80,7 @@ Matrix* ConvLayer::feedForward(Matrix *rawInput) {
 
     return output;
 }
-#include <iostream>
+
 Matrix* ConvLayer::backPropagation(Matrix* dOut, float learningRate) {
 
     assert(dOut->rows == input->rows);
@@ -109,17 +108,16 @@ Matrix* ConvLayer::backPropagation(Matrix* dOut, float learningRate) {
         delete colInputT;
         delete dBiasRow;
 
-        auto filtersT = filters->transposed();
+        auto filtersT = filters->transposed(); // add filtersT and colInputT to cache
         auto dInput = filtersT->multiply(dOutRow);
-        auto dInputReLU = dInput->ReLUDerivative(colInput);
-        auto dInputImage = cool2ami(dInputReLU->data, inputChannels, inputWidth, inputHeight, filterSize, stride, padding, colWidth, colHeight, colChannels);
+        dInput->apply_reluderivative(colInput);
+        auto dInputImage = cool2ami(dInput->data, inputChannels, inputWidth, inputHeight, filterSize, stride, padding, colWidth, colHeight, colChannels);
         dInputBatch->setRow(dInputImage->data, i);
 
         delete colInput;
         delete dInputImage;
         delete filtersT;
         delete dInput;
-        delete dInputReLU;
         delete dOutRow;
     }
 

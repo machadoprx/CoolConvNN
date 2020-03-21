@@ -267,10 +267,9 @@ Matrix* NeuralNet::forwardStep(Matrix* batch, bool validation) {
         curr = temp;
     }
 
-    auto prob = curr->normalized();
-    delete curr;
+    curr->normalized();
 
-    return prob;
+    return curr;
 }
 
 void NeuralNet::backPropagationStep(Matrix* prob, Matrix* batch, int *labels) {

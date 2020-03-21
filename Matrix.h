@@ -44,11 +44,15 @@ public:
     
     float sumElements();
     
+    void normalize2(Matrix *mean, Matrix *deviationInv);
+    void normalize();
     void randomize(float mean, float deviation);
     void set(Matrix *W);
     void setArray(float *data);
     void setRow(float *row, int rowPos);
     void accumulate(Matrix *W);
+    void apply_sum(Matrix *W, float scalar);
+    void apply_reluderivative(Matrix* W);
 
     static Matrix *invDeviation(Matrix *variance);
     static float ReLU(float x);
