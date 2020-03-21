@@ -11,8 +11,11 @@ It uses the standard C++ library and LodePNG (https://github.com/lvandeve/lodepn
 External data is supported, following the format:
 
 Number of labels(int), Samples per labels(int), Dimension of features(int)
+
 Data mean(sizeof(float) * FeaturesDim)
+
 Data deviation(sizeof(float) * FeaturesDim)
+
 Actual data(sizeof(float) * labels * samplesPerLables * FeaturesDim)
 
 The data samples must be ordered by labels and their actual names must be kept aside (labels number are generated automatically)
