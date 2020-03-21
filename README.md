@@ -29,13 +29,13 @@ Clone the repository and run make in the folder. (gcc)
 
 Process data (save to binary and normalyze) with labels separated by folder (must be  .png and width == height):
 
-'''
+```
 ./cnn_cpp getdata [samplesPerlabel] [samplesSize] [numberOfLabels] [sourceFolder] 
-'''
+```
 
 params.ini Define the cnn architecture:
 
-'''
+```
 2 // [conv+relu][pool] layers
 1 32 1 3 1 28 28 // conv1: input depth, number of filters, stride, filterSize, padding, input width, input height
 2 2 32 0 28 28 // pool1: stride, filterSize, depth, padding, input width, input height
@@ -44,24 +44,24 @@ params.ini Define the cnn architecture:
 0 // additional fully connected layers
 3136 16 512 // features dimension, number of labels, size of fc
 256 0.05 // batch size and learning rate
-'''
+```
 
 Start learning:
 
-'''
+```
 ./cnn_cpp new [epochs]
-'''
+```
 
 Continue learning (you may set the learning rate in params.ini):
 
-'''
+```
 ./cnn_cpp continue [epochs]
-'''
+```
 
 Test sample:
-'''
+```
 ./cnn_cpp test [sample_path]
-'''
+```
 
 
 
