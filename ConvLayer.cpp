@@ -25,17 +25,14 @@ void ConvLayer::BiasAndReLU(Matrix *conv) {
     
     int size = colWidth * colHeight;
 
-    #pragma omp parallel
-    {
-        #pragma omp for collapse(2) nowait
-        for (int b = 0; b < conv->rows; b++) {
-            for (int i = 0; i < outputChannels; i++) {
-                int index = size * (b * outputChannels + i);
-                for (int j = 0; j < size; j++) {
-                    conv->data[index] += bias->data[i];
-                    conv->data[index] = (conv->data[index] > .0f) ? conv->data[index] : .0f;
-                    index++;
-                }
+    #pragma omp parallel for
+    for (int b = 0; b < conv->rows; b++) {
+        for (int i = 0; i < outputChannels; i++) {
+            int index = size * (b * outputChannels + i);
+            for (int j = 0; j < size; j++) {
+                conv->data[index] += bias->data[i];
+                conv->data[index] = (conv->data[index] > .0f) ? conv->data[index] : .0f;
+                index++;
             }
         }
     }
@@ -45,17 +42,14 @@ void ConvLayer::updateWeights(Matrix *dWeights, Matrix *dBias, float learningRat
     
     float invBatch = 1.0f / (float)batchSize;
 
-    #pragma omp parallel
-    {
-        #pragma omp for nowait
-        for (int i = 0; i < outputChannels; i++) {
-            int index = i * colChannels;
-            for (int j = 0; j < colChannels; j++) {
-                filters->data[index] -= (dWeights->data[index] * invBatch) * learningRate;
-                index++;
-            }
-            bias->data[i] -= (dBias->data[i] * invBatch) * learningRate;
+    #pragma omp parallel for
+    for (int i = 0; i < outputChannels; i++) {
+        int index = i * colChannels;
+        for (int j = 0; j < colChannels; j++) {
+            filters->data[index] -= (dWeights->data[index] * invBatch) * learningRate;
+            index++;
         }
+        bias->data[i] -= (dBias->data[i] * invBatch) * learningRate;
     }
 }
 
@@ -69,7 +63,7 @@ Matrix* ConvLayer::feedForward(Matrix *rawInput) {
     for (int i = 0; i < rawInput->rows; i++) {
         auto colInput = iam2cool(rawInput->data + (i * inputDim), inputChannels, inputWidth, inputHeight, filterSize, stride, padding, colWidth, colHeight, colChannels);
         Matrix::mcopy(input->data + (i * colInputDim), colInput->data, colInputDim);
-        auto convolution = filters->multiply(colInput);
+        auto convolution = filters->multiply(colInput, false, false);
         Matrix::mcopy(output->data + (i * outputDim), convolution->data, outputDim);
 
         delete colInput;
@@ -92,31 +86,27 @@ Matrix* ConvLayer::backPropagation(Matrix* dOut, float learningRate) {
     for (int i = 0; i < input->rows; i++) {
         auto colInput = new Matrix(colChannels, colWidth * colHeight);
         Matrix::mcopy(colInput->data, input->data + (i * colInputDim), colInputDim);
-        auto colInputT = colInput->transposed();
 
         auto dOutRow = new Matrix(outputChannels, colWidth * colHeight); // fill
 
         Matrix::mcopy(dOutRow->data, dOut->data + (i * outputDim), outputDim);
 
-        auto dWeightsRow = dOutRow->multiply(colInputT);
+        auto dWeightsRow = dOutRow->multiply(colInput, false, true);
         auto dBiasRow = dOutRow->sumColumns();
 
         dWeights->accumulate(dWeightsRow);
         dBias->accumulate(dBiasRow);
 
         delete dWeightsRow;
-        delete colInputT;
         delete dBiasRow;
 
-        auto filtersT = filters->transposed(); // add filtersT and colInputT to cache
-        auto dInput = filtersT->multiply(dOutRow);
+        auto dInput = filters->multiply(dOutRow, true, false);
         dInput->apply_reluderivative(colInput);
         auto dInputImage = cool2ami(dInput->data, inputChannels, inputWidth, inputHeight, filterSize, stride, padding, colWidth, colHeight, colChannels);
         dInputBatch->setRow(dInputImage->data, i);
 
         delete colInput;
         delete dInputImage;
-        delete filtersT;
         delete dInput;
         delete dOutRow;
     }

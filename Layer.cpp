@@ -37,24 +37,16 @@ Layer::Layer(int inputDimension, int outputDimension, bool hidden, bool isFirst,
         this->runningMean = new Matrix(1, inputDimension);
         this->runningVariance = new Matrix(1, inputDimension);
 
-        #pragma omp parallel
-        {
-            #pragma omp for nowait
-            for (int i = 0; i < inputDimension; i++) {
-                this->gamma->data[i] = gamma[i];
-                this->beta->data[i] = beta[i];
-                this->runningMean->data[i] = runningMean[i];
-                this->runningVariance->data[i] = runningVariance[i];
-            }
+        for (int i = 0; i < inputDimension; i++) {
+            this->gamma->data[i] = gamma[i];
+            this->beta->data[i] = beta[i];
+            this->runningMean->data[i] = runningMean[i];
+            this->runningVariance->data[i] = runningVariance[i];
         }
     }
 
-    #pragma omp parallel
-    {
-        #pragma omp for nowait
-        for (int i = 0; i < inputDimension * outputDimension; i++) {
-            this->weights->data[i] = weights[i];
-        }
+    for (int i = 0; i < inputDimension * outputDimension; i++) {
+        this->weights->data[i] = weights[i];
     }
 }
 
@@ -74,13 +66,10 @@ void Layer::updateRunningStatus(Matrix* mean, Matrix* variance) {
     float momentum = 0.9f;
     float nmomentum = 1.0f - momentum;
 
-    #pragma omp parallel
-    {
-        #pragma omp for nowait
-        for (int i = 0; i < mean->columns; i++) {
-            runningMean->data[i] = (momentum * runningMean->data[i]) + (nmomentum * mean->data[i]);
-            runningVariance->data[i] = (momentum * runningVariance->data[i]) + (nmomentum * variance->data[i]);
-        }
+    #pragma omp parallel for
+    for (int i = 0; i < mean->columns; i++) {
+        runningMean->data[i] = (momentum * runningMean->data[i]) + (nmomentum * mean->data[i]);
+        runningVariance->data[i] = (momentum * runningVariance->data[i]) + (nmomentum * variance->data[i]);
     }
 }
 
@@ -115,16 +104,10 @@ Matrix* Layer::feedForward(Matrix* rawInput, bool validation){
         input = rawInput->copy();
     }
 
-    auto output = input->multiply(weights);
+    auto output = input->multiply(weights, false, false);
 
     if (hidden) {
-        #pragma omp parallel
-        {
-            #pragma omp for nowait
-            for (int i = 0; i < output->rows * output->columns; i++) {
-                output->data[i] = (output->data[i] > .0f) ? output->data[i] : .0f;
-            }
-        }
+        output->apply_relu();
     }
 
     return output;
@@ -143,36 +126,32 @@ Matrix* Layer::getBatchNormDerivative(Matrix* dInput) {
 
     float rowsInv = 1.0f / (float)rows;
 
-    #pragma omp parallel
-    {
-        #pragma omp for
-        for (int i = 0; i < columns; i++) {
-            dPart1[i] = .0f;
-            dPart2[i] = .0f;
-        }
+    for (int i = 0; i < columns; i++) {
+        dPart1[i] = .0f;
+        dPart2[i] = .0f;
+    }
 
-        #pragma omp for
-        for (int i = 0; i < rows; i++) {
-            int index = i * columns;
-            float elem;
-            for (int j = 0; j < columns; j++) {
-                elem = dInput->data[index] * gamma->data[j];
-                dPart1[j] += elem;
-                dPart2[j] += elem * inputNormalized->data[index];
-                R->data[index] = elem * rows;
-                index++;
-            }
+    #pragma omp parallel for
+    for (int i = 0; i < rows; i++) {
+        int index = i * columns;
+        float elem;
+        for (int j = 0; j < columns; j++) {
+            elem = dInput->data[index] * gamma->data[j];
+            dPart1[j] += elem;
+            dPart2[j] += elem * inputNormalized->data[index];
+            R->data[index] = elem * rows;
+            index++;
         }
+    }
 
-        #pragma omp for nowait
-        for (int i = 0; i < rows; i++) {
-            int index = i * columns;
-            for (int j = 0; j < columns; j++) {
-                R->data[index] -= dPart1[j];
-                R->data[index] -= (inputNormalized->data[index] * dPart2[j]);
-                R->data[index] = R->data[index] * (deviationInv->data[j] * rowsInv);
-                index++;
-            }
+    #pragma omp parallel for
+    for (int i = 0; i < rows; i++) {
+        int index = i * columns;
+        for (int j = 0; j < columns; j++) {
+            R->data[index] -= dPart1[j];
+            R->data[index] -= (inputNormalized->data[index] * dPart2[j]);
+            R->data[index] = R->data[index] * (deviationInv->data[j] * rowsInv);
+            index++;
         }
     }
 
@@ -184,30 +163,16 @@ Matrix* Layer::getBatchNormDerivative(Matrix* dInput) {
 
 Matrix* Layer::backPropagation(Matrix *dOut, float lambdaReg, float learningRate) {
 
-    auto inputT = input->transposed();
-
     // Current weights derivative with L2 regularization
-    auto dWeights = inputT->multiply(dOut);
+    auto dWeights = input->multiply(dOut, true, false);
     dWeights->apply_sum(weights, lambdaReg);
 
-    // update current layer weights
-    updateWeights(dWeights, learningRate);
-    
-    delete dWeights;
-    delete inputT;
-
-    if(isFirst) {
-        return nullptr;
-    }
-
-    auto WT = weights->transposed();
-    auto dInput = dOut->multiply(WT);
+    auto dInput = dOut->multiply(weights, false, true);
 
     // gamma and beta derivative for batch norm
     auto dGammaPartial = dInput->elemMul(inputNormalized);
     auto dGamma = dGammaPartial->sumRows();
     auto dBeta = dInput->sumRows();
-    updateGammaBeta(dGamma, dBeta, learningRate);
     
     // get input layer final derivative
     auto dInputNorm = getBatchNormDerivative(dInput);
@@ -215,12 +180,16 @@ Matrix* Layer::backPropagation(Matrix *dOut, float lambdaReg, float learningRate
     // get relu derivative
     dInputNorm->apply_reluderivative(input);
 
+    // update current layer weights
+    updateWeights(dWeights, learningRate);
+    updateGammaBeta(dGamma, dBeta, learningRate);
+
     //clear
+    delete dWeights;
     delete dGamma;
     delete dBeta;
     delete dGammaPartial;
     delete dInput;
-    delete WT;
 
     return dInputNorm;
 }

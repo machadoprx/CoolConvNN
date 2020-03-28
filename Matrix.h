@@ -14,7 +14,7 @@
 #include <chrono>
 #include <iterator>
 
-#define CACHE_LINE 64
+#define CACHE_LINE 32
 
 class Matrix {
 
@@ -34,7 +34,7 @@ public:
     Matrix* sumColumns();
     Matrix *variance0Axis(Matrix *mean);
     Matrix *mean0Axis();
-    Matrix *multiply(Matrix *W);
+    Matrix *multiply(Matrix *W, bool transA, bool transB);
     Matrix *sum(Matrix *W, float scalar);
     Matrix *elemMul(Matrix *W);
     Matrix *elemMulVector(Matrix *W, Matrix *W1);
@@ -52,6 +52,7 @@ public:
     void setRow(float *row, int rowPos);
     void accumulate(Matrix *W);
     void apply_sum(Matrix *W, float scalar);
+    void apply_relu();
     void apply_reluderivative(Matrix* W);
 
     static Matrix *invDeviation(Matrix *variance);

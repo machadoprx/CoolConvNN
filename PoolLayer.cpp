@@ -23,33 +23,30 @@ Matrix* PoolLayer::feedForward(Matrix *rawInput) {
     indexes = new int[rawInput->rows * outputDim];
     auto output = new Matrix(rawInput->rows, outputDim);
 
-    #pragma omp parallel
-    {
-        #pragma omp for collapse(4) nowait
-        for (int b = 0; b < rawInput->rows; b++) {
-            for (int c = 0; c < inputChannels; c++) {
-                for(int h = 0; h < newHeight; h++) {
-                    for(int w = 0; w < newWidth; w++) {
-                        int outIndex = newWidth * ((inputChannels * b + c) * newHeight + h) + w;
-                        float max = -9999999.0f;
-                        int maxIndex = -1;
-                        for (int fh = 0; fh < filterSize; fh++) {
-                            for (int fw = 0; fw < filterSize; fw++) {
-                                int currWidth = offSet + (w * stride) + fw;
-                                int currHeight = offSet + (h * stride) + fh;
-                                int inIndex = currWidth + inputWidth * (currHeight + inputHeight * (c + b * inputChannels));
-                                if (currHeight >= 0 && currHeight < inputHeight && 
-                                    currWidth >= 0  && currWidth < inputWidth) {
-                                    if (rawInput->data[inIndex] > max) {
-                                        maxIndex = inIndex;
-                                        max = rawInput->data[inIndex];
-                                    }
+    #pragma omp parallel for
+    for (int b = 0; b < rawInput->rows; b++) {
+        for (int c = 0; c < inputChannels; c++) {
+            for(int h = 0; h < newHeight; h++) {
+                for(int w = 0; w < newWidth; w++) {
+                    int outIndex = newWidth * ((inputChannels * b + c) * newHeight + h) + w;
+                    float max = -9999999.0f;
+                    int maxIndex = -1;
+                    for (int fh = 0; fh < filterSize; fh++) {
+                        for (int fw = 0; fw < filterSize; fw++) {
+                            int currWidth = offSet + (w * stride) + fw;
+                            int currHeight = offSet + (h * stride) + fh;
+                            int inIndex = currWidth + inputWidth * (currHeight + inputHeight * (c + b * inputChannels));
+                            if (currHeight >= 0 && currHeight < inputHeight && 
+                                currWidth >= 0  && currWidth < inputWidth) {
+                                if (rawInput->data[inIndex] > max) {
+                                    maxIndex = inIndex;
+                                    max = rawInput->data[inIndex];
                                 }
                             }
                         }
-                        output->data[outIndex] = max;
-                        indexes[outIndex] = maxIndex;
                     }
+                    output->data[outIndex] = max;
+                    indexes[outIndex] = maxIndex;
                 }
             }
         }
@@ -61,12 +58,9 @@ Matrix* PoolLayer::backPropagation(Matrix* dOut) {
 
     auto R = new Matrix(dOut->rows, inputDim);
     
-    #pragma omp parallel
-    {
-        #pragma omp for nowait
-        for (int i = 0; i < outputDim * dOut->rows; ++i) {
-            R->data[ indexes[i] ] += dOut->data[i]; // warning if parallel and overlap
-        }
+    #pragma omp parallel for
+    for (int i = 0; i < outputDim * dOut->rows; ++i) {
+        R->data[ indexes[i] ] = dOut->data[i]; // warning if parallel and overlap
     }
 
     return R;

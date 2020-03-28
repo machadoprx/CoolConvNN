@@ -44,8 +44,8 @@ ConvNeuralNet::ConvNeuralNet(const char* cnnFileName, const char* weightsFileNam
         
         convLayers.push_back(new ConvLayer(inputChannels, outputChannels, stride, filterSize, padding, inputWidth, inputHeight));
         
-        weights = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * outputChannels * filterSize * filterSize * inputChannels);
-        beta = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * outputChannels);
+        weights = new float[outputChannels * filterSize * filterSize * inputChannels];
+        beta = new float[outputChannels];
 
         fread(weights, sizeof(float) * outputChannels * filterSize * filterSize * inputChannels, 1, weightsFile);
         fread(beta, sizeof(float) * outputChannels, 1, weightsFile);
@@ -63,11 +63,11 @@ ConvNeuralNet::ConvNeuralNet(const char* cnnFileName, const char* weightsFileNam
     fscanf(cnnFile, "%d\n", &fcAdditionalHidden);
     fscanf(cnnFile, "%d %d %d\n", &fcFeaturesDim, &fcOutputDim, &fcLayersDim);
 
-    weights = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * fcFeaturesDim * fcLayersDim);
-    gamma = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * fcFeaturesDim);
-    beta = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * fcFeaturesDim);
-    runningMean = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * fcFeaturesDim);
-    runningVariance = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * fcFeaturesDim);
+    weights = new float[fcFeaturesDim * fcLayersDim];
+    gamma = new float[fcFeaturesDim];
+    beta = new float[fcFeaturesDim];
+    runningMean = new float[fcFeaturesDim];
+    runningVariance = new float[fcFeaturesDim];
 
     fread(weights, sizeof(float) * fcFeaturesDim * fcLayersDim, 1, weightsFile);
     fread(gamma, sizeof(float) * fcFeaturesDim, 1, weightsFile);
@@ -84,11 +84,11 @@ ConvNeuralNet::ConvNeuralNet(const char* cnnFileName, const char* weightsFileNam
     delete runningMean;
 
     for (int i = 0; i < fcAdditionalHidden; i++) {
-        weights = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * fcLayersDim * fcLayersDim);
-        gamma = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * fcLayersDim);
-        beta = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * fcLayersDim);
-        runningMean = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * fcLayersDim);
-        runningVariance = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * fcLayersDim);
+        weights = new float[fcLayersDim * fcLayersDim];
+        gamma = new float[fcLayersDim];
+        beta = new float[fcLayersDim];
+        runningMean = new float[fcLayersDim];
+        runningVariance = new float[fcLayersDim];
 
         fread(weights, sizeof(float) * fcLayersDim * fcLayersDim, 1, weightsFile);
         fread(gamma, sizeof(float) * fcLayersDim, 1, weightsFile);
@@ -104,11 +104,11 @@ ConvNeuralNet::ConvNeuralNet(const char* cnnFileName, const char* weightsFileNam
         delete runningVariance;
         delete runningMean;
     }
-    weights = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * fcLayersDim * fcOutputDim);
-    gamma = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * fcLayersDim);
-    beta = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * fcLayersDim);
-    runningMean = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * fcLayersDim);
-    runningVariance = (float*) aligned_alloc(CACHE_LINE, sizeof(float) * fcLayersDim);
+    weights = new float[fcLayersDim * fcOutputDim];
+    gamma = new float[fcLayersDim];
+    beta = new float[fcLayersDim];
+    runningMean = new float[fcLayersDim];
+    runningVariance = new float[fcLayersDim];
 
     fread(weights, sizeof(float) * fcOutputDim * fcLayersDim, 1, weightsFile);
     fread(gamma, sizeof(float) * fcLayersDim, 1, weightsFile);

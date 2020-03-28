@@ -174,12 +174,9 @@ Matrix* NeuralNet::getCorrectProb(Matrix* prob, int *labels){
 
     auto correctProb = new Matrix(prob->rows, 1);
 
-    #pragma omp parallel
-    {
-        #pragma omp for nowait
-        for (int i = 0; i < prob->rows; i++) {
-            correctProb->data[i] = (-1.0f) * logf(prob->data[i * prob->columns + labels[i]]);
-        }
+    #pragma omp parallel for
+    for (int i = 0; i < prob->rows; i++) {
+        correctProb->data[i] = (-1.0f) * logf(prob->data[i * prob->columns + labels[i]]);
     }
 
     return correctProb;
@@ -190,18 +187,15 @@ Matrix* NeuralNet::getProbDerivative(Matrix* prob, int *labels){
     int rows = prob->rows, columns = prob->columns;
     auto dProb = new Matrix(prob->rows, prob->columns);
     
-    #pragma omp parallel
-    {
-        #pragma omp for nowait
-        for (int i = 0; i < rows; i++) {
-            
-            int index = i * columns;
-            dProb->data[index + labels[i]] = -1.0f;
+    #pragma omp parallel for
+    for (int i = 0; i < rows; i++) {
+        
+        int index = i * columns;
+        dProb->data[index + labels[i]] = -1.0f;
 
-            for (int j = 0; j < columns; j++) {
-                dProb->data[index] = (dProb->data[index] + prob->data[index]) / (float)rows;
-                index++;
-            }
+        for (int j = 0; j < columns; j++) {
+            dProb->data[index] = (dProb->data[index] + prob->data[index]) / (float)rows;
+            index++;
         }
     }
 
@@ -212,12 +206,9 @@ float NeuralNet::getDataLoss(Matrix* correctProb){
 
     float loss = .0f;
 
-    #pragma omp parallel
-    {
-        #pragma omp for reduction (+:loss) schedule(static)
-        for (int i = 0; i < correctProb->rows; i++) {
-            loss += correctProb->data[i];
-        }
+    #pragma omp parallel for reduction (+:loss)
+    for (int i = 0; i < correctProb->rows; i++) {
+        loss += correctProb->data[i];
     }
 
     return loss / correctProb->rows;
@@ -267,7 +258,7 @@ Matrix* NeuralNet::forwardStep(Matrix* batch, bool validation) {
         curr = temp;
     }
 
-    curr->normalized();
+    curr->normalize();
 
     return curr;
 }
@@ -289,17 +280,14 @@ void NeuralNet::backPropagationStep(Matrix* prob, Matrix* batch, int *labels) {
 }
 
 void NeuralNet::prepareBatch(float** &dataSet, int* &labels, int batchLength, int dataIndex, Matrix *batch, int *batchLabels, int dataDim) {
-    #pragma omp parallel
-    {
-        #pragma omp for nowait
-        for (int i = 0; i < batchLength; i++) {
-            int index = i * dataDim;
-            for (int j = 0; j < dataDim; j++) {
-                batch->data[index] = dataSet[dataIndex + i][j];
-                index++;
-            }
-            batchLabels[i] = labels[dataIndex + i];
+    
+    #pragma omp parallel for
+    for (int i = 0; i < batchLength; i++) {
+        float *dest = batch->data + (i * dataDim);
+        for (int j = 0; j < dataDim; j++) {
+            dest[j] = dataSet[dataIndex + i][j];
         }
+        batchLabels[i] = labels[dataIndex + i];
     }
 }
 
