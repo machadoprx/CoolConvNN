@@ -40,14 +40,14 @@ int main(int argc, char const *argv[]) {
         const char *test_path = argv[2];
 
         float *sample = decode_png(test_path, &w, &h);
-        matrix *test = matrix_alloc(1, w * h);
+        matrix *test = matrix_alloc(32, w * h);
         for (int i = 0; i < w * h; i++) {
             test->data[i] = (sample[i] - mean[i]) / deviation[i];
         }
         cnn *net = cnn_load(param_file, cnn_file);
         matrix *result = cnn_forward(net, test, false);
 
-        for (int i = 1; i <= labels; i++) {
+        for (int i = 0; i < labels; i++) {
             printf("label: %d prob: %f\n", i, result->data[i] * 100.0f);
         }
         cnn_free(net);

@@ -10,10 +10,10 @@ float *decode_png(const char* filename, int *w, int *h) {
     float *pixels = aligned_alloc(CACHE_LINE, sizeof(float) * width * height);
 
     for (int i = 0; i < (int)(width * height); i++) {
-        int r = pixels[i * 4 + 0];
-        int g = pixels[i * 4 + 1];
-        int b = pixels[i * 4 + 2];
-        float gray = ((r * 0.299f) + (g * 0.587f) + (b * 0.114f));
+        int r = image[i * 4 + 0];
+        int g = image[i * 4 + 1];
+        int b = image[i * 4 + 2];
+        float gray = (r * 0.299f) + (g * 0.587f) + (b * 0.114f);
         pixels[i] = gray;
     }
     *w = width;
