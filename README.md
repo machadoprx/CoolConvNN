@@ -7,7 +7,7 @@ This software was coded with only learning purposes, not for production uses. Th
 Apart of that, it is fully functioning, the FC layers uses Batch normalization and ReLU, Conv Layers bias(BN todo) and ReLU and MaxPool layers. Learning is done using mini-batch sgd.
 Accuracy and validation set, todo
 
-It uses the standard C++ library and LodePNG (https://github.com/lvandeve/lodepng) for png to float arrays conversion.
+It uses LodePNG (https://github.com/lvandeve/lodepng) for png to float arrays conversion.
 
 External data is supported, following the format:
 
