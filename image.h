@@ -1,9 +1,9 @@
-#ifndef NNCPP_EXEC_IMAGE_H
-#define NNCPP_EXEC_IMAGE_H
+#ifndef image_h
+#define image_h
 
-#include "Matrix.h"
+#include "matrix.h"
 
-Matrix* iam2cool(float *im, int channels, int width, int height, int filterSize, int stride, int pad, int colWidth, int colHeight, int colChannels);
-Matrix* cool2ami(float *cols, int channels, int width, int height, int filterSize, int stride, int pad, int colWidth, int colHeight, int colChannels);
+void iam2cool(float *im, int in_c, int in_w, int in_h, int f_size, int stride, int padd, int col_w, int col_h, int col_c, float *out);
+void cool2ami(float *cols, int in_c, int in_w, int in_h, int f_size, int stride, int padd, int col_w, int col_h, int col_c, float *out);
 
-#endif //NNCPP_EXEC_IMAGE_H
+#endif
