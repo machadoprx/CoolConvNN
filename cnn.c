@@ -55,8 +55,10 @@ cnn* cnn_load(const char* cnn_config, const char* cnn_state) { // array alignmen
         int w_size = l->out_c * l->f_size * l->f_size * l->in_c;
 
         fread(l->filters->data, sizeof(float) * w_size, 1, cnn_state_fp);
-        fread(l->bias->data, sizeof(float) * l->out_c, 1, cnn_state_fp);
-
+        fread(l->gamma->data, sizeof(float) * l->in_c, 1, cnn_state_fp);
+        fread(l->beta->data, sizeof(float) * l->in_c, 1, cnn_state_fp);
+        fread(l->run_mean->data, sizeof(float) * l->in_c, 1, cnn_state_fp);
+        fread(l->run_var->data, sizeof(float) * l->in_c, 1, cnn_state_fp);
     }
 
     for (int i = 0; i < net->fc_add + 2; i++) {
@@ -98,7 +100,10 @@ void cnn_save(cnn *net, const char* cnn_state) {
         int w_size = l->out_c * l->f_size * l->f_size * l->in_c;
 
         fwrite(l->filters->data, sizeof(float) * w_size, 1, cnn_state_fp);
-        fwrite(l->bias->data, sizeof(float) * l->out_c, 1, cnn_state_fp);
+        fwrite(l->gamma->data, sizeof(float) * l->in_c, 1, cnn_state_fp);
+        fwrite(l->beta->data, sizeof(float) * l->in_c, 1, cnn_state_fp);
+        fwrite(l->run_mean->data, sizeof(float) * l->in_c, 1, cnn_state_fp);
+        fwrite(l->run_var->data, sizeof(float) * l->in_c, 1, cnn_state_fp);
     }
 
     for (int i = 0; i < net->fc_add + 2; i++) {
@@ -121,7 +126,7 @@ matrix* cnn_forward(cnn *net, matrix *batch, bool training) {
     matrix *curr = mat_copy(batch), *tmp;
     
     for (i = 0; i < net->conv_pool_layers; i++) {
-        tmp = conv_forward(net->conv[i], curr);
+        tmp = conv_forward(net->conv[i], curr, training);
         matrix_free(curr);
         curr = pool_forward(net->pool[i], tmp);
         matrix_free(tmp);

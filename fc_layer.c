@@ -27,7 +27,6 @@ fc_layer* fc_alloc(int in_dim, int out_dim, bool relu) {
 }
 
 void fc_free(fc_layer *layer) {
-    
     matrix_free(layer->weights);
     matrix_free(layer->gamma);
     matrix_free(layer->beta);
@@ -104,9 +103,9 @@ matrix* fc_forward(fc_layer *layer, matrix *raw_input, bool training) {
     return output;
 }
 
-static matrix* fc_bn_derivative(fc_layer *layer, matrix *dinput) {
+static matrix* fc_bn_derivative(fc_layer *layer, matrix *dinput_norm) {
 
-    int rows = dinput->rows, columns = dinput->columns;
+    int rows = dinput_norm->rows, columns = dinput_norm->columns;
     float *dp1 = aligned_alloc(CACHE_LINE, sizeof(float) * columns * 2);
     float *dp2 = dp1 + columns;
     matrix *out = matrix_alloc(rows, columns);
@@ -122,7 +121,7 @@ static matrix* fc_bn_derivative(fc_layer *layer, matrix *dinput) {
         register int index = i * columns;
         register float elem;
         for (int j = 0; j < columns; j++, index++) {
-            elem = dinput->data[index] * layer->gamma->data[j];
+            elem = dinput_norm->data[index] * layer->gamma->data[j];
             dp1[j] += elem;
             dp2[j] += elem * layer->input_norm->data[index];
             out->data[index] = elem * rows;
@@ -150,30 +149,31 @@ matrix* fc_backward(fc_layer *layer, matrix *dout, float lambda_reg, float l_rat
     apply_sum(dweights, layer->weights, lambda_reg);
 
     // get in derivative
-    matrix *dinput = multiply(dout, layer->weights, CblasNoTrans, CblasTrans, dout->rows, layer->weights->rows, dout->columns);
+    matrix *dinput_norm = multiply(dout, layer->weights, CblasNoTrans, CblasTrans, dout->rows, layer->weights->rows, dout->columns);
 
     // gamma and beta derivative for batch norm
-    matrix *dgammap = elemwise_mul(dinput, layer->input_norm);
+    matrix *dgammap = elemwise_mul(dinput_norm, layer->input_norm);
     matrix *dgamma = sum_rows(dgammap);
-    matrix *dbeta = sum_rows(dinput);
+    matrix *dbeta = sum_rows(dinput_norm);
 
     // get input layer final derivative
-    matrix *dinput_norm = fc_bn_derivative(layer, dinput);
+    matrix *dinput = fc_bn_derivative(layer, dinput_norm);
 
     // get relu derivative
-    relu_del(dinput_norm, layer->input);
+    relu_del(dinput, layer->input);
 
     // update weights
-    apply_sum(layer->weights, dweights, (-1.0f) * l_rate);
-    apply_sum(layer->gamma, dgamma, (-1.0f) * l_rate);
-    apply_sum(layer->beta, dbeta, (-1.0f) * l_rate);
+    int scale = (-1.0f) * l_rate;
+    apply_sum(layer->weights, dweights, scale);
+    apply_sum(layer->gamma, dgamma, scale);
+    apply_sum(layer->beta, dbeta, scale);
 
     // clear
-    matrix_free(dinput);
+    matrix_free(dinput_norm);
     matrix_free(dbeta);
     matrix_free(dweights);
     matrix_free(dgamma);
     matrix_free(dgammap);
 
-    return dinput_norm;
+    return dinput;
 }
