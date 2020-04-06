@@ -1,10 +1,10 @@
 # CoolConvNN
-Complete, simple and cool convolutional neural network, build from scratch, parallel(CPU only) and almost dependency free(OpenMP). Support custom layers, restricted to ReLU activation and [CONV-POOL-ACTIV]xM [FC]xN architecture.
+Complete, simple and cool convolutional neural network, build from scratch, parallel(CPU only) and almost dependency free(OpenMP). Support custom layers, restricted to ReLU activation.
 
 ## Introduction
 
 This software was coded with only learning purposes, not for production uses. The aim of use is myself, optimized for run in a intel CPU.
-Apart of that, it is fully functioning, the FC layers uses Batch normalization and ReLU, Conv Layers bias(BN todo) and ReLU and MaxPool layers. Learning is done using mini-batch sgd.
+Apart of that, it is fully functioning, the FC layers uses Batch normalization and ReLU, Conv Layers batch normalization and ReLU and MaxPool layers. Learning is done using mini-batch sgd.
 Accuracy and validation set, todo
 
 It uses LodePNG (https://github.com/lvandeve/lodepng) for png to float arrays conversion.
