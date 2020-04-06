@@ -80,36 +80,28 @@ static inline void train_forward(fc_layer *layer, matrix *raw_out) {
 static void fc_bn_derivative(fc_layer *layer, matrix *dout) {
 
     int rows = dout->rows, columns = dout->columns;
-    float *dp1 = aligned_alloc(CACHE_LINE, sizeof(float) * columns * 2);
-    float *dp2 = dp1 + columns;
 
     const float n_inv = 1.0f / (float)rows;
 
     #pragma omp parallel for
-    for (int i = 0; i < 2 * columns; i++) {
-        dp1[i] = .0f;
-    }
-
-    for (int i = 0; i < rows; i++) {
-        register int index = i * columns;
-        for (int j = 0; j < columns; j++, index++) {
-            dout->data[index] *= layer->gamma->data[j];
-            dp1[j] += dout->data[index];
-            dp2[j] += dout->data[index] * layer->out_norm->data[index];
+    for (int j = 0; j < columns; j++) {
+        register float dp1 = 0, dp2 = 0;
+        const float gamma = layer->gamma->data[j];
+        const float stddev_inv_n = layer->stddev_inv->data[j] * n_inv;
+        for (int i = 0; i < rows; i++) {
+            register int index = i * columns + j;
+            dout->data[index] *= gamma;
+            dp1 += dout->data[index];
+            dp2 += dout->data[index] * layer->out_norm->data[index];
             dout->data[index] *= rows;
         }
-    }
 
-    #pragma omp parallel for
-    for (int i = 0; i < rows; i++) {
-        register int index = i * columns;
-        for (int j = 0; j < columns; j++, index++) {
-            dout->data[index] -= dp1[j] + (layer->out_norm->data[index] * dp2[j]);
-            dout->data[index] *= layer->stddev_inv->data[j] * n_inv;
+        for (int i = 0; i < rows; i++) {
+            register int index = i * columns + j;
+            dout->data[index] -= dp1 + (layer->out_norm->data[index] * dp2);
+            dout->data[index] *= stddev_inv_n;
         }
     }
-
-    free(dp1);
 }
 
 matrix* fc_forward(fc_layer *layer, matrix *raw_input, bool training) {
@@ -143,8 +135,6 @@ matrix* fc_forward(fc_layer *layer, matrix *raw_input, bool training) {
 
 matrix* fc_backward(fc_layer *layer, matrix *dout, float lambda_reg, float l_rate) {
 
-    int scale = (-1.0f) * l_rate;
-
     if (layer->relu) {
         
         del_relu_activations(dout, layer->activations);
@@ -154,8 +144,8 @@ matrix* fc_backward(fc_layer *layer, matrix *dout, float lambda_reg, float l_rat
         matrix *dbeta = sum_rows(dout);
         fc_bn_derivative(layer, dout);
         
-        apply_sum(layer->gamma, dgamma, scale);
-        apply_sum(layer->beta, dbeta, scale);
+        apply_sum(layer->gamma, dgamma, -l_rate);
+        apply_sum(layer->beta, dbeta, -l_rate);
         matrix_free(dgamma);
         matrix_free(dbeta);
         matrix_free(dgammap);
@@ -166,7 +156,7 @@ matrix* fc_backward(fc_layer *layer, matrix *dout, float lambda_reg, float l_rat
 
     matrix *dinput = multiply(dout, layer->weights, CblasNoTrans, CblasTrans, dout->rows, layer->weights->rows, dout->columns);
 
-    apply_sum(layer->weights, dweights, scale);
+    apply_sum(layer->weights, dweights, -l_rate);
 
     matrix_free(dweights);
 

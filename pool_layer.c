@@ -36,13 +36,13 @@ matrix* pool_forward(pool_layer *layer, matrix *raw_input) {
     matrix *out = matrix_alloc(raw_input->rows, layer->out_dim);
     layer->indexes = aligned_alloc(CACHE_LINE, sizeof(int) * raw_input->rows * layer->out_dim);
 
-    #pragma omp parallel for
+    #pragma omp parallel for collapse(3)
     for (int b = 0; b < raw_input->rows; b++) {
         for (int c = 0; c < layer->chan; c++) {
             for(int h = 0; h < layer->out_h; h++) {
                 for(int w = 0; w < layer->out_w; w++) {
-                    int max_index = -1;
                     int out_index = layer->out_w * ((layer->chan * b + c) * layer->out_h + h) + w;
+                    int max_index = -1;
                     float max = -9999999.0f;
                     for (int fh = 0; fh < layer->f_size; fh++) {
                         for (int fw = 0; fw < layer->f_size; fw++) {
@@ -74,7 +74,7 @@ matrix* pool_backward(pool_layer *layer, matrix *dout) {
     int size = layer->out_dim * dout->rows;
 
     for (int i = 0; i < size; ++i) {
-        dinput->data[ layer->indexes[i] ] += dout->data[i]; // warning if parallel and overlap
+        dinput->data[ layer->indexes[i] ] += dout->data[i];
     }
 
     return dinput;

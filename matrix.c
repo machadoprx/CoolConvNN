@@ -111,7 +111,7 @@ void normalize(matrix *src) {
 
 matrix *multiply(matrix *src, matrix *in, CBLAS_TRANSPOSE tra, CBLAS_TRANSPOSE trb, int m, int n, int k) {
 
-    matrix *out = matrix_alloc(m, n);
+    matrix *out = internal_alloc(m, n);
     cblas_sgemm(CblasRowMajor, tra, trb,
         m, n, k, 1.0f, src->data, src->columns, in->data, in->columns, 0.0f, out->data, out->columns);
 
@@ -357,7 +357,7 @@ float sum_elem(matrix *src) {
     float sum = 0;
     int len = src->rows * src->columns;
 
-    #pragma omp parallel for reduction (+:sum)
+    #pragma omp simd reduction(+: sum)
     for (int i = 0; i < len; i++) {
         sum += src->data[i];
     }
@@ -368,10 +368,11 @@ float sum_elem(matrix *src) {
 matrix* stddev_inv(matrix* src) {
 
     matrix *out = internal_alloc(1, src->columns);
+    const float eps = 1e-5f;
     
     #pragma omp parallel for
     for (int i = 0; i < src->columns; i++) {
-        out->data[i] = 1.0f / sqrtf(src->data[i] + .00001f);
+        out->data[i] = 1.0f / sqrtf(src->data[i] + eps);
     }
 
     return out;
@@ -380,7 +381,7 @@ matrix* stddev_inv(matrix* src) {
 int *relu_activations(matrix* src) {
 
     int len = src->rows * src->columns;
-    int *atv = malloc(len * sizeof(int));
+    int *atv = aligned_alloc(CACHE_LINE, len * sizeof(int));
 
     for (int i = 0; i < len; i++) {
         if (src->data[i] < .0f) {

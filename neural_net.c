@@ -10,7 +10,7 @@ matrix* correct_prob(matrix *prob, int *labels){
 
     #pragma omp parallel for
     for (int i = 0; i < prob->rows; i++) {
-        correct_prob->data[i] = (-1.0f) * logf(prob->data[i * prob->columns + labels[i]]);
+        correct_prob->data[i] = -logf(prob->data[i * prob->columns + labels[i]]);
     }
 
     return correct_prob;
@@ -41,7 +41,7 @@ float loss(matrix* correct_prob){
 
     float out = .0f;
 
-    #pragma omp parallel for reduction (+:out)
+    #pragma omp simd reduction(+: out)
     for (int i = 0; i < correct_prob->rows; i++) {
         out += correct_prob->data[i];
     }
