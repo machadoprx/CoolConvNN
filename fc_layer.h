@@ -10,9 +10,10 @@
 
 typedef struct _fc_layer {
     bool relu;
+    int *activations;
     matrix *weights, *gamma, *beta;
-    matrix *run_mean, *run_var, *stddev_inv;
-    matrix *input, *input_norm;
+    matrix *run_mean, *run_var;
+    matrix *input, *out_norm, *stddev_inv;
 } fc_layer;
 
 fc_layer* fc_alloc(int in_dim, int out_dim, bool relu);

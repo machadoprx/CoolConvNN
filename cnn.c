@@ -55,10 +55,10 @@ cnn* cnn_load(const char* cnn_config, const char* cnn_state) { // array alignmen
         int w_size = l->out_c * l->f_size * l->f_size * l->in_c;
 
         fread(l->filters->data, sizeof(float) * w_size, 1, cnn_state_fp);
-        fread(l->gamma->data, sizeof(float) * l->in_c, 1, cnn_state_fp);
-        fread(l->beta->data, sizeof(float) * l->in_c, 1, cnn_state_fp);
-        fread(l->run_mean->data, sizeof(float) * l->in_c, 1, cnn_state_fp);
-        fread(l->run_var->data, sizeof(float) * l->in_c, 1, cnn_state_fp);
+        fread(l->gamma->data, sizeof(float) * l->out_c, 1, cnn_state_fp);
+        fread(l->beta->data, sizeof(float) * l->out_c, 1, cnn_state_fp);
+        fread(l->run_mean->data, sizeof(float) * l->out_c, 1, cnn_state_fp);
+        fread(l->run_var->data, sizeof(float) * l->out_c, 1, cnn_state_fp);
     }
 
     for (int i = 0; i < net->fc_add + 2; i++) {
@@ -66,10 +66,10 @@ cnn* cnn_load(const char* cnn_config, const char* cnn_state) { // array alignmen
         int in_dim = l->weights->rows, out_dim = l->weights->columns;
 
         fread(l->weights->data, sizeof(float) * in_dim * out_dim, 1, cnn_state_fp);
-        fread(l->gamma->data, sizeof(float) * in_dim, 1, cnn_state_fp);
-        fread(l->beta->data, sizeof(float) * in_dim, 1, cnn_state_fp);
-        fread(l->run_mean->data, sizeof(float) * in_dim, 1, cnn_state_fp);
-        fread(l->run_var->data, sizeof(float) * in_dim, 1, cnn_state_fp);
+        fread(l->gamma->data, sizeof(float) * out_dim, 1, cnn_state_fp);
+        fread(l->beta->data, sizeof(float) * out_dim, 1, cnn_state_fp);
+        fread(l->run_mean->data, sizeof(float) * out_dim, 1, cnn_state_fp);
+        fread(l->run_var->data, sizeof(float) * out_dim, 1, cnn_state_fp);
 
     }
 
@@ -100,10 +100,10 @@ void cnn_save(cnn *net, const char* cnn_state) {
         int w_size = l->out_c * l->f_size * l->f_size * l->in_c;
 
         fwrite(l->filters->data, sizeof(float) * w_size, 1, cnn_state_fp);
-        fwrite(l->gamma->data, sizeof(float) * l->in_c, 1, cnn_state_fp);
-        fwrite(l->beta->data, sizeof(float) * l->in_c, 1, cnn_state_fp);
-        fwrite(l->run_mean->data, sizeof(float) * l->in_c, 1, cnn_state_fp);
-        fwrite(l->run_var->data, sizeof(float) * l->in_c, 1, cnn_state_fp);
+        fwrite(l->gamma->data, sizeof(float) * l->out_c, 1, cnn_state_fp);
+        fwrite(l->beta->data, sizeof(float) * l->out_c, 1, cnn_state_fp);
+        fwrite(l->run_mean->data, sizeof(float) * l->out_c, 1, cnn_state_fp);
+        fwrite(l->run_var->data, sizeof(float) * l->out_c, 1, cnn_state_fp);
     }
 
     for (int i = 0; i < net->fc_add + 2; i++) {
@@ -111,10 +111,10 @@ void cnn_save(cnn *net, const char* cnn_state) {
         int in_dim = l->weights->rows, out_dim = l->weights->columns;
 
         fwrite(l->weights->data, sizeof(float) * in_dim * out_dim, 1, cnn_state_fp);
-        fwrite(l->gamma->data, sizeof(float) * in_dim, 1, cnn_state_fp);
-        fwrite(l->beta->data, sizeof(float) * in_dim, 1, cnn_state_fp);
-        fwrite(l->run_mean->data, sizeof(float) * in_dim, 1, cnn_state_fp);
-        fwrite(l->run_var->data, sizeof(float) * in_dim, 1, cnn_state_fp);
+        fwrite(l->gamma->data, sizeof(float) * out_dim, 1, cnn_state_fp);
+        fwrite(l->beta->data, sizeof(float) * out_dim, 1, cnn_state_fp);
+        fwrite(l->run_mean->data, sizeof(float) * out_dim, 1, cnn_state_fp);
+        fwrite(l->run_var->data, sizeof(float) * out_dim, 1, cnn_state_fp);
     }
 
     fclose(cnn_state_fp);

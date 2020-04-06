@@ -65,16 +65,16 @@ void accumulate(matrix *src, matrix *in);
 
 void apply_sum(matrix *src, matrix *in, float scalar);
 
-void relu(matrix *src);
+void apply_elw_mulvec(matrix *src, matrix* in);
 
-void relu_del(matrix *src, matrix* in);
+void apply_elw_mulvec2(matrix *src, matrix* in_1, matrix *in_2);
 
 matrix* stddev_inv(matrix *src);
 
 void mcopy(float *dest, float *src, int len);
 
-int *relu_atv(matrix* src);
+int *relu_activations(matrix* src);
 
-void del_relu_atv(matrix* src, int* atv) ;
+void del_relu_activations(matrix* src, int* atv) ;
 
 #endif //matrix_h

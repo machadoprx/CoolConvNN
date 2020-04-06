@@ -36,14 +36,7 @@ conv_layer* conv_alloc(int in_c, int in_w, int in_h, int out_c, int f_size, int 
     return layer;
 }
 
-void conv_free(conv_layer *layer) {
-
-    matrix_free(layer->filters);
-    matrix_free(layer->gamma);
-    matrix_free(layer->beta);
-    matrix_free(layer->run_mean);
-    matrix_free(layer->run_var);
-
+static inline void clear_cache(conv_layer *layer) {
     if (layer->input_col != NULL){
         free(layer->activations);
         matrix_free(layer->out);
@@ -51,7 +44,15 @@ void conv_free(conv_layer *layer) {
         matrix_free(layer->stddev_inv);
         matrix_free(layer->input_col);
     }
+}
 
+void conv_free(conv_layer *layer) {
+    matrix_free(layer->filters);
+    matrix_free(layer->gamma);
+    matrix_free(layer->beta);
+    matrix_free(layer->run_mean);
+    matrix_free(layer->run_var);
+    clear_cache(layer);
     free(layer);
 }
 
@@ -64,16 +65,6 @@ static inline void conv_update_status(conv_layer *layer, matrix *mean, matrix *v
     for (int i = 0; i < channels; i++) {
         layer->run_mean->data[i] = (momentum * layer->run_mean->data[i]) + (nmomentum * mean->data[i]);
         layer->run_var->data[i] = (momentum * layer->run_var->data[i]) + (nmomentum * variance->data[i]);
-    }
-}
-
-static inline void clear_cache(conv_layer *layer) {
-    if (layer->input_col != NULL){
-        free(layer->activations);
-        matrix_free(layer->out);
-        matrix_free(layer->out_norm);
-        matrix_free(layer->stddev_inv);
-        matrix_free(layer->input_col);
     }
 }
 
@@ -163,13 +154,12 @@ static inline matrix* conv_scale_shift(conv_layer *layer, matrix *src, int spati
     return out;
 }
 
-static matrix* conv_bn_derivative(conv_layer *layer, matrix *dout_norm, int spatial, int channels) {
+static void conv_bn_derivative(conv_layer *layer, matrix *dout, int spatial, int channels) {
 
     float *dp1 = aligned_alloc(CACHE_LINE, sizeof(float) * channels * 2);
     float *dp2 = dp1 + channels;
-    matrix *dout = matrix_alloc(dout_norm->rows, dout_norm->columns);
 
-    const float n = (float)(dout_norm->rows * spatial);
+    const float n = (float)(dout->rows * spatial);
     const float n_inv = 1.0f / n;
 
     #pragma omp parallel for
@@ -177,23 +167,21 @@ static matrix* conv_bn_derivative(conv_layer *layer, matrix *dout_norm, int spat
         dp1[i] = .0f;
     }
 
-    for (int b = 0; b < dout_norm->rows; b++) {
+    for (int b = 0; b < dout->rows; b++) {
         for (int c = 0; c < channels; c++) {
             float *dout_ptr = dout->data + spatial * (b * channels + c);
-            float *dout_norm_ptr = dout_norm->data + spatial * (b * channels + c);
             float *out_norm_ptr = layer->out_norm->data + spatial * (b * channels + c);
-            float elem;
             for (int i = 0; i < spatial; i++) {
-                elem = dout_norm_ptr[i] * layer->gamma->data[c];
-                dp1[c] += elem;
-                dp2[c] += elem * out_norm_ptr[i];
-                dout_ptr[i] = elem * n;
+                dout_ptr[i] *= layer->gamma->data[c];
+                dp1[c] += dout_ptr[i];
+                dp2[c] += dout_ptr[i] * out_norm_ptr[i];
+                dout_ptr[i] *= n;
             }
         }
     }
 
     #pragma omp parallel for
-    for (int b = 0; b < dout_norm->rows; b++) {
+    for (int b = 0; b < dout->rows; b++) {
         for (int c = 0; c < channels; c++) {
             float *dout_ptr = dout->data + spatial * (b * channels + c);
             float *out_norm_ptr = layer->out_norm->data + spatial * (b * channels + c);
@@ -205,8 +193,6 @@ static matrix* conv_bn_derivative(conv_layer *layer, matrix *dout_norm, int spat
     }
 
     free(dp1);
-
-    return dout;
 }
 
 static inline void conv_update_filters(conv_layer *layer, matrix *dfilters, int batch_size, float l_rate) {
@@ -285,7 +271,7 @@ matrix* conv_forward(conv_layer *layer, matrix *raw_input, bool training) {
     }
     
     layer->out = conv_scale_shift(layer, layer->out_norm, out_cols, layer->out_c);
-    layer->activations = relu_atv(layer->out);
+    layer->activations = relu_activations(layer->out);
     
     mcopy(out->data, layer->out->data, out->columns * out->rows);
 
@@ -299,11 +285,11 @@ matrix* conv_backward(conv_layer *layer, matrix *dout, float l_rate) {
     int batch_size = layer->input_col->rows;
     int spatial = layer->col_w * layer->col_h;
 
-    del_relu_atv(dout, layer->activations);
+    del_relu_activations(dout, layer->activations);
 
     matrix *dgamma = conv_gamma_del(layer, dout, spatial, layer->out_c);
     matrix *dbeta = conv_sum_spatial(dout, spatial, layer->out_c);
-    matrix *dout_bn = conv_bn_derivative(layer, dout, spatial, layer->out_c);
+    conv_bn_derivative(layer, dout, spatial, layer->out_c);
     
     conv_update_bn(layer, dgamma, dbeta, l_rate);
     
@@ -316,7 +302,7 @@ matrix* conv_backward(conv_layer *layer, matrix *dout, float l_rate) {
 
     for (int i = 0; i < batch_size; i++) {
 
-        float *dout_row = dout_bn->data + i * layer->out_dim;
+        float *dout_row = dout->data + i * layer->out_dim;
         float *col_row = layer->input_col->data + i * layer->col_dim;
         float *din_row = dinput->data + i * layer->in_dim;
 
@@ -337,7 +323,6 @@ matrix* conv_backward(conv_layer *layer, matrix *dout, float l_rate) {
     conv_update_filters(layer, dfilters, batch_size, l_rate);
     
     free(dcol);
-    matrix_free(dout_bn);
     matrix_free(dfilters);
 
     return dinput;

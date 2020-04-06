@@ -178,6 +178,33 @@ matrix* elemwise_mulvec2(matrix *src, matrix* in_1, matrix* in_2) {
     return out;
 }
 
+void apply_elw_mulvec(matrix *src, matrix* in) {
+
+    assert((in->rows * in->columns) == src->columns);
+    
+    #pragma omp parallel for
+    for (int i = 0; i < src->rows; i++) {
+        register float *src_row = src->data + i * src->columns;
+        for (int j = 0; j < src->columns; j++) {
+            src_row[j] *= in->data[j];
+        }
+    }
+}
+
+void apply_elw_mulvec2(matrix *src, matrix* in_1, matrix *in_2) {
+
+    assert((in_1->rows * in_1->columns) == src->columns);
+    assert((in_2->rows * in_2->columns) == src->columns);
+    
+    #pragma omp parallel for
+    for (int i = 0; i < src->rows; i++) {
+        register float *src_row = src->data + i * src->columns;
+        for (int j = 0; j < src->columns; j++) {
+            src_row[j] = (src_row[j] * in_1->data[j]) + in_2->data[j];
+        }
+    }
+}
+
 matrix* elemwise_mulvec(matrix *src, matrix* in) {
 
     assert((in->rows * in->columns) == src->columns);
@@ -350,20 +377,7 @@ matrix* stddev_inv(matrix* src) {
     return out;
 }
 
-void relu_del(matrix* src, matrix* in) { //profile
-
-    assert(in->rows == src->rows && in->columns == src->columns);
-
-    int len = src->rows * src->columns;
-
-    for (int i = 0; i < len; i++) {
-        if (in->data[i] < .0f) {
-            src->data[i] = .0f;
-        }
-    }
-}
-
-int *relu_atv(matrix* src) {
+int *relu_activations(matrix* src) {
 
     int len = src->rows * src->columns;
     int *atv = malloc(len * sizeof(int));
@@ -381,23 +395,12 @@ int *relu_atv(matrix* src) {
     return atv;
 }
 
-void del_relu_atv(matrix* src, int* atv) {
+void del_relu_activations(matrix* src, int* atv) {
 
     int len = src->rows * src->columns;
 
     for (int i = 0; i < len; i++) {
         src->data[i] = src->data[i] * (float)atv[i]; 
-    }
-}
-
-void relu(matrix* src) {
-
-    int len = src->rows * src->columns;
-
-    for (int i = 0; i < len; i++) {
-        if (src->data[i] < .0f) {
-            src->data[i] = .0f;
-        }
     }
 }
 
