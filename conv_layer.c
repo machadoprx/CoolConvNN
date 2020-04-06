@@ -24,10 +24,10 @@ conv_layer* conv_alloc(int in_c, int in_w, int in_h, int out_c, int f_size, int 
     layer->run_mean = matrix_alloc(1, out_c);
     layer->run_var = matrix_alloc(1, out_c);
 
-    layer->out = layer->out_norm = layer->stddev_inv = layer->input_col = NULL;
+    layer->out_norm = layer->stddev_inv = layer->input_col = NULL;
     layer->activations = NULL;
 
-    randomize(layer->filters, 0.0f, sqrtf(2.0f / (float)layer->out_c));
+    randomize(layer->filters, 0.0f, sqrtf(2.0f / (float)layer->in_dim));
     for (int i = 0; i < out_c; i++) {
         layer->gamma->data[i] = 1.0f;
     }
@@ -39,7 +39,6 @@ conv_layer* conv_alloc(int in_c, int in_w, int in_h, int out_c, int f_size, int 
 static inline void clear_cache(conv_layer *layer) {
     if (layer->input_col != NULL){
         free(layer->activations);
-        matrix_free(layer->out);
         matrix_free(layer->out_norm);
         matrix_free(layer->stddev_inv);
         matrix_free(layer->input_col);
@@ -103,21 +102,17 @@ static inline matrix* conv_var(matrix *src, matrix *mean, int spatial, int chann
     return out;
 }
 
-static inline matrix* conv_norm(matrix *src, matrix *mean, matrix *stddev_inv, int spatial, int channels) {
-
-    matrix *out = matrix_alloc(src->rows, src->columns);
+static inline void conv_norm(matrix *src, matrix *mean, matrix *stddev_inv, int spatial, int channels) {
 
     #pragma omp parallel for
     for (int b = 0; b < src->rows; b++) {
         for (int c = 0; c < channels; c++) {
-            register float *out_ptr = out->data + spatial * (b * channels + c);
             register float *src_ptr = src->data + spatial * (b * channels + c);
             for (int i = 0; i < spatial; i++) {
-                out_ptr[i] = (src_ptr[i] - mean->data[c]) * stddev_inv->data[c];
+                src_ptr[i] = (src_ptr[i] - mean->data[c]) * stddev_inv->data[c];
             }
         }
     }
-    return out;
 }
 
 static inline void train_forward(conv_layer *layer, matrix *raw_out, int spatial, int channels) {
@@ -130,28 +125,24 @@ static inline void train_forward(conv_layer *layer, matrix *raw_out, int spatial
     conv_update_status(layer, mean, var, channels);
 
     layer->stddev_inv = stddev_inv(var);
-    layer->out_norm = conv_norm(raw_out, mean, layer->stddev_inv, spatial, channels);
+    conv_norm(raw_out, mean, layer->stddev_inv, spatial, channels);
+    layer->out_norm = mat_copy(raw_out);
 
     matrix_free(mean);
     matrix_free(var);
 }
 
-static inline matrix* conv_scale_shift(conv_layer *layer, matrix *src, int spatial, int channels) {
-
-    matrix *out = matrix_alloc(src->rows, src->columns);
+static inline void conv_scale_shift(conv_layer *layer, matrix *src, int spatial, int channels) {
 
     #pragma omp parallel for
     for (int b = 0; b < src->rows; b++) {
         for (int c = 0; c < channels; c++) {
-            register float *out_ptr = out->data + spatial * (b * channels + c);
             register float *src_ptr = src->data + spatial * (b * channels + c);
             for (int i = 0; i < spatial; i++) {
-                out_ptr[i] = (src_ptr[i] * layer->gamma->data[c]) + layer->beta->data[c];
+                src_ptr[i] = (src_ptr[i] * layer->gamma->data[c]) + layer->beta->data[c];
             }
         }
     }
-
-    return out;
 }
 
 static void conv_bn_derivative(conv_layer *layer, matrix *dout, int spatial, int channels) {
@@ -267,13 +258,12 @@ matrix* conv_forward(conv_layer *layer, matrix *raw_input, bool training) {
     }
     else {
         layer->stddev_inv = stddev_inv(layer->run_var);
-        layer->out_norm = conv_norm(out, layer->run_mean, layer->stddev_inv, out_cols, layer->out_c);
+        conv_norm(out, layer->run_mean, layer->stddev_inv, out_cols, layer->out_c);
+        layer->out_norm = mat_copy(out);
     }
     
-    layer->out = conv_scale_shift(layer, layer->out_norm, out_cols, layer->out_c);
-    layer->activations = relu_activations(layer->out);
-    
-    mcopy(out->data, layer->out->data, out->columns * out->rows);
+    conv_scale_shift(layer, out, out_cols, layer->out_c);
+    layer->activations = relu_activations(out);
 
     return out;
 }

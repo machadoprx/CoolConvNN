@@ -67,6 +67,7 @@ int* random_indices(int samples) {
 
     int *indices = aligned_alloc(CACHE_LINE, sizeof(int) * samples);
     
+    #pragma omp parallel for
     for (int i = 0; i < samples; i++) {
         indices[i] = i;
     }

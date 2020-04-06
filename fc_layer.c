@@ -143,18 +143,21 @@ matrix* fc_forward(fc_layer *layer, matrix *raw_input, bool training) {
 
 matrix* fc_backward(fc_layer *layer, matrix *dout, float lambda_reg, float l_rate) {
 
-    matrix *dgamma = NULL, *dbeta = NULL;
+    int scale = (-1.0f) * l_rate;
 
     if (layer->relu) {
         
         del_relu_activations(dout, layer->activations);
 
         matrix *dgammap = elemwise_mul(dout, layer->out_norm);
-        dgamma = sum_rows(dgammap);
-        dbeta = sum_rows(dout);
-
+        matrix *dgamma = sum_rows(dgammap);
+        matrix *dbeta = sum_rows(dout);
         fc_bn_derivative(layer, dout);
-
+        
+        apply_sum(layer->gamma, dgamma, scale);
+        apply_sum(layer->beta, dbeta, scale);
+        matrix_free(dgamma);
+        matrix_free(dbeta);
         matrix_free(dgammap);
     }
 
@@ -163,15 +166,7 @@ matrix* fc_backward(fc_layer *layer, matrix *dout, float lambda_reg, float l_rat
 
     matrix *dinput = multiply(dout, layer->weights, CblasNoTrans, CblasTrans, dout->rows, layer->weights->rows, dout->columns);
 
-    int scale = (-1.0f) * l_rate;
     apply_sum(layer->weights, dweights, scale);
-
-    if (layer->relu) {
-        apply_sum(layer->gamma, dgamma, scale);
-        apply_sum(layer->beta, dbeta, scale);
-        matrix_free(dgamma);
-        matrix_free(dbeta);
-    }
 
     matrix_free(dweights);
 
