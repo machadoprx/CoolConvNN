@@ -13,13 +13,13 @@ cnn* cnn_alloc(const char* cnn_cfg) {
 
     net->conv = aligned_alloc(CACHE_LINE, sizeof(*net->conv) * net->conv_pool_layers);
     net->pool = aligned_alloc(CACHE_LINE, sizeof(*net->pool) * net->conv_pool_layers);
-    
+
     for (int i = 0; i < net->conv_pool_layers; i++) {
         int in_c, out_c, stride, f_size, padd, in_w, in_h;
         
         fscanf(cfg_fp, "%d %d %d %d %d %d %d\n", &in_c, &out_c, &stride, &f_size, &padd, &in_w, &in_h);
         net->conv[i] = conv_alloc(in_c, in_w, in_h, out_c, f_size, stride, padd);
-
+        
         fscanf(cfg_fp, "%d %d %d %d %d %d\n", &stride, &f_size, &in_c, &padd, &in_w, &in_h);
         net->pool[i] = pool_alloc(in_c, in_w, in_h, f_size, stride, padd);
     }

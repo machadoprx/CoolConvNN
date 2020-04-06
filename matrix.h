@@ -73,4 +73,8 @@ matrix* stddev_inv(matrix *src);
 
 void mcopy(float *dest, float *src, int len);
 
+int *relu_atv(matrix* src);
+
+void del_relu_atv(matrix* src, int* atv) ;
+
 #endif //matrix_h

@@ -11,9 +11,10 @@ typedef struct _conv_layer {
     int stride, f_size, padd;
     int col_w, col_h, col_c;
     int in_dim, out_dim, col_dim;
+    int *activations;
     matrix *filters, *gamma, *beta;
     matrix *run_mean, *run_var, *stddev_inv;
-    matrix *input, *input_norm, *input_col;
+    matrix *input_col, *out, *out_norm;
 } conv_layer;
 
 conv_layer* conv_alloc(int in_c, int in_w, int in_h, int out_c, int f_size, int stride, int padd);

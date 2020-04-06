@@ -344,7 +344,7 @@ matrix* stddev_inv(matrix* src) {
     
     #pragma omp parallel for
     for (int i = 0; i < src->columns; i++) {
-        out->data[i] = 1.0f / sqrtf(src->data[i] + .000001f);
+        out->data[i] = 1.0f / sqrtf(src->data[i] + .00001f);
     }
 
     return out;
@@ -360,6 +360,33 @@ void relu_del(matrix* src, matrix* in) { //profile
         if (in->data[i] < .0f) {
             src->data[i] = .0f;
         }
+    }
+}
+
+int *relu_atv(matrix* src) {
+
+    int len = src->rows * src->columns;
+    int *atv = malloc(len * sizeof(int));
+
+    for (int i = 0; i < len; i++) {
+        if (src->data[i] < .0f) {
+            src->data[i] = .0f;
+            atv[i] = 0;
+        }
+        else {
+            atv[i] = 1;
+        }
+    }
+
+    return atv;
+}
+
+void del_relu_atv(matrix* src, int* atv) {
+
+    int len = src->rows * src->columns;
+
+    for (int i = 0; i < len; i++) {
+        src->data[i] = src->data[i] * (float)atv[i]; 
     }
 }
 

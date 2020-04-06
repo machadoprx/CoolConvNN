@@ -73,9 +73,8 @@ matrix* pool_backward(pool_layer *layer, matrix *dout) {
     matrix *dinput = matrix_alloc(dout->rows, layer->in_dim);
     int size = layer->out_dim * dout->rows;
 
-    #pragma omp parallel for
     for (int i = 0; i < size; ++i) {
-        dinput->data[ layer->indexes[i] ] = dout->data[i]; // warning if parallel and overlap
+        dinput->data[ layer->indexes[i] ] += dout->data[i]; // warning if parallel and overlap
     }
 
     return dinput;

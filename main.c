@@ -17,13 +17,13 @@ int main(int argc, char const *argv[]) {
     float *mean, *deviation, **input;
     load_data(data_file, &input, &mean, &deviation, &labels, &samplesPerLabels, &featuresDimension);
     int *targets = gen_targets(labels, samplesPerLabels);
-    
+    cnn *net = NULL;
+
     printf("Features Dimension: %d\n", featuresDimension);
     printf("Number of labels: %d\n", labels);
     printf("Samples/Label: %d\n\n", samplesPerLabels);
 
     if (strcmp(mode, "new") == 0 || strcmp(mode, "continue") == 0) {
-        cnn *net;
         int epochs = atoi(argv[2]);
         if (strcmp(mode, "new") == 0) {
             net = cnn_alloc(param_file);
@@ -50,11 +50,12 @@ int main(int argc, char const *argv[]) {
         for (int i = 0; i < labels; i++) {
             printf("label: %d prob: %f\n", i, result->data[i] * 100.0f);
         }
-        cnn_free(net);
         matrix_free(result);
         matrix_free(test);
         free(sample);
     }
+    if (net != NULL)
+        cnn_free(net);
     free(mean);
     free(deviation);
     free(targets);
