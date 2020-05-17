@@ -369,7 +369,7 @@ matrix* stddev_inv(matrix* src) {
 
     matrix *out = internal_alloc(1, src->columns);
     const float eps = 1e-5f;
-    
+
     #pragma omp parallel for
     for (int i = 0; i < src->columns; i++) {
         out->data[i] = 1.0f / sqrtf(src->data[i] + eps);
@@ -383,6 +383,7 @@ int *relu_activations(matrix* src) {
     int len = src->rows * src->columns;
     int *atv = aligned_alloc(CACHE_LINE, len * sizeof(int));
 
+    #pragma omp parallel for
     for (int i = 0; i < len; i++) {
         if (src->data[i] < .0f) {
             src->data[i] = .0f;
@@ -400,8 +401,9 @@ void del_relu_activations(matrix* src, int* atv) {
 
     int len = src->rows * src->columns;
 
+    #pragma omp parallel for
     for (int i = 0; i < len; i++) {
-        src->data[i] = src->data[i] * (float)atv[i]; 
+        src->data[i] *= (float)atv[i]; 
     }
 }
 
