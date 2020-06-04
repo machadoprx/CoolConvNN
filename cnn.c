@@ -180,7 +180,7 @@ void cnn_train(cnn *net, float **data_set, int *labels, int samples, int epochs)
         int *indices = random_indices(samples);
 
         for (int k = 0; k < num_batches; k++) {
-
+            
             // prepare batch
             int batch_len = (data_index + net->batch_size >= samples) ?
                             samples - data_index : net->batch_size;

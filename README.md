@@ -9,29 +9,23 @@ Accuracy and validation set, todo
 
 It uses LodePNG (https://github.com/lvandeve/lodepng) for png to float arrays conversion.
 
-External data is supported, following the format:
+External data is supported, following the csv format:
 
-Number of labels(int), Samples per labels(int), Dimension of features(int)
+835,4096,2,masked,unmasked
+-0.33487654,-0.2857717,-0.38590893, ... ,-0.4879623,-0.56448114,-0.4101708,-0.3997688,0
+-0.8728179,-0.9562261,-1.0026246, ... ,-1.0423806,-1.0312552,-1.0120616,-0.9987559,1
+2.4470487,2.5051897,2.665211, ... ,2.7244022,2.8196306,2.8667905,2.9545586,2.404601,0
+...
 
-Data mean(sizeof(float) * FeaturesDim)
-
-Data deviation(sizeof(float) * FeaturesDim)
-
-Actual data(sizeof(float) * labels * samplesPerLables * FeaturesDim)
-
-The data samples must be ordered by labels and their actual names must be kept aside (labels number are generated automatically)
+number_of_samples,features_size,number_of_labels,[labels separated by comma]
+features_separated_by_comma,label
+...
 
 ### Installing
 
 Clone the repository and run make in the folder. (gcc)
 
 #### How to use
-
-Process data (save to binary and normalyze) with labels separated by folder (must be  .png and width == height):
-
-```
-./cnn_cpp getdata [samplesPerlabel] [samplesSize] [numberOfLabels] [sourceFolder] 
-```
 
 params.ini Define the cnn architecture:
 
@@ -49,18 +43,18 @@ params.ini Define the cnn architecture:
 Start learning:
 
 ```
-./cnn_cpp new [epochs]
+./cnn_c new [epochs]
 ```
 
 Continue learning (you may set the learning rate in params.ini):
 
 ```
-./cnn_cpp continue [epochs]
+./cnn_c continue [epochs]
 ```
 
 Test sample:
 ```
-./cnn_cpp test [sample_path]
+./cnn_c test [sample_path]
 ```
 
 

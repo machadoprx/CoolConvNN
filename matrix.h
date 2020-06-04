@@ -6,9 +6,7 @@
 #define matrix_h
 
 #include <math.h>
-#include <mkl/mkl.h>
-#include <mkl/mkl_cblas.h>
-#include <mkl/mkl_types.h>
+#include <cblas.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <time.h>
