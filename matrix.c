@@ -149,6 +149,7 @@ matrix* elemwise_mul(matrix *src, matrix* in) {
     assert((src->rows == in->rows) && (src->columns == in->columns));
 
     int len = src->rows * src->columns;
+    //int iter_end = len % 8;
     matrix *out = internal_alloc(src->rows, src->columns);
 
     #pragma omp parallel for

@@ -167,9 +167,14 @@ void cnn_backward(cnn *net, matrix *prob, matrix *batch, int *labels) {
 
 void cnn_train(cnn *net, float **data_set, int *labels, int samples, int epochs) {
 
+    /*int val_slice = samples * 0.15;
+    int train_samples = samples - val_slice;*/
+    
     int num_batches = samples % net->batch_size != 0 ?
                     (samples / net->batch_size) + 1
                     : samples / net->batch_size;
+
+    //int val_slice = samples * 0.15;
 
     for (int e = 1; e <= epochs; e++) {
 

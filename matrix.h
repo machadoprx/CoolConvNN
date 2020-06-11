@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <time.h>
+#include <immintrin.h>
 #include "utils.h"
 
 typedef struct _matrix {

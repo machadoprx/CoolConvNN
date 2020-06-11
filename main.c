@@ -15,9 +15,10 @@ int main(int argc, char const *argv[]) {
     const char *mode = argv[1];
 
     int *targets, samples, labels_n;
+    float *mean, *std;
     float **input;
     char **label_names;
-    parse_csv(data_file, &input, &targets, &label_names, &samples, &labels_n);
+    parse_csv(data_file, &input, &mean, &std, &targets, &label_names, &samples, &labels_n);
 
     cnn *net = NULL;
     printf("Number of samples: %d\n", samples);
@@ -41,7 +42,7 @@ int main(int argc, char const *argv[]) {
         float *sample = decode_png(test_path, &w, &h);
         matrix *test = matrix_alloc(1, w * h);
         for (int i = 0; i < w * h; i++) {
-            test->data[i] = (sample[i] - 127.5) / 127.5;
+            test->data[i] = (sample[i] - mean[i]) / std[i];
         }
         cnn *net = cnn_load(param_file, cnn_file);
         matrix *result = cnn_forward(net, test, false);
@@ -56,6 +57,13 @@ int main(int argc, char const *argv[]) {
     if (net != NULL)
         cnn_free(net);
     free(targets);
+    free(mean);
+    free(std);
+    for (int i = 0; i < labels_n; i++) {
+        free(label_names[i]);
+    }
+    free(label_names);
+
     for (int i = 0; i < samples; i++) {
         free(input[i]);
     }
