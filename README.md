@@ -12,17 +12,30 @@ It uses LodePNG (https://github.com/lvandeve/lodepng) for png to float arrays co
 External data is supported, following the csv format:
 
 835,4096,2,masked,unmasked
+<<<<<<< HEAD
 87.17098,84.20363,81.519516, ... ,79.42487,77.518654,76.04577,74.97219,74.087395,73.2
 72.778564,71.41166,69.91917, ... ,68.847664,67.7942,67.16,66.50335,65.87927,65.37431
+=======
+
+>>>>>>> 07b3637f7b7645c640b29ab4d5b59ad2d7877d59
 -0.33487654,-0.2857717,-0.38590893, ... ,-0.4879623,-0.56448114,-0.4101708,-0.3997688,0
+
 -0.8728179,-0.9562261,-1.0026246, ... ,-1.0423806,-1.0312552,-1.0120616,-0.9987559,1
+
 2.4470487,2.5051897,2.665211, ... ,2.7244022,2.8196306,2.8667905,2.9545586,2.404601,0
+
 ...
 
 number_of_samples,features_size,number_of_labels,[labels separated by comma]
+<<<<<<< HEAD
 mean_of_features_separated_by_comma
 std_of_features_separated_by_comma
 sample_1_features_separated_by_comma,label
+=======
+
+features_separated_by_comma,label
+
+>>>>>>> 07b3637f7b7645c640b29ab4d5b59ad2d7877d59
 ...
 sample_n,label
 
