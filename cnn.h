@@ -23,7 +23,7 @@ cnn* cnn_alloc(const char* cnn_config);
 cnn* cnn_load(const char* cnn_config, const char* cnn_state);
 void cnn_free(cnn *net);
 void cnn_save(cnn *net, const char* cnn_state);
-void cnn_train(cnn *net, float **data_set, int *labels, int samples, int epochs);
+void cnn_train(cnn *net, float **data_set, int *labels, int samples, float val_split, int epochs);
 
 matrix* cnn_forward(cnn *net, matrix *batch, bool training);
 

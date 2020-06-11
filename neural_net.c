@@ -4,19 +4,19 @@
 
 #include "neural_net.h"
 
-matrix* correct_prob(matrix *prob, int *labels){
+matrix* correct_prob(matrix *prob, int *indices, int *labels) {
 
     matrix *correct_prob = matrix_alloc(prob->rows, 1);
 
     #pragma omp parallel for
     for (int i = 0; i < prob->rows; i++) {
-        correct_prob->data[i] = -logf(prob->data[i * prob->columns + labels[i]]);
+        correct_prob->data[i] = -logf(prob->data[i * prob->columns + labels[ indices[i] ]]);
     }
 
     return correct_prob;
 }
 
-matrix* prob_del(matrix* prob, int *labels){
+matrix* prob_del(matrix* prob, int *indices, int *labels) {
 
     matrix *dprob = matrix_alloc(prob->rows, prob->columns);
     const float n_inv = 1.0f / (float)prob->rows;
@@ -27,7 +27,7 @@ matrix* prob_del(matrix* prob, int *labels){
         float *dp_row = dprob->data + i * prob->columns;
         float *p_row = prob->data + i * prob->columns;
 
-        dp_row[ labels[i] ] = -1.0f;
+        dp_row[ labels[ indices[i] ] ] = -1.0f;
 
         for (int j = 0; j < prob->columns; j++) {
             dp_row[j] = (dp_row[j] + p_row[j]) * n_inv;
@@ -84,7 +84,7 @@ int* random_indices(int samples) {
     return indices;
 }
 
-void get_batch(int *indices, float **data_set, int *labels, int batch_len, int data_dim, matrix* batch, int *batch_labels) {
+void get_batch(int *indices, float **data_set, int batch_len, int data_dim, matrix* batch) {
     
     #pragma omp parallel for
     for (int i = 0; i < batch_len; i++) {
@@ -93,6 +93,5 @@ void get_batch(int *indices, float **data_set, int *labels, int batch_len, int d
         for (int j = 0; j < data_dim; j++) {
             dest_ptr[j] = data_set[ indices[i] ][j];
         }
-        batch_labels[i] = labels[ indices[i] ];
     }
 }

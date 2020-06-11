@@ -21,17 +21,23 @@ int main(int argc, char const *argv[]) {
     parse_csv(data_file, &input, &mean, &std, &targets, &label_names, &samples, &labels_n);
 
     cnn *net = NULL;
-    printf("Number of samples: %d\n", samples);
 
     if (strcmp(mode, "new") == 0 || strcmp(mode, "continue") == 0) {
         int epochs = atoi(argv[2]);
+        float split = atof(argv[3]);
         if (strcmp(mode, "new") == 0) {
             net = cnn_alloc(param_file);
         }
         else {
             net = cnn_load(param_file, cnn_file);
         }
-        cnn_train(net, input, targets, samples, epochs);
+        
+        printf("Number of samples: %d\n", samples);
+        printf("Val split: %.2f\n", split);
+        printf("Learning Rate: %.4f\n", net->l_rate);
+        printf("Batch Size: %d\n\n", net->batch_size);
+
+        cnn_train(net, input, targets, samples, split, epochs);
         cnn_save(net, cnn_file);
     }
     else if (strcmp(mode, "test") == 0) {

@@ -1,2 +1,2 @@
 all:
-	gcc -std=c17 -lopenblas -fopenmp -liomp5 -lpthread -march=native -msse2 -msse4.2 -fopt-info-vec -ftree-vectorizer-verbose=7 -Ofast main.c cnn.c matrix.c neural_net.c fc_layer.c conv_layer.c pool_layer.c image.c parse_data.c png2array/png2array.c png2array/lodepng.c utils.c -Wall -pedantic -lm -o cnn_c
+	gcc -std=c17 -lopenblas -fopenmp -liomp5 -lpthread -march=native -msse2 -msse4.2 -Ofast main.c cnn.c matrix.c neural_net.c fc_layer.c conv_layer.c pool_layer.c image.c parse_data.c png2array/png2array.c png2array/lodepng.c utils.c -Wall -pedantic -lm -o cnn_c

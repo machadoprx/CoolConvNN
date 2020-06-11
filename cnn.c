@@ -143,11 +143,11 @@ matrix* cnn_forward(cnn *net, matrix *batch, bool training) {
     return curr;
 }
 
-void cnn_backward(cnn *net, matrix *prob, matrix *batch, int *labels) {
+void cnn_backward(cnn *net, matrix *prob, matrix *batch, int *indices, int *labels) {
     
     int i;
     matrix *tmp;
-    matrix *dout = prob_del(prob, labels);
+    matrix *dout = prob_del(prob, indices, labels);
 
     for (i = net->fc_add + 1; i >= 0; --i) {
         tmp = fc_backward(net->fc[i], dout, net->l_reg, net->l_rate);
@@ -165,58 +165,76 @@ void cnn_backward(cnn *net, matrix *prob, matrix *batch, int *labels) {
     matrix_free(dout);
 }
 
-void cnn_train(cnn *net, float **data_set, int *labels, int samples, int epochs) {
+void cnn_train(cnn *net, float **data_set, int *labels, int samples, float val_split, int epochs) {
 
-    /*int val_slice = samples * 0.15;
-    int train_samples = samples - val_slice;*/
-    
-    int num_batches = samples % net->batch_size != 0 ?
-                    (samples / net->batch_size) + 1
-                    : samples / net->batch_size;
+    int val_len = samples * val_split;
+    int train_samples = samples - val_len;
+    int *val_indices = aligned_alloc(CACHE_LINE, sizeof(int) * val_len);
 
-    //int val_slice = samples * 0.15;
+    for (int i = 0; i < val_len; i++) {
+        val_indices[i] = i + train_samples;
+    }
+
+    int num_batches = train_samples % net->batch_size != 0 ?
+                    (train_samples / net->batch_size) + 1
+                    : train_samples / net->batch_size;
 
     for (int e = 1; e <= epochs; e++) {
 
         int data_index = 0;
         float total_loss = 0;
-
-        // shuffle dataset
-        int *indices = random_indices(samples);
+        int *indices = random_indices(train_samples);
 
         for (int k = 0; k < num_batches; k++) {
             
             // prepare batch
-            int batch_len = (data_index + net->batch_size >= samples) ?
-                            samples - data_index : net->batch_size;
+            int batch_len = (data_index + net->batch_size >= train_samples) ?
+                            train_samples - data_index : net->batch_size;
             
-            int *batch_labels = aligned_alloc(CACHE_LINE, sizeof(int) * batch_len);
             matrix *batch = matrix_alloc(batch_len, net->conv[0]->in_dim);
-            
-            get_batch(indices + data_index, data_set, labels, batch_len, net->conv[0]->in_dim, batch, batch_labels);
+
+            get_batch(indices + data_index, data_set, batch_len, net->conv[0]->in_dim, batch);
 
             //forward step
             matrix *prob = cnn_forward(net, batch, true);
 
             // get correct probabilities for each class
-            matrix *corr_prob = correct_prob(prob, batch_labels);
+            matrix *corr_prob = correct_prob(prob, indices + data_index, labels);
 
             // compute loss
             total_loss += loss(corr_prob) + reg_loss(net->fc, 2 + net->fc_add, net->l_reg);
 
             // backpropagation step
-            cnn_backward(net, prob, batch, batch_labels);
+            cnn_backward(net, prob, batch, indices + data_index, labels);
 
             // update data index
             data_index += batch_len;
 
             //clean
-            matrix_free(batch);
             matrix_free(prob);
             matrix_free(corr_prob);
-            free(batch_labels);
+            matrix_free(batch);
         }
-        printf("epoch: %d loss: %f\n", e, total_loss / (float)num_batches);
+
+        matrix *val = matrix_alloc(val_len, net->conv[0]->in_dim);
+
+        get_batch(val_indices, data_set, val_len, net->conv[0]->in_dim, val);
+
+        //forward step
+        matrix *val_prob = cnn_forward(net, val, false);
+
+        // get correct probabilities for each class
+        matrix *val_corr_prob = correct_prob(val_prob, val_indices, labels);
+
+        // compute loss
+        float val_loss = loss(val_corr_prob) + reg_loss(net->fc, 2 + net->fc_add, net->l_reg);
+
+        printf("epoch: %d loss: %f val_loss: %f\n", e, total_loss / (float)num_batches, val_loss);
         free(indices);
+        matrix_free(val);
+        matrix_free(val_prob);
+        matrix_free(val_corr_prob);
+
     }
+    free(val_indices);
 }
