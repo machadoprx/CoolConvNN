@@ -4,8 +4,7 @@ Complete, simple and cool convolutional neural network, build from scratch, para
 ## Introduction
 
 This software was coded with only learning purposes, not for production uses. The aim of use is myself, optimized for run in a intel CPU.
-Apart of that, it is fully functioning, the FC layers uses Batch normalization and ReLU, Conv Layers batch normalization and ReLU and MaxPool layers. Learning is done using mini-batch sgd.
-Accuracy and validation set, todo
+Apart of that, it is fully functioning, the FC layers uses Batch normalization and ReLU, Convolutional Layers also use bn and ReLU activation. The Max-Pool layer is applied after each convolution. The weights learning is done using mini-batch sgd.
 
 It uses LodePNG (https://github.com/lvandeve/lodepng) for png to float arrays conversion.
 
@@ -60,13 +59,13 @@ params.ini Define the cnn architecture:
 Start learning:
 
 ```
-./cnn_c new [epochs]
+./cnn_c new [epochs] [validation_set_split]
 ```
 
 Continue learning (you may set the learning rate in params.ini):
 
 ```
-./cnn_c continue [epochs]
+./cnn_c continue [epochs] [validation_set_split]
 ```
 
 Test sample:
