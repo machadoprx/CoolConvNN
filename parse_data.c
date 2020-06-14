@@ -1,6 +1,6 @@
 #include "parse_data.h"
 
-void parse_csv(const char *csv_name, float ***data, float **mean, float **std, int **labels, char ***label_names, int *samples, int *lab_n) {
+void parse_csv(const char *csv_name, float ***data, float **mean, float **std, int **labels, char ***label_names, int *samples, int *lab_n, int test) {
     FILE *csv = fopen(csv_name, "r");
     char buffer[64];
     char names[8192];
@@ -22,10 +22,14 @@ void parse_csv(const char *csv_name, float ***data, float **mean, float **std, i
         names_ptr++;
     }
 
-    (*data) = aligned_alloc(32, n * sizeof(float*));
+    if (test == 0) {
+        (*data) = aligned_alloc(32, n * sizeof(float*));
+        (*labels) = aligned_alloc(32, n * sizeof(int));
+    }
+        
     (*mean) = aligned_alloc(32, features_len * sizeof(float));
     (*std) = aligned_alloc(32, features_len * sizeof(float));
-    (*labels) = aligned_alloc(32, n * sizeof(int));
+    
     *samples = n;
     *lab_n = labels_n;
 
@@ -40,6 +44,9 @@ void parse_csv(const char *csv_name, float ***data, float **mean, float **std, i
         (*std)[k] = atof(buffer);
         fseek(csv, sizeof(char), SEEK_CUR);
     }
+    if (test == 1) {
+        goto out;
+    }
 
     for (int i = 0; i < n; i++) {
         (*data)[i] = aligned_alloc(32, features_len * sizeof(float));
@@ -51,5 +58,6 @@ void parse_csv(const char *csv_name, float ***data, float **mean, float **std, i
         fscanf(csv, "%[^\n]\n", buffer);
         (*labels)[i] = atoi(buffer);
     }
+    out:
     fclose(csv);
 }

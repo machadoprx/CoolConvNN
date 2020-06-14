@@ -78,11 +78,12 @@ cnn* cnn_load(const char* cnn_config, const char* cnn_state) { // array alignmen
 }
 
 void cnn_free(cnn *net) {
-    for (int i = 0; i < net->conv_pool_layers; i++) {
+    int i;
+    for (i = 0; i < net->conv_pool_layers; i++) {
         conv_free(net->conv[i]);
         pool_free(net->pool[i]);
     }
-    for (int i = 0; i < net->fc_add + 2; i++) {
+    for (i = 0; i < net->fc_add + 2; i++) {
         fc_free(net->fc[i]);
     }
     free(net->pool);
@@ -216,25 +217,28 @@ void cnn_train(cnn *net, float **data_set, int *labels, int samples, float val_s
             matrix_free(batch);
         }
 
-        matrix *val = matrix_alloc(val_len, net->conv[0]->in_dim);
+        if (val_len > 0) {
+            matrix *val = matrix_alloc(val_len, net->conv[0]->in_dim);
 
-        get_batch(val_indices, data_set, val_len, net->conv[0]->in_dim, val);
+            get_batch(val_indices, data_set, val_len, net->conv[0]->in_dim, val);
 
-        //forward step
-        matrix *val_prob = cnn_forward(net, val, false);
+            //forward step
+            matrix *val_prob = cnn_forward(net, val, false);
 
-        // get correct probabilities for each class
-        matrix *val_corr_prob = correct_prob(val_prob, val_indices, labels);
+            // get correct probabilities for each class
+            matrix *val_corr_prob = correct_prob(val_prob, val_indices, labels);
 
-        // compute loss
-        float val_loss = loss(val_corr_prob) + reg_loss(net->fc, 2 + net->fc_add, net->l_reg);
-
-        printf("epoch: %d loss: %f val_loss: %f\n", e, total_loss / (float)num_batches, val_loss);
+            // compute loss
+            float val_loss = loss(val_corr_prob) + reg_loss(net->fc, 2 + net->fc_add, net->l_reg);
+            printf("epoch: %d loss: %f val_loss: %f\n", e, total_loss / (float)num_batches, val_loss);
+            matrix_free(val);
+            matrix_free(val_prob);
+            matrix_free(val_corr_prob);
+        }
+        else {
+            printf("epoch: %d loss: %f\n", e, total_loss / (float)num_batches);
+        }
         free(indices);
-        matrix_free(val);
-        matrix_free(val_prob);
-        matrix_free(val_corr_prob);
-
     }
     free(val_indices);
 }

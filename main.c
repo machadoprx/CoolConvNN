@@ -18,11 +18,11 @@ int main(int argc, char const *argv[]) {
     float *mean, *std;
     float **input;
     char **label_names;
-    parse_csv(data_file, &input, &mean, &std, &targets, &label_names, &samples, &labels_n);
 
     cnn *net = NULL;
 
     if (strcmp(mode, "new") == 0 || strcmp(mode, "continue") == 0) {
+        parse_csv(data_file, &input, &mean, &std, &targets, &label_names, &samples, &labels_n, 0);
         int epochs = atoi(argv[2]);
         float split = atof(argv[3]);
         if (strcmp(mode, "new") == 0) {
@@ -39,9 +39,20 @@ int main(int argc, char const *argv[]) {
 
         cnn_train(net, input, targets, samples, split, epochs);
         cnn_save(net, cnn_file);
+        free(targets);
+        for (int i = 0; i < samples; i++) {
+            free(input[i]);
+        }
+        free(input);
+        free(mean);
+        free(std);
+        for (int i = 0; i < labels_n; i++) {
+            free(label_names[i]);
+        }
+        free(label_names);
     }
     else if (strcmp(mode, "test") == 0) {
-
+        parse_csv(data_file, &input, &mean, &std, &targets, &label_names, &samples, &labels_n, 1);
         int w, h;
         const char *test_path = argv[2];
 
@@ -59,20 +70,15 @@ int main(int argc, char const *argv[]) {
         matrix_free(result);
         matrix_free(test);
         free(sample);
+        free(mean);
+        free(std);
+        for (int i = 0; i < labels_n; i++) {
+            free(label_names[i]);
+        }
+        free(label_names);
     }
     if (net != NULL)
         cnn_free(net);
-    free(targets);
-    free(mean);
-    free(std);
-    for (int i = 0; i < labels_n; i++) {
-        free(label_names[i]);
-    }
-    free(label_names);
 
-    for (int i = 0; i < samples; i++) {
-        free(input[i]);
-    }
-    free(input);
     return 0;
 }

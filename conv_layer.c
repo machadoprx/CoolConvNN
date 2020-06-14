@@ -202,7 +202,6 @@ static inline matrix* conv_sum_spatial(matrix *src, int spatial, int channels) {
     matrix *out = matrix_alloc(1, channels);
 
     for (int b = 0; b < src->rows; b++) {
-        #pragma omp parallel for
         for (int c = 0; c < channels; c++) {
             register float *src_ptr = src->data + spatial * (b * channels + c);
             for (int i = 0; i < spatial; i++) {
