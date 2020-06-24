@@ -9,14 +9,14 @@
 #include <stdbool.h>
 
 typedef struct _fc_layer {
-    bool relu;
-    int *activations;
+    bool out_layer;
+    int *activations, activ;
     matrix *weights, *gamma, *beta;
     matrix *run_mean, *run_var;
     matrix *input, *out_norm, *stddev_inv;
 } fc_layer;
 
-fc_layer* fc_alloc(int in_dim, int out_dim, bool relu);
+fc_layer* fc_alloc(int in_dim, int out_dim, int activ, bool out_layer);
 void fc_free(fc_layer *layer);
 void fc_update_status(fc_layer *layer, matrix *mean, matrix *variance);
 

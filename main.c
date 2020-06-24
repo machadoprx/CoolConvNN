@@ -1,16 +1,16 @@
 #include <stdio.h>
-#include "cnn.h"
+#include "cool_nn.h"
 #include "omp.h"
 #include "png2array/png2array.h"
 #include "parse_data.h"
 
 int main(int argc, char const *argv[]) {
 
-    int nProcessors = omp_get_max_threads();
-    omp_set_num_threads(nProcessors);
+    int n_proc = omp_get_max_threads();
+    omp_set_num_threads(n_proc);
     
     const char *data_file = "data.csv";
-    const char *cnn_file = "cnn_state.dat";
+    const char *nn_file = "nn_state.dat";
     const char *param_file = "params.ini";
     const char *mode = argv[1];
 
@@ -19,26 +19,28 @@ int main(int argc, char const *argv[]) {
     float **input;
     char **label_names;
 
-    cnn *net = NULL;
+    cool_nn *net = NULL;
 
     if (strcmp(mode, "new") == 0 || strcmp(mode, "continue") == 0) {
         parse_csv(data_file, &input, &mean, &std, &targets, &label_names, &samples, &labels_n, 0);
-        int epochs = atoi(argv[2]);
-        float split = atof(argv[3]);
+        float split = atof(argv[2]);
+        float l_rate = atof(argv[3]);
+        float l_reg = atof(argv[4]);
+        int epochs = atoi(argv[5]);
         if (strcmp(mode, "new") == 0) {
-            net = cnn_alloc(param_file);
+            net = cool_alloc(param_file);
         }
         else {
-            net = cnn_load(param_file, cnn_file);
+            net = cool_load(param_file, nn_file);
         }
         
         printf("Number of samples: %d\n", samples);
         printf("Val split: %.2f\n", split);
-        printf("Learning Rate: %.4f\n", net->l_rate);
+        printf("Learning Rate: %.4f\n", l_rate);
         printf("Batch Size: %d\n\n", net->batch_size);
 
-        cnn_train(net, input, targets, samples, split, epochs);
-        cnn_save(net, cnn_file);
+        cool_train(net, input, targets, samples, split, l_rate, l_reg, epochs);
+        cool_save(net, nn_file);
         free(targets);
         for (int i = 0; i < samples; i++) {
             free(input[i]);
@@ -61,8 +63,8 @@ int main(int argc, char const *argv[]) {
         for (int i = 0; i < w * h; i++) {
             test->data[i] = (sample[i] - mean[i]) / std[i];
         }
-        cnn *net = cnn_load(param_file, cnn_file);
-        matrix *result = cnn_forward(net, test, false);
+        net = cool_load(param_file, nn_file);
+        matrix *result = cool_forward(net, test, false);
 
         for (int i = 0; i < labels_n; i++) {
             printf("%s prob: %f\n", label_names[i], result->data[i] * 100.0f);
@@ -77,8 +79,9 @@ int main(int argc, char const *argv[]) {
         }
         free(label_names);
     }
-    if (net != NULL)
-        cnn_free(net);
+    if (net != NULL){
+        cool_free(net);
+    }
 
     return 0;
 }

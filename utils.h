@@ -3,18 +3,16 @@
 
 #include <stdlib.h>
 #include <math.h>
-#include <stdio.h>
+#include <string.h>
 
-#define CACHE_LINE 32
-#define LINUX 1
+#define CACHE_LINE 64
+#define aalloc(bytes) aligned_alloc(CACHE_LINE, bytes);
 
-#define f_apply(type, f, ...) {									\
-	void *stop_loop = (int[]){0};								\
-	type **list = (type*[]){__VA_ARGS__, stop_loop};			\
-	for (int i = 0; list[i] != stop_loop; i++)					\
-		f(list[i]);												\
-}
+enum layer_t{CONV, FC, MAX_POOL};
+enum activ_t{NONE, RELU};
 
 void get_gauss(float mean, float stddev, float *u, float *v);
+int dec_activation(const char* name);
+int dec_layer_type(const char* name);
 
 #endif

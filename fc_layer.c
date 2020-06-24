@@ -4,20 +4,20 @@
 
 #include "fc_layer.h"
 
-fc_layer* fc_alloc(int in_dim, int out_dim, bool relu) {
+fc_layer* fc_alloc(int in_dim, int out_dim, int activ, bool out_layer) {
 
-    fc_layer* layer = aligned_alloc(CACHE_LINE, sizeof(*layer));
+    fc_layer* layer = aalloc(sizeof(*layer));
     layer->weights = matrix_alloc(in_dim, out_dim);
     layer->gamma = matrix_alloc(1, out_dim);
     layer->beta = matrix_alloc(1, out_dim);
     layer->run_mean = matrix_alloc(1, out_dim);
     layer->run_var = matrix_alloc(1, out_dim);
 
-    layer->relu = relu;
+    layer->activ = activ;
+    layer->out_layer = out_layer;
     layer->input = layer->out_norm = layer->stddev_inv = NULL;
     layer->activations = NULL;
 
-    #pragma omp parallel for
     for (int j = 0; j < out_dim; j++) {
         layer->gamma->data[j] = 1.f;
     }
@@ -31,8 +31,10 @@ static inline void clear_cache(fc_layer *layer) {
     if (layer->input != NULL){
         matrix_free(layer->input);
     }
-    if (layer->out_norm != NULL) {
+    if (layer->activations != NULL) {
         free(layer->activations);
+    }
+    if (layer->out_norm != NULL) {
         matrix_free(layer->out_norm);
         matrix_free(layer->stddev_inv);
     }
@@ -113,12 +115,10 @@ matrix* fc_forward(fc_layer *layer, matrix *raw_input, bool training) {
     matrix *out = multiply(raw_input, layer->weights, CblasNoTrans, CblasNoTrans, 
                     raw_input->rows, layer->weights->columns, raw_input->columns);
 
-    if (layer->relu) {
-
+    if (!layer->out_layer) {
         if (training) {
             train_forward(layer, out);
         }
-        
         else {
             layer->stddev_inv = stddev_inv(layer->run_var);
             normalize2(out, layer->run_mean, layer->stddev_inv);
@@ -126,8 +126,10 @@ matrix* fc_forward(fc_layer *layer, matrix *raw_input, bool training) {
         }
 
         apply_elw_mulvec2(out, layer->gamma, layer->beta);
-        layer->activations = relu_activations(out);
+    }
 
+    if (layer->activ == RELU) {
+        layer->activations = relu_activations(out);
     }
 
     return out;
@@ -135,10 +137,11 @@ matrix* fc_forward(fc_layer *layer, matrix *raw_input, bool training) {
 
 matrix* fc_backward(fc_layer *layer, matrix *dout, float lambda_reg, float l_rate) {
 
-    if (layer->relu) {
-        
+    if (layer->activ == RELU) {        
         del_relu_activations(dout, layer->activations);
+    }
 
+    if (!layer->out_layer) {
         matrix *dgammap = elemwise_mul(dout, layer->out_norm);
         matrix *dgamma = sum_rows(dgammap);
         matrix *dbeta = sum_rows(dout);

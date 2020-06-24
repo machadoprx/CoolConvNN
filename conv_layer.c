@@ -1,8 +1,8 @@
 #include "conv_layer.h"
 
-conv_layer* conv_alloc(int in_c, int in_w, int in_h, int out_c, int f_size, int stride, int padd) {
+conv_layer* conv_alloc(int in_c, int in_w, int in_h, int out_c, int f_size, int stride, int padd, int activ, bool out_layer) {
     
-    conv_layer *layer = aligned_alloc(CACHE_LINE, sizeof(*layer));
+    conv_layer *layer = aalloc(sizeof(*layer));
 
     layer->out_c = out_c; 
     layer->stride = stride;
@@ -17,6 +17,8 @@ conv_layer* conv_alloc(int in_c, int in_w, int in_h, int out_c, int f_size, int 
     layer->out_dim = layer->col_w * layer->col_h * out_c;
     layer->col_c = in_c * f_size * f_size;
     layer->col_dim = layer->col_c * layer->col_w * layer->col_h;
+    layer->activ = activ;
+    layer->out_layer = out_layer;
 
     layer->filters = matrix_alloc(out_c, layer->col_c);
     layer->gamma = matrix_alloc(1, out_c);
@@ -36,8 +38,10 @@ conv_layer* conv_alloc(int in_c, int in_w, int in_h, int out_c, int f_size, int 
 }
 
 static inline void clear_cache(conv_layer *layer) {
-    if (layer->input_col != NULL){
+    if (layer->activations != NULL) {
         free(layer->activations);
+    }
+    if (layer->input_col != NULL){
         matrix_free(layer->out_norm);
         matrix_free(layer->stddev_inv);
         matrix_free(layer->input_col);
@@ -245,17 +249,22 @@ matrix* conv_forward(conv_layer *layer, matrix *raw_input, bool training) {
                     col_row, out_cols, 0.0f, out_row, out_cols);
     }
     
-    if (training) {
-        train_forward(layer, out, out_cols, layer->out_c);
+    if (!layer->out_layer) {
+        if (training) {
+            train_forward(layer, out, out_cols, layer->out_c);
+        }
+        else {
+            layer->stddev_inv = stddev_inv(layer->run_var);
+            conv_norm(out, layer->run_mean, layer->stddev_inv, out_cols, layer->out_c);
+            layer->out_norm = mat_copy(out);
+        }
+        
+        conv_scale_shift(layer, out, out_cols, layer->out_c);
     }
-    else {
-        layer->stddev_inv = stddev_inv(layer->run_var);
-        conv_norm(out, layer->run_mean, layer->stddev_inv, out_cols, layer->out_c);
-        layer->out_norm = mat_copy(out);
+
+    if (layer->activ == RELU) {
+        layer->activations = relu_activations(out);
     }
-    
-    conv_scale_shift(layer, out, out_cols, layer->out_c);
-    layer->activations = relu_activations(out);
 
     return out;
 }
@@ -267,18 +276,22 @@ matrix* conv_backward(conv_layer *layer, matrix *dout, float l_rate) {
     int batch_size = layer->input_col->rows;
     int spatial = layer->col_w * layer->col_h;
 
-    del_relu_activations(dout, layer->activations);
+    if (layer->activ == RELU) {
+        del_relu_activations(dout, layer->activations);
+    }
 
-    matrix *dgamma = conv_gamma_del(layer, dout, spatial, layer->out_c);
-    matrix *dbeta = conv_sum_spatial(dout, spatial, layer->out_c);
-    conv_bn_derivative(layer, dout, spatial, layer->out_c);
-    
-    conv_update_bn(layer, dgamma, dbeta, l_rate);
-    
-    matrix_free(dgamma);
-    matrix_free(dbeta);
+    if (!layer->out_layer) {
+        matrix *dgamma = conv_gamma_del(layer, dout, spatial, layer->out_c);
+        matrix *dbeta = conv_sum_spatial(dout, spatial, layer->out_c);
+        conv_bn_derivative(layer, dout, spatial, layer->out_c);
+        
+        conv_update_bn(layer, dgamma, dbeta, l_rate);
+        
+        matrix_free(dgamma);
+        matrix_free(dbeta);
+    }
 
-    float *dcol = aligned_alloc(CACHE_LINE, sizeof(float) * layer->col_dim);
+    float *dcol = aalloc(sizeof(float) * layer->col_dim);
     matrix *dfilters = matrix_alloc(layer->filters->rows, layer->filters->columns);
     matrix *dinput = matrix_alloc(batch_size, layer->in_dim);
 

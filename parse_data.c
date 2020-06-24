@@ -23,12 +23,12 @@ void parse_csv(const char *csv_name, float ***data, float **mean, float **std, i
     }
 
     if (test == 0) {
-        (*data) = aligned_alloc(32, n * sizeof(float*));
-        (*labels) = aligned_alloc(32, n * sizeof(int));
+        (*data) = aalloc(n * sizeof(float*));
+        (*labels) = aalloc(n * sizeof(int));
     }
         
-    (*mean) = aligned_alloc(32, features_len * sizeof(float));
-    (*std) = aligned_alloc(32, features_len * sizeof(float));
+    (*mean) = aalloc(features_len * sizeof(float));
+    (*std) = aalloc(features_len * sizeof(float));
     
     *samples = n;
     *lab_n = labels_n;
@@ -49,7 +49,7 @@ void parse_csv(const char *csv_name, float ***data, float **mean, float **std, i
     }
 
     for (int i = 0; i < n; i++) {
-        (*data)[i] = aligned_alloc(32, features_len * sizeof(float));
+        (*data)[i] = aalloc(features_len * sizeof(float));
         for (int k = 0; k < features_len; k++) {
             fscanf(csv, "%[^,]", buffer);
             (*data)[i][k] = atof(buffer);

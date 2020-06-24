@@ -8,7 +8,6 @@ matrix* correct_prob(matrix *prob, int *indices, int *labels) {
 
     matrix *correct_prob = matrix_alloc(prob->rows, 1);
 
-    #pragma omp parallel for
     for (int i = 0; i < prob->rows; i++) {
         correct_prob->data[i] = -logf(prob->data[i * prob->columns + labels[ indices[i] ]]);
     }
@@ -49,15 +48,17 @@ float loss(matrix* correct_prob){
     return out / (float)correct_prob->rows;
 }
 
-float reg_loss(fc_layer **layers, int len, float l_reg){
+float reg_loss(void **layers, int *layer_type, int len, float l_reg) {
 
     float out = .0f;
 
     for (int i = 0; i < len; i++) {
-        matrix *w = layers[i]->weights;
-        matrix *temp = elemwise_mul(w, w);
-        out += 0.5f * l_reg * sum_elem(temp);
-        matrix_free(temp);
+        if (layer_type[i] == FC) {
+            matrix *w = ((fc_layer*)layers[i])->weights;
+            matrix *temp = elemwise_mul(w, w);
+            out += 0.5f * l_reg * sum_elem(temp);
+            matrix_free(temp);
+        }
     }
 
     return out;
@@ -65,9 +66,8 @@ float reg_loss(fc_layer **layers, int len, float l_reg){
 
 int* random_indices(int samples) {
 
-    int *indices = aligned_alloc(CACHE_LINE, sizeof(int) * samples);
+    int *indices = aalloc(sizeof(int) * samples);
     
-    #pragma omp parallel for
     for (int i = 0; i < samples; i++) {
         indices[i] = i;
     }

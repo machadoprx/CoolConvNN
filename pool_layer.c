@@ -2,7 +2,7 @@
 
 pool_layer* pool_alloc(int chan, int in_w, int in_h, int f_size, int stride, int padd) {
 
-    pool_layer *layer = aligned_alloc(CACHE_LINE, sizeof(*layer));
+    pool_layer *layer = aalloc(sizeof(*layer));
 
     layer->stride = stride;
     layer->f_size = f_size;  
@@ -34,7 +34,7 @@ matrix* pool_forward(pool_layer *layer, matrix *raw_input) {
 
     int offset = -layer->padd / 2; // stride
     matrix *out = matrix_alloc(raw_input->rows, layer->out_dim);
-    layer->indexes = aligned_alloc(CACHE_LINE, sizeof(int) * raw_input->rows * layer->out_dim);
+    layer->indexes = aalloc(sizeof(int) * raw_input->rows * layer->out_dim);
 
     #pragma omp parallel for collapse(3)
     for (int b = 0; b < raw_input->rows; b++) {

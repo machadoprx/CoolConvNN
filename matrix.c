@@ -6,14 +6,14 @@
 
 matrix* matrix_alloc(int rows, int columns) {
 
-    matrix *out = aligned_alloc(CACHE_LINE, sizeof(*out));
-    out->data = aligned_alloc(CACHE_LINE, sizeof(float) * rows * columns);
+    int len = rows * columns;
+    matrix *out = aalloc(sizeof(*out));
+    out->data = aalloc(sizeof(float) * len);
 
     out->rows = rows;
     out->columns = columns;
     
-    #pragma omp parallel for
-    for (int i = 0; i < rows * columns; i++) {
+    for (int i = 0; i < len; i++) {
         out->data[i] = .0f;
     }
 
@@ -21,8 +21,8 @@ matrix* matrix_alloc(int rows, int columns) {
 }
 
 static inline matrix *internal_alloc(int rows, int columns) {
-    matrix *out = aligned_alloc(CACHE_LINE, sizeof(*out));
-    out->data = aligned_alloc(CACHE_LINE, sizeof(float) * rows * columns);
+    matrix *out = aalloc(sizeof(*out));
+    out->data = aalloc(sizeof(float) * rows * columns);
     out->rows = rows;
     out->columns = columns;
 
@@ -125,7 +125,6 @@ matrix* sum(matrix *src, matrix *in, float scalar) {
     matrix *out = internal_alloc(src->rows, src->columns);
     int len = src->rows * src->columns;
 
-    #pragma omp parallel for
     for (int i = 0; i < len; i++) {
         out->data[i] = src->data[i] + (in->data[i] * scalar);
     }
@@ -138,7 +137,6 @@ void apply_sum(matrix *src, matrix *in, float scalar) {
     assert((src->rows == in->rows) && (src->columns == in->columns));
     int len = src->rows * src->columns;
 
-    #pragma omp parallel for
     for (int i = 0; i < len; i++) {
         src->data[i] += (in->data[i] * scalar);
     }
@@ -151,7 +149,6 @@ matrix* elemwise_mul(matrix *src, matrix* in) {
     int len = src->rows * src->columns;
     matrix *out = internal_alloc(src->rows, src->columns);
 
-    #pragma omp parallel for
     for (int i = 0; i < len; i++) {
         out->data[i] = src->data[i] * in->data[i];
     }
@@ -237,7 +234,6 @@ matrix* mean_0axis(matrix *src) {
         }
     }
 
-    #pragma omp parallel for
     for (int i = 0; i < src->columns; i++) {
         out->data[i] *= inv_rows;
     }
@@ -260,7 +256,6 @@ matrix* variance_0axis(matrix *src, matrix *mean) {
         }
     }
 
-    #pragma omp parallel for
     for (int i = 0; i < src->columns; i++) {
         out->data[i] *= inv_rows;
     }
@@ -332,7 +327,6 @@ void set_row(matrix *src, float *in, int row_pos) {
     
     float *src_ptr = src->data + (row_pos * src->columns);
 
-    #pragma omp parallel for
     for (int i = 0; i < src->columns; i++) {
         src_ptr[i] = in[i];
     }
@@ -370,7 +364,6 @@ matrix* stddev_inv(matrix* src) {
     matrix *out = internal_alloc(1, src->columns);
     const float eps = 1e-5f;
 
-    #pragma omp parallel for
     for (int i = 0; i < src->columns; i++) {
         out->data[i] = 1.0f / sqrtf(src->data[i] + eps);
     }
@@ -381,9 +374,8 @@ matrix* stddev_inv(matrix* src) {
 int *relu_activations(matrix* src) {
 
     int len = src->rows * src->columns;
-    int *atv = aligned_alloc(CACHE_LINE, len * sizeof(int));
+    int *atv = aalloc(len * sizeof(int));
 
-    #pragma omp parallel for
     for (int i = 0; i < len; i++) {
         if (src->data[i] < .0f) {
             src->data[i] = .0f;
@@ -401,7 +393,6 @@ void del_relu_activations(matrix* src, int* atv) {
 
     int len = src->rows * src->columns;
 
-    #pragma omp parallel for
     for (int i = 0; i < len; i++) {
         src->data[i] *= (float)atv[i]; 
     }
@@ -413,7 +404,6 @@ void accumulate(matrix* src, matrix *in) {
 
     int len = src->rows * src->columns;
 
-    #pragma omp parallel for
     for (int i = 0; i < len; i++) {
         src->data[i] += in->data[i];
     }
@@ -425,7 +415,6 @@ void set(matrix *src, matrix *in) {
 
     int len = src->rows * src->columns;
 
-    #pragma omp parallel for
     for (int i = 0; i < len; i++) {
         src->data[i] = in->data[i];
     }
@@ -435,7 +424,6 @@ void set_array(matrix *src, float *data) {
 
     int len = src->rows * src->columns;
 
-    #pragma omp parallel for
     for (int i = 0; i < len; i++) {
         src->data[i] = data[i];
     }
@@ -446,7 +434,6 @@ matrix* mat_copy(matrix *src) {
     matrix *out = internal_alloc(src->rows, src->columns);
     int len = src->rows * src->columns;
 
-    #pragma omp parallel for
     for (int i = 0; i < len; i++) {
         out->data[i] = src->data[i];
     }
@@ -455,7 +442,6 @@ matrix* mat_copy(matrix *src) {
 }
 
 void mcopy(float *dest, float *src, int len) {
-    #pragma omp parallel for
     for (int i = 0; i < len; i++) {
         dest[i] = src[i];
     }
