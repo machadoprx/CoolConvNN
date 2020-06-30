@@ -32,5 +32,11 @@ int dec_layer_type(const char* name) {
     else if (strcmp(name, "max_pool") == 0) {
         return MAX_POOL;
     }
+    else if (strcmp(name, "activate") == 0) {
+        return ACTIVATION;
+    }
+    else if (strcmp(name, "batch_norm") == 0) {
+        return BN;
+    }
     return -1;
 }

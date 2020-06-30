@@ -5,6 +5,8 @@
 #include "neural_net.h"
 #include "pool_layer.h"
 #include "fc_layer.h"
+#include "activations_layer.h"
+#include "bn_layer.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

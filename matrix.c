@@ -30,8 +30,10 @@ static inline matrix *internal_alloc(int rows, int columns) {
 }
 
 void matrix_free(matrix *src) {
-    free(src->data);
-    free(src);
+    if (src != NULL) {
+        free(src->data);
+        free(src);
+    }
 }
 
 matrix* transposed(matrix *src) {
@@ -49,7 +51,7 @@ matrix* transposed(matrix *src) {
     return out;
 }
 
-matrix* normalized(matrix *src) {
+matrix* softmaxed(matrix *src) {
 
     matrix *out = internal_alloc(src->rows, src->columns);
 
@@ -57,7 +59,7 @@ matrix* normalized(matrix *src) {
     for (int i = 0; i < src->rows; i++) {
 
         int j;
-        float sum = 0, max = -999999.0f;
+        float sum = 0, max = -FLT_MAX;
         register float *src_row = src->data + i * src->columns;
         register float *out_row = out->data + i * src->columns;
 
@@ -82,12 +84,12 @@ matrix* normalized(matrix *src) {
     return out;
 }
 
-void normalize(matrix *src) {
+void softmax(matrix *src) {
     #pragma omp parallel for
     for (int i = 0; i < src->rows; i++) {
 
         int j;
-        float sum = 0, max = -999999.0f;
+        float sum = 0, max = -FLT_MAX;
         register float *src_row = src->data + i * src->columns;
 
         for (j = 0; j < src->columns; j++) {
@@ -220,74 +222,91 @@ matrix* elemwise_mulvec(matrix *src, matrix* in) {
     return out;
 }
 
-matrix* mean_0axis(matrix *src) {
+matrix* mean(matrix *src, int spatial, int channels) {
 
-    matrix *out = matrix_alloc(1, src->columns);
-    float inv_rows = 1.0f / (float)src->rows;
-
-    for (int i = 0; i < src->rows; i++) {
-
-        register float* src_row = src->data + i * src->columns;
-        
-        for (int j = 0; j < src->columns; j++) {
-            out->data[j] += src_row[j];
-        }
-    }
-
-    for (int i = 0; i < src->columns; i++) {
-        out->data[i] *= inv_rows;
-    }
-
-    return out;
-}
-
-matrix* variance_0axis(matrix *src, matrix *mean) {
-
-    matrix *out = matrix_alloc(1, src->columns);
-    float inv_rows = 1.0f / (float)src->rows;
-
-    for (int i = 0; i < src->rows; i++) {
-
-        register float* src_row = src->data + i * src->columns;
-        
-        for (int j = 0; j < src->columns; j++) {
-            float diff = src_row[j] - mean->data[j];
-            out->data[j] += diff * diff;
-        }
-    }
-
-    for (int i = 0; i < src->columns; i++) {
-        out->data[i] *= inv_rows;
-    }
-
-    return out;
-}
-
-matrix* normalized2(matrix *src, matrix *mean, matrix *stddev_inv) {
-
-    matrix *out = internal_alloc(src->rows, src->columns);
+    matrix *out = matrix_alloc(1, channels);
+    const float n_inv = 1.0f / (float)(src->rows * spatial);
 
     #pragma omp parallel for
-    for (int i = 0; i < src->rows; i++) {
-        float *out_row = out->data + i * src->columns;
-        float *src_row = src->data + i * src->columns;
-        for (int j = 0; j < src->columns; j++) {
-            out_row[j] = (src_row[j] - mean->data[j]) * stddev_inv->data[j];
+    for (int c = 0; c < channels; c++) {
+        for (int b = 0; b < src->rows; b++) {
+            register float *src_ptr = src->data + spatial * (b * channels + c);
+            for (int i = 0; i < spatial; i++) {
+                out->data[c] += src_ptr[i];
+            }
+        }
+        out->data[c] *= n_inv;
+    }
+
+    return out;
+}
+
+matrix* variance(matrix *src, matrix *mean, int spatial, int channels) {
+    matrix *out = matrix_alloc(1, channels);
+    const float n_inv = 1.0f / (float)(src->rows * spatial);
+
+    #pragma omp parallel for
+    for (int c = 0; c < channels; c++) {
+        for (int b = 0; b < src->rows; b++) {
+            register float *src_ptr = src->data + spatial * (b * channels + c);
+            for (int i = 0; i < spatial; i++) {
+                float diff = src_ptr[i] - mean->data[c];
+                out->data[c] += diff * diff;
+            }
+        }
+        out->data[c] *= n_inv;
+    }
+    return out;
+}
+
+void normalize(matrix *src, matrix *mean, matrix *variance, int spatial, int channels) {
+
+    const float eps = 1e-5f;
+    #pragma omp parallel for
+    for (int b = 0; b < src->rows; b++) {
+        for (int c = 0; c < channels; c++) {
+            register float *src_ptr = src->data + spatial * (b * channels + c);
+            for (int i = 0; i < spatial; i++) {
+                src_ptr[i] = (src_ptr[i] - mean->data[c]) / sqrtf(variance->data[c] + eps);
+            }
+        }
+    }
+}
+
+matrix* normalized(matrix *src, matrix *mean, matrix *variance, int spatial, int channels) {
+    
+    matrix *out = matrix_alloc(src->rows, src->columns);
+    
+    const float eps = 1e-5f;
+    #pragma omp parallel for
+    for (int b = 0; b < src->rows; b++) {
+        for (int c = 0; c < channels; c++) {
+            register float *src_ptr = src->data + spatial * (b * channels + c);
+            register float *out_ptr = out->data + spatial * (b * channels + c);
+            for (int i = 0; i < spatial; i++) {
+                out_ptr[i] = (src_ptr[i] - mean->data[c]) / sqrtf(variance->data[c] + eps);
+            }
         }
     }
 
     return out;
 }
 
-void normalize2(matrix *src, matrix *mean, matrix *stddev_inv) {
+matrix* scale_shifted(matrix *src, matrix *gamma, matrix *beta, int channels, int spatial) {
+    
+    matrix *out = matrix_alloc(src->rows, src->columns);
     
     #pragma omp parallel for
-    for (int i = 0; i < src->rows; i++) {
-        register float *src_row = src->data + i * src->columns;
-        for (int j = 0; j < src->columns; j++) {
-            src_row[j] = (src_row[j] - mean->data[j]) * stddev_inv->data[j];
+    for (int b = 0; b < src->rows; b++) {
+        for (int c = 0; c < channels; c++) {
+            register float *src_ptr = src->data + spatial * (b * channels + c);
+            register float *out_ptr = out->data + spatial * (b * channels + c);
+            for (int i = 0; i < spatial; i++) {
+                out_ptr[i] = (src_ptr[i] * gamma->data[c]) + beta->data[c];
+            }
         }
     }
+    return out;
 }
 
 matrix* sum_rows(matrix *src) { //profile
@@ -357,45 +376,6 @@ float sum_elem(matrix *src) {
     }
 
     return sum;
-}
-
-matrix* stddev_inv(matrix* src) {
-
-    matrix *out = internal_alloc(1, src->columns);
-    const float eps = 1e-5f;
-
-    for (int i = 0; i < src->columns; i++) {
-        out->data[i] = 1.0f / sqrtf(src->data[i] + eps);
-    }
-
-    return out;
-}
-
-int *relu_activations(matrix* src) {
-
-    int len = src->rows * src->columns;
-    int *atv = aalloc(len * sizeof(int));
-
-    for (int i = 0; i < len; i++) {
-        if (src->data[i] < .0f) {
-            src->data[i] = .0f;
-            atv[i] = 0;
-        }
-        else {
-            atv[i] = 1;
-        }
-    }
-
-    return atv;
-}
-
-void del_relu_activations(matrix* src, int* atv) {
-
-    int len = src->rows * src->columns;
-
-    for (int i = 0; i < len; i++) {
-        src->data[i] *= (float)atv[i]; 
-    }
 }
 
 void accumulate(matrix* src, matrix *in) {

@@ -15,10 +15,9 @@ Current features, activations, optimizer and layers:
 * Mini-batch stochastic gradient descent
 
 To do:
+* Attention layer
 * Deconvolutional layer
-* Recurrent layer
 * Dropout
-* TanH activation
 * Leaky ReLU activation
 * Adam optimizer
 
@@ -68,24 +67,34 @@ After that, just clone the repository and run make in the cloned folder
 params.ini Define the cnn architecture:
 
 ```
-8
-conv 1 32 1 5 2 64 64 relu
+16
+conv 1 32 1 5 2 64 64
+batch_norm 32 4096
+activate relu
 max_pool 2 2 32 0 64 64
-conv 32 32 1 3 1 32 32 relu
+conv 32 32 1 3 1 32 32
+batch_norm 32 1024
+activate relu
 max_pool 2 2 32 0 32 32
-conv 32 32 1 3 1 16 16 relu
+conv 32 32 1 3 1 16 16
+batch_norm 32 256
+activate relu
 max_pool 2 2 32 0 16 16
-fc 2048 512 relu
-fc 512 2 none
+fc 2048 512
+batch_norm 512 1
+activate relu
+fc 512 2
 32
 ```
 
 ```
 [total number of layers]
-[type(conv)] [input depth number_of_filters stride filter_size padding input_width input_height] [activation]
+[type(conv)] [input depth number_of_filters stride filter_size padding input_width input_height]
 [type(max_pool)] [stride filter_size, depth, padding, input_width, input_height]
 ...
-[type(fc)] [input_dim layer_size] [activation]
+[type(fc)] [input_dim layer_size]
+[type(batch_norm)] [channels spatial]
+[type(activation)] [type]
 ...
 [batch size]
 ```
@@ -103,6 +112,7 @@ Continue fitting :
 ```
 
 Test sample:
+
 ```
 ./cnn_c test [sample_path]
 ```

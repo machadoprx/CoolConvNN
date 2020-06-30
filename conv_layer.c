@@ -1,6 +1,6 @@
 #include "conv_layer.h"
 
-conv_layer* conv_alloc(int in_c, int in_w, int in_h, int out_c, int f_size, int stride, int padd, int activ, bool out_layer) {
+conv_layer* conv_alloc(int in_c, int in_w, int in_h, int out_c, int f_size, int stride, int padd) {
     
     conv_layer *layer = aalloc(sizeof(*layer));
 
@@ -17,216 +17,27 @@ conv_layer* conv_alloc(int in_c, int in_w, int in_h, int out_c, int f_size, int 
     layer->out_dim = layer->col_w * layer->col_h * out_c;
     layer->col_c = in_c * f_size * f_size;
     layer->col_dim = layer->col_c * layer->col_w * layer->col_h;
-    layer->activ = activ;
-    layer->out_layer = out_layer;
 
     layer->filters = matrix_alloc(out_c, layer->col_c);
-    layer->gamma = matrix_alloc(1, out_c);
-    layer->beta = matrix_alloc(1, out_c);
-    layer->run_mean = matrix_alloc(1, out_c);
-    layer->run_var = matrix_alloc(1, out_c);
 
-    layer->out_norm = layer->stddev_inv = layer->input_col = NULL;
-    layer->activations = NULL;
+    layer->input_col = NULL;
 
     randomize(layer->filters, 0.0f, sqrtf(2.0f / (float)layer->in_dim));
-    for (int i = 0; i < out_c; i++) {
-        layer->gamma->data[i] = 1.0f;
-    }
 
     return layer;
 }
 
 static inline void clear_cache(conv_layer *layer) {
-    if (layer->activations != NULL) {
-        free(layer->activations);
-    }
-    if (layer->input_col != NULL){
-        matrix_free(layer->out_norm);
-        matrix_free(layer->stddev_inv);
-        matrix_free(layer->input_col);
-    }
+    matrix_free(layer->input_col);
 }
 
 void conv_free(conv_layer *layer) {
     matrix_free(layer->filters);
-    matrix_free(layer->gamma);
-    matrix_free(layer->beta);
-    matrix_free(layer->run_mean);
-    matrix_free(layer->run_var);
     clear_cache(layer);
     free(layer);
 }
 
-static void conv_update_status(conv_layer *layer, matrix *mean, matrix *variance, int channels) {
-
-    const float momentum = 0.99f;
-    const float nmomentum = 1.0f - momentum;
-
-    #pragma omp parallel for
-    for (int i = 0; i < channels; i++) {
-        layer->run_mean->data[i] = (momentum * layer->run_mean->data[i]) + (nmomentum * mean->data[i]);
-        layer->run_var->data[i] = (momentum * layer->run_var->data[i]) + (nmomentum * variance->data[i]);
-    }
-}
-
-static matrix* conv_mean(matrix *src, int spatial, int channels) {
-
-    matrix *out = matrix_alloc(1, channels);
-    const float n_inv = 1.0f / (float)(src->rows * spatial);
-
-    for (int c = 0; c < channels; c++) {
-        for (int b = 0; b < src->rows; b++) {
-            register float *src_ptr = src->data + spatial * (b * channels + c);
-            for (int i = 0; i < spatial; i++) {
-                out->data[c] += src_ptr[i];
-            }
-        }
-        out->data[c] *= n_inv;
-    }
-    return out;
-}
-
-static matrix* conv_var(matrix *src, matrix *mean, int spatial, int channels) {
-
-    matrix *out = matrix_alloc(1, channels);
-    const float n_inv = 1.0f / (float)(src->rows * spatial);
-
-    for (int c = 0; c < channels; c++) {
-        for (int b = 0; b < src->rows; b++) {
-            register float *src_ptr = src->data + spatial * (b * channels + c);
-            for (int i = 0; i < spatial; i++) {
-                float diff = src_ptr[i] - mean->data[c];
-                out->data[c] += diff * diff;
-            }
-        }
-        out->data[c] *= n_inv;
-    }
-    return out;
-}
-
-static void conv_norm(matrix *src, matrix *mean, matrix *stddev_inv, int spatial, int channels) {
-
-    #pragma omp parallel for
-    for (int b = 0; b < src->rows; b++) {
-        for (int c = 0; c < channels; c++) {
-            register float *src_ptr = src->data + spatial * (b * channels + c);
-            for (int i = 0; i < spatial; i++) {
-                src_ptr[i] = (src_ptr[i] - mean->data[c]) * stddev_inv->data[c];
-            }
-        }
-    }
-}
-
-static void train_forward(conv_layer *layer, matrix *raw_out, int spatial, int channels) {
-    
-    matrix *mean, *var;
-
-    mean = conv_mean(raw_out, spatial, channels);
-    var = conv_var(raw_out, mean, spatial, channels);
-
-    conv_update_status(layer, mean, var, channels);
-
-    layer->stddev_inv = stddev_inv(var);
-    conv_norm(raw_out, mean, layer->stddev_inv, spatial, channels);
-    layer->out_norm = mat_copy(raw_out);
-
-    matrix_free(mean);
-    matrix_free(var);
-}
-
-static void conv_scale_shift(conv_layer *layer, matrix *src, int spatial, int channels) {
-
-    #pragma omp parallel for
-    for (int b = 0; b < src->rows; b++) {
-        for (int c = 0; c < channels; c++) {
-            register float *src_ptr = src->data + spatial * (b * channels + c);
-            for (int i = 0; i < spatial; i++) {
-                src_ptr[i] = (src_ptr[i] * layer->gamma->data[c]) + layer->beta->data[c];
-            }
-        }
-    }
-}
-
-static void conv_bn_derivative(conv_layer *layer, matrix *dout, int spatial, int channels) {
-
-    const float n = (float)(dout->rows * spatial);
-    const float n_inv = 1.0f / n;
-
-    #pragma omp parallel for
-    for (int c = 0; c < channels; c++) {
-        register float dp1 = 0, dp2 = 0;
-        const float gamma = layer->gamma->data[c];
-        const float stddev_inv_n = layer->stddev_inv->data[c] * n_inv;
-        for (int b = 0; b < dout->rows; b++) {
-            int index = spatial * (b * channels + c);
-            float *dout_ptr = dout->data + index;
-            float *out_norm_ptr = layer->out_norm->data + index;
-            for (int i = 0; i < spatial; i++) {
-                dout_ptr[i] *= gamma;
-                dp1 += dout_ptr[i];
-                dp2 += dout_ptr[i] * out_norm_ptr[i];
-                dout_ptr[i] *= n;
-            }
-        }
-
-        for (int b = 0; b < dout->rows; b++) {
-            int index = spatial * (b * channels + c);
-            float *dout_ptr = dout->data + index;
-            float *out_norm_ptr = layer->out_norm->data + index;
-            for (int i = 0; i < spatial; i++) {
-                dout_ptr[i] -= (dp1 + (out_norm_ptr[i] * dp2));
-                dout_ptr[i] *= stddev_inv_n;
-            }
-        }
-    }
-}
-
-static inline void conv_update_filters(conv_layer *layer, matrix *dfilters, int batch_size, float l_rate) {
-
-    const int len = dfilters->rows * dfilters->columns;
-    const float batch_inv = 1.0f / (float)batch_size;
-
-    #pragma omp parallel for
-    for (int f = 0; f < len; f++) {
-        layer->filters->data[f] -= (dfilters->data[f] * batch_inv) * l_rate;
-    }
-}
-
-static inline void conv_update_bn(conv_layer *layer, matrix *dgamma, matrix *dbeta, float l_rate) {
-    #pragma omp parallel for
-    for (int c = 0; c < dgamma->columns; c++) {
-        layer->gamma->data[c] -= dgamma->data[c] * l_rate;
-        layer->beta->data[c] -= dbeta->data[c] * l_rate;
-    }
-}
-
-static inline matrix* conv_sum_spatial(matrix *src, int spatial, int channels) {
-
-    matrix *out = matrix_alloc(1, channels);
-
-    for (int b = 0; b < src->rows; b++) {
-        for (int c = 0; c < channels; c++) {
-            register float *src_ptr = src->data + spatial * (b * channels + c);
-            for (int i = 0; i < spatial; i++) {
-                out->data[c] += src_ptr[i];
-            }
-        }
-    }
-
-    return out;
-}
-
-static inline matrix* conv_gamma_del(conv_layer *layer, matrix *dout_norm, int spatial, int channels) {
-
-    matrix *src = elemwise_mul(dout_norm, layer->out_norm);
-    matrix *out = conv_sum_spatial(src, spatial, channels);
-    matrix_free(src);
-
-    return out;
-}
-
-matrix* conv_forward(conv_layer *layer, matrix *raw_input, bool training) {
+matrix* conv_forward(conv_layer *layer, matrix *raw_input) {
     
     clear_cache(layer);
 
@@ -248,23 +59,6 @@ matrix* conv_forward(conv_layer *layer, matrix *raw_input, bool training) {
                     1.0f, layer->filters->data, layer->filters->columns, 
                     col_row, out_cols, 0.0f, out_row, out_cols);
     }
-    
-    if (!layer->out_layer) {
-        if (training) {
-            train_forward(layer, out, out_cols, layer->out_c);
-        }
-        else {
-            layer->stddev_inv = stddev_inv(layer->run_var);
-            conv_norm(out, layer->run_mean, layer->stddev_inv, out_cols, layer->out_c);
-            layer->out_norm = mat_copy(out);
-        }
-        
-        conv_scale_shift(layer, out, out_cols, layer->out_c);
-    }
-
-    if (layer->activ == RELU) {
-        layer->activations = relu_activations(out);
-    }
 
     return out;
 }
@@ -275,21 +69,6 @@ matrix* conv_backward(conv_layer *layer, matrix *dout, float l_rate) {
 
     int batch_size = layer->input_col->rows;
     int spatial = layer->col_w * layer->col_h;
-
-    if (layer->activ == RELU) {
-        del_relu_activations(dout, layer->activations);
-    }
-
-    if (!layer->out_layer) {
-        matrix *dgamma = conv_gamma_del(layer, dout, spatial, layer->out_c);
-        matrix *dbeta = conv_sum_spatial(dout, spatial, layer->out_c);
-        conv_bn_derivative(layer, dout, spatial, layer->out_c);
-        
-        conv_update_bn(layer, dgamma, dbeta, l_rate);
-        
-        matrix_free(dgamma);
-        matrix_free(dbeta);
-    }
 
     float *dcol = aalloc(sizeof(float) * layer->col_dim);
     matrix *dfilters = matrix_alloc(layer->filters->rows, layer->filters->columns);
@@ -315,7 +94,7 @@ matrix* conv_backward(conv_layer *layer, matrix *dout, float l_rate) {
                 layer->padd, layer->col_w, layer->col_h, layer->col_c, din_row);
     }
 
-    conv_update_filters(layer, dfilters, batch_size, l_rate);
+    apply_sum(layer->filters, dfilters, -l_rate / (float)batch_size);
     
     free(dcol);
     matrix_free(dfilters);

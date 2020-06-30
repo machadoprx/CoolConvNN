@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <immintrin.h>
+#include <float.h>
 #include "utils.h"
 
 typedef struct _matrix {
@@ -24,17 +25,19 @@ void matrix_free(matrix *src);
 
 matrix* transposed(matrix *src);
 
-matrix *normalized(matrix *src);
+matrix *softmaxed(matrix *src);
 
-matrix *normalized2(matrix *src, matrix *mean, matrix *stddev_inv);
+matrix *normalized(matrix *src, matrix *mean, matrix *variance, int spatial, int channels);
 
 matrix *sum_rows(matrix *src);
 
 matrix *sum_columns(matrix *src);
 
-matrix *variance_0axis(matrix *src, matrix *mean);
+matrix* scale_shifted(matrix *src, matrix *gamma, matrix *beta, int channels, int spatial);
 
-matrix* mean_0axis(matrix *src);
+matrix *variance(matrix *src, matrix *mean, int spatial, int channels);
+
+matrix* mean(matrix *src, int spatial, int channels);
 
 matrix *multiply(matrix *src, matrix *in, CBLAS_TRANSPOSE tra, CBLAS_TRANSPOSE trb, int m, int n, int k);
 
@@ -50,9 +53,9 @@ matrix* mat_copy(matrix *src);
 
 float sum_elem(matrix *src);
 
-void normalize2(matrix *src, matrix *mean, matrix *stddev_inv);
+void normalize(matrix *src, matrix *mean, matrix *variance, int spatial, int channels);
 
-void normalize(matrix *src);
+void softmax(matrix *src);
 
 void randomize(matrix *src, float mean, float deviation);
 
@@ -73,9 +76,5 @@ void apply_elw_mulvec2(matrix *src, matrix* in_1, matrix *in_2);
 matrix* stddev_inv(matrix *src);
 
 void mcopy(float *dest, float *src, int len);
-
-int *relu_activations(matrix* src);
-
-void del_relu_activations(matrix* src, int* atv) ;
 
 #endif //matrix_h
