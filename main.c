@@ -26,20 +26,20 @@ int main(int argc, char const *argv[]) {
         float split = atof(argv[2]);
         float l_rate = atof(argv[3]);
         float l_reg = atof(argv[4]);
-        int epochs = atoi(argv[5]);
+        int batch_size = atof(argv[5]);
+        int epochs = atoi(argv[6]);
         if (strcmp(mode, "new") == 0) {
             net = cool_alloc(param_file);
         }
         else {
             net = cool_load(param_file, nn_file);
         }
-        
         printf("Number of samples: %d\n", samples);
         printf("Val split: %g\n", split);
         printf("Learning Rate: %g\n", l_rate);
-        printf("Batch Size: %d\n\n", net->batch_size);
+        printf("Batch Size: %d\n\n", batch_size);
 
-        cool_train(net, input, targets, samples, split, l_rate, l_reg, epochs);
+        cool_train(net, input, targets, samples, split, l_rate, l_reg, batch_size, epochs);
         cool_save(net, nn_file);
         free(targets);
         for (int i = 0; i < samples; i++) {

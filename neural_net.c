@@ -4,15 +4,17 @@
 
 #include "neural_net.h"
 
-matrix* correct_prob(matrix *prob, int *indices, int *labels) {
-
-    matrix *correct_prob = matrix_alloc(prob->rows, 1);
+float accurracy(matrix *prob, int *indices, int *labels) {
+    int correct = 0;
+    const float threshold = (1.0f / (float)prob->columns) + 0.4f;
 
     for (int i = 0; i < prob->rows; i++) {
-        correct_prob->data[i] = -logf(prob->data[i * prob->columns + labels[ indices[i] ]]);
+        if (prob->data[i * prob->columns + labels[ indices[i] ]] > threshold) {
+            correct++;
+        }
     }
 
-    return correct_prob;
+    return (float)correct / (float)prob->rows;
 }
 
 matrix* prob_del(matrix* prob, int *indices, int *labels) {
@@ -27,7 +29,6 @@ matrix* prob_del(matrix* prob, int *indices, int *labels) {
         float *p_row = prob->data + i * prob->columns;
 
         dp_row[ labels[ indices[i] ] ] = -1.0f;
-
         for (int j = 0; j < prob->columns; j++) {
             dp_row[j] = (dp_row[j] + p_row[j]) * n_inv;
         }
@@ -36,16 +37,15 @@ matrix* prob_del(matrix* prob, int *indices, int *labels) {
     return dprob;
 }
 
-float loss(matrix* correct_prob){
+float loss(matrix* prob, int *indices, int *labels){
 
     float out = .0f;
 
-    #pragma omp simd reduction(+: out)
-    for (int i = 0; i < correct_prob->rows; i++) {
-        out += correct_prob->data[i];
+    for (int i = 0; i < prob->rows; i++) {
+        out += logf(prob->data[i * prob->columns + labels[ indices[i] ]]);
     }
 
-    return out / (float)correct_prob->rows;
+    return -out / (float)prob->rows;
 }
 
 float reg_loss(void **layers, int *layer_type, int len, float l_reg) {
@@ -84,8 +84,10 @@ int* random_indices(int samples) {
     return indices;
 }
 
-void get_batch(int *indices, float **data_set, int batch_len, int data_dim, matrix* batch) {
+matrix* get_batch(int *indices, float **data_set, int batch_len, int data_dim) {
     
+    matrix *batch = matrix_alloc(batch_len, data_dim);
+
     #pragma omp parallel for
     for (int i = 0; i < batch_len; i++) {
 
@@ -94,4 +96,5 @@ void get_batch(int *indices, float **data_set, int batch_len, int data_dim, matr
             dest_ptr[j] = data_set[ indices[i] ][j];
         }
     }
+    return batch;
 }

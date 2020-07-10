@@ -5,7 +5,7 @@
 #include <math.h>
 #include <string.h>
 
-#define CACHE_LINE 64
+#define CACHE_LINE 32
 #define aalloc(bytes) aligned_alloc(CACHE_LINE, bytes);
 
 enum layer_t{CONV, FC, MAX_POOL, ACTIVATION, BN};

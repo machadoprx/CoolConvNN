@@ -1,2 +1,2 @@
 all:
-	gcc -std=c17 -DMKL_ILP64 -m64 -I/include -L/lib/intel64 -mfpmath=sse -ftree-vectorizer-verbose=5 -lopenblas -fopenmp -liomp5 -lpthread -march=native -msse -msse2 -msse3 -msse4.2 -O3 -ffast-math -flto main.c cool_nn.c matrix.c neural_net.c fc_layer.c conv_layer.c pool_layer.c image.c parse_data.c png2array/png2array.c png2array/lodepng.c utils.c activations_layer.c bn_layer.c -Wall -pedantic -g -lm -o cnn_c
+	gcc -std=c17 -mfpmath=sse -lopenblas -fopenmp -liomp5 -march=native -Ofast -flto main.c cool_nn.c matrix.c neural_net.c fc_layer.c conv_layer.c pool_layer.c image.c parse_data.c png2array/png2array.c png2array/lodepng.c utils.c activations_layer.c bn_layer.c -Wall -lm -o cnn_c

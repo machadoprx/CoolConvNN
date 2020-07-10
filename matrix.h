@@ -15,7 +15,7 @@
 #include "utils.h"
 
 typedef struct _matrix {
-    int rows, columns;
+    unsigned rows, columns;
     float *data;
 } matrix;
 
@@ -45,10 +45,6 @@ matrix *sum(matrix *src, matrix *in, float scalar);
 
 matrix *elemwise_mul(matrix *src, matrix *in);
 
-matrix *elemwise_mulvec2(matrix *src, matrix *in_1, matrix *in_2);
-
-matrix *elemwise_mulvec(matrix *src, matrix *in);
-
 matrix* mat_copy(matrix *src);
 
 float sum_elem(matrix *src);
@@ -59,22 +55,6 @@ void softmax(matrix *src);
 
 void randomize(matrix *src, float mean, float deviation);
 
-void set(matrix *src, matrix *W);
-
-void set_array(matrix *src, float *data);
-
-void set_row(matrix *src, float *data, int row_pos);
-
-void accumulate(matrix *src, matrix *in);
-
 void apply_sum(matrix *src, matrix *in, float scalar);
-
-void apply_elw_mulvec(matrix *src, matrix* in);
-
-void apply_elw_mulvec2(matrix *src, matrix* in_1, matrix *in_2);
-
-matrix* stddev_inv(matrix *src);
-
-void mcopy(float *dest, float *src, int len);
 
 #endif //matrix_h

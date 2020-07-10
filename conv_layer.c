@@ -27,19 +27,15 @@ conv_layer* conv_alloc(int in_c, int in_w, int in_h, int out_c, int f_size, int 
     return layer;
 }
 
-static inline void clear_cache(conv_layer *layer) {
-    matrix_free(layer->input_col);
-}
-
 void conv_free(conv_layer *layer) {
     matrix_free(layer->filters);
-    clear_cache(layer);
+    matrix_free(layer->input_col);
     free(layer);
 }
 
 matrix* conv_forward(conv_layer *layer, matrix *raw_input) {
     
-    clear_cache(layer);
+    matrix_free(layer->input_col);
 
     matrix *out = matrix_alloc(raw_input->rows, layer->out_dim);
     layer->input_col = matrix_alloc(raw_input->rows, layer->col_dim);

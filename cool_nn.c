@@ -40,9 +40,7 @@ cool_nn* cool_alloc(const char* nn_config) {
         }
     }
 
-    fscanf(cfg_fp, "%d\n", &net->batch_size);
     fclose(cfg_fp);
-
     return net;
 }
 
@@ -136,20 +134,24 @@ matrix* cool_forward(cool_nn *net, matrix *batch, bool training) {
             in = mat_copy(curr);
             matrix_free(curr);
         }
-        if (net->layers_type[i] == CONV) {
-            curr = conv_forward((conv_layer*)net->layers[i], in);
-        }
-        else if (net->layers_type[i] == FC) {
-            curr = fc_forward((fc_layer*)net->layers[i], in);
-        }
-        else if (net->layers_type[i] == MAX_POOL) {
-            curr = pool_forward((pool_layer*)net->layers[i], in);
-        }
-        else if (net->layers_type[i] == BN) {
-            curr = bn_forward((bn_layer*)net->layers[i], in, training);
-        }
-        else if (net->layers_type[i] == ACTIVATION) {
-            curr = activations_forward((activations_layer*)net->layers[i], in);
+        switch (net->layers_type[i]) {
+            case CONV:
+                curr = conv_forward((conv_layer*)net->layers[i], in);
+                break;
+            case FC:
+                curr = fc_forward((fc_layer*)net->layers[i], in);
+                break;
+            case MAX_POOL:
+                curr = pool_forward((pool_layer*)net->layers[i], in);
+                break;
+            case BN:
+                curr = bn_forward((bn_layer*)net->layers[i], in, training);
+                break;
+            case ACTIVATION:
+                curr = activations_forward((activations_layer*)net->layers[i], in);
+                break;
+            default:
+                break;
         }
         matrix_free(in);
     }
@@ -168,20 +170,24 @@ void cool_backward(cool_nn *net, matrix *prob, matrix *batch, int *indices, int 
             in = mat_copy(curr);
             matrix_free(curr);
         }
-        if (net->layers_type[i] == CONV) {
-            curr = conv_backward((conv_layer*)net->layers[i], in, l_rate);
-        }
-        else if (net->layers_type[i] == FC) {
-            curr = fc_backward((fc_layer*)net->layers[i], in, l_reg, l_rate);
-        }
-        else if (net->layers_type[i] == MAX_POOL) {
-            curr = pool_backward((pool_layer*)net->layers[i], in);
-        }
-        else if (net->layers_type[i] == BN) {
-            curr = bn_backward((bn_layer*)net->layers[i], in, l_rate);
-        }
-        else if (net->layers_type[i] == ACTIVATION) {
-            curr = activations_backward((activations_layer*)net->layers[i], in);
+        switch (net->layers_type[i]) {
+            case CONV:
+                curr = conv_backward((conv_layer*)net->layers[i], in, l_rate);
+                break;
+            case FC:
+                curr = fc_backward((fc_layer*)net->layers[i], in, l_reg, l_rate);
+                break;
+            case MAX_POOL:
+                curr = pool_backward((pool_layer*)net->layers[i], in);
+                break;
+            case BN:
+                curr = bn_backward((bn_layer*)net->layers[i], in, l_rate);
+                break;
+            case ACTIVATION:
+                curr = activations_backward((activations_layer*)net->layers[i], in);
+                break;
+            default:
+                break;
         }
         matrix_free(in);
     }
@@ -189,19 +195,20 @@ void cool_backward(cool_nn *net, matrix *prob, matrix *batch, int *indices, int 
     matrix_free(curr);
 }
 
-void cool_train(cool_nn *net, float **data_set, int *labels, int samples, float val_split, float l_rate, float l_reg, int epochs) {
+void cool_train(cool_nn *net, float **data_set, int *labels, int samples, float val_split, float l_rate, float l_reg, int batch_size, int epochs) {
 
     int val_len = samples * val_split;
     int train_samples = samples - val_len;
-    int *val_indices = aalloc(sizeof(int) * val_len);
-
+    int *val_indices = NULL;
+    if (val_len > 0) {
+        val_indices = aalloc(sizeof(int) * val_len);
+    }
     for (int i = 0; i < val_len; i++) {
         val_indices[i] = i + train_samples;
     }
-
-    int num_batches = train_samples % net->batch_size != 0 ?
-                    (train_samples / net->batch_size) + 1
-                    : train_samples / net->batch_size;
+    int num_batches = train_samples % batch_size != 0 ?
+                    (train_samples / batch_size) + 1
+                    : train_samples / batch_size;
 
     int input_dim = net->layers_type[0] == CONV ? (((conv_layer*)net->layers[0])->in_dim)
                                                 : (((fc_layer*)net->layers[0])->weights->rows);
@@ -212,26 +219,26 @@ void cool_train(cool_nn *net, float **data_set, int *labels, int samples, float 
         float total_loss = 0;
         int *indices = random_indices(train_samples);
         float _reg_loss = 0;
+        float acc = 0.0f;
 
         for (int k = 0; k < num_batches; k++) {
-            
+                
             // prepare batch
-            int batch_len = (data_index + net->batch_size >= train_samples) ?
-                            train_samples - data_index : net->batch_size;
+            int batch_len = (data_index + batch_size >= train_samples) ?
+                            train_samples - data_index : batch_size;
             
-            matrix *batch = matrix_alloc(batch_len, input_dim);
-
-            get_batch(indices + data_index, data_set, batch_len, input_dim, batch);
+            matrix *batch = get_batch(indices + data_index, data_set, batch_len, input_dim);
 
             //forward step
             matrix *prob = cool_forward(net, batch, true);
 
-            // get correct probabilities for each class
-            matrix *corr_prob = correct_prob(prob, indices + data_index, labels);
-
             // compute loss
             _reg_loss = reg_loss(net->layers, net->layers_type, net->layers_n, l_reg);
-            total_loss += loss(corr_prob) + _reg_loss;
+            total_loss += loss(prob, indices + data_index, labels) + _reg_loss;
+            acc += accurracy(prob, indices + data_index, labels);
+
+            printf("\033[A\33[2K\r");
+            printf("Progress : %.02f%c\n", (float)(num_batches * (e - 1) + k) * 100.0f / (float)(epochs * num_batches), '%');
 
             // backpropagation step
             cool_backward(net, prob, batch, indices + data_index, labels, l_rate, l_reg);
@@ -241,32 +248,29 @@ void cool_train(cool_nn *net, float **data_set, int *labels, int samples, float 
 
             //clean
             matrix_free(prob);
-            matrix_free(corr_prob);
             matrix_free(batch);
         }
+        free(indices);
 
         if (val_len > 0) {
-            matrix *val = matrix_alloc(val_len, input_dim);
-
-            get_batch(val_indices, data_set, val_len, input_dim, val);
+            matrix *val = get_batch(val_indices, data_set, val_len, input_dim);
 
             //forward step
             matrix *val_prob = cool_forward(net, val, false);
 
-            // get correct probabilities for each class
-            matrix *val_corr_prob = correct_prob(val_prob, val_indices, labels);
-
             // compute loss
-            float val_loss = loss(val_corr_prob) + _reg_loss;
-            printf("epoch: %d loss: %g val_loss: %g\n", e, total_loss / (float)num_batches, val_loss);
+            float val_loss = loss(val_prob, val_indices, labels) + _reg_loss;
+            float val_acc = accurracy(val_prob, val_indices, labels);
+
+            printf("\033[A\33[2K\r");
+            printf("epoch: %d loss: %g accuracy: %g val_loss: %g val_acc: %g\nFinished\n", e, total_loss / (float)num_batches, acc / (float)num_batches, val_loss, val_acc);
             matrix_free(val);
             matrix_free(val_prob);
-            matrix_free(val_corr_prob);
         }
         else {
-            printf("epoch: %d loss: %g\n", e, total_loss / (float)num_batches);
+            printf("\033[A\33[2K\r");
+            printf("epoch: %d loss: %g accuracy: %g\nFinished\n", e, total_loss / (float)num_batches, acc / (float)num_batches);
         }
-        free(indices);
     }
     free(val_indices);
 }

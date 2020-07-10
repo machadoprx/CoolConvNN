@@ -10,7 +10,7 @@ Current features, activations, optimizer and layers:
 * Convolutional layer
 * MaxPool layer
 * Fully Connected layer
-* Batch normalization as default in Convolutional and fully-connected layers.
+* Batch normalization
 * ReLU activation
 * Mini-batch stochastic gradient descent
 
@@ -84,7 +84,6 @@ fc 2048 512
 batch_norm 512 1
 activate relu
 fc 512 2
-32
 ```
 
 ```
@@ -95,20 +94,18 @@ fc 512 2
 [type(fc)] [input_dim layer_size]
 [type(batch_norm)] [channels spatial]
 [type(activation)] [type]
-...
-[batch size]
 ```
 
 Start fitting the data:
 
 ```
-./cnn_c new [validation_set_split] [learning_rate] [l2_reg_lambda] [epochs] 
+./cnn_c new [validation_set_split] [learning_rate] [l2_reg_lambda] [batch_size] [epochs] 
 ```
 
 Continue fitting :
 
 ```
-./cnn_c continue [validation_set_split] [learning_rate] [l2_reg_lambda] [epochs]
+./cnn_c continue [validation_set_split] [learning_rate] [l2_reg_lambda] [batch_size] [epochs]
 ```
 
 Test sample:

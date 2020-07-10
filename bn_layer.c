@@ -38,7 +38,6 @@ static void bn_update_status(bn_layer *layer, matrix *mean, matrix *variance) {
     const float momentum = 0.99f;
     const float nmomentum = 1.0f - momentum;
 
-    #pragma omp parallel for simd
     for (int i = 0; i < layer->in_channels; i++) {
         layer->run_mean->data[i] = (momentum * layer->run_mean->data[i]) + (nmomentum * mean->data[i]);
         layer->run_var->data[i] = (momentum * layer->run_var->data[i]) + (nmomentum * variance->data[i]);
@@ -63,6 +62,7 @@ matrix* bn_forward(bn_layer *layer, matrix *input, bool training) {
     }
     else {
         layer->out_cache = normalized(input, layer->run_mean, layer->run_var, layer->in_spatial, layer->in_channels);
+        layer->variance = NULL;
     }
 
     return scale_shifted(layer->out_cache, layer->gamma, layer->beta, layer->in_channels, layer->in_spatial);
@@ -71,9 +71,9 @@ matrix* bn_forward(bn_layer *layer, matrix *input, bool training) {
 void bn_norm_del(matrix *dout, matrix *gamma, matrix *out_norm, matrix *variance, int spatial, int channels) {
 
     const float n = (float)(dout->rows * spatial);
-    const float eps = 0.00001f;
-
-    #pragma omp parallel for simd
+    const float eps = 1e-5f;
+    
+    #pragma omp parallel for
     for (int c = 0; c < channels; c++) {
         register float dp1 = 0.0f, dp2 = 0.0f;
         const float _gamma = gamma->data[c];
@@ -106,16 +106,17 @@ static matrix* sum_spatial(matrix *src, int spatial, int channels) {
 
     matrix *out = matrix_alloc(1, channels);
 
-    #pragma omp parallel for simd
+    #pragma omp parallel for
     for (int c = 0; c < channels; c++) {
+        float sum = 0.0f;
         for (int b = 0; b < src->rows; b++) {
-            register float *src_ptr = src->data + spatial * (b * channels + c);
+            float *src_ptr = src->data + spatial * (b * channels + c);
             for (int i = 0; i < spatial; i++) {
-                out->data[c] += src_ptr[i];
+                sum += src_ptr[i];
             }
         }
+        out->data[c] = sum;
     }
-
     return out;
 }
 

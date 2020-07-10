@@ -13,7 +13,6 @@
 
 typedef struct _cool_nn {
     int layers_n;
-    int batch_size;
     int *layers_type;
     void **layers;
 } cool_nn;
@@ -23,7 +22,7 @@ cool_nn* cool_load(const char* nn_config, const char* nn_state);
 
 void cool_free(cool_nn *net);
 void cool_save(cool_nn *net, const char* nn_state);
-void cool_train(cool_nn *net, float **data_set, int *labels, int samples, float val_split, float l_rate, float l_reg, int epochs);
+void cool_train(cool_nn *net, float **data_set, int *labels, int samples, float val_split, float l_rate, float l_reg, int batch_size, int epochs);
 
 matrix* cool_forward(cool_nn *net, matrix *batch, bool training);
 
