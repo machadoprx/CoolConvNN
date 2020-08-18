@@ -8,7 +8,6 @@ int main(int argc, char const *argv[]) {
 
     int n_proc = omp_get_max_threads();
     omp_set_num_threads(n_proc);
-    
     const char *data_file = "data.csv";
     const char *nn_file = "nn_state.dat";
     const char *param_file = "params.ini";

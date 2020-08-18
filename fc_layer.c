@@ -16,19 +16,15 @@ fc_layer* fc_alloc(int in_dim, int out_dim) {
     return layer;
 }
 
-static void clear_cache(fc_layer *layer) {
-    matrix_free(layer->input);
-}
-
 void fc_free(fc_layer *layer) {
     matrix_free(layer->weights);
-    clear_cache(layer);
+    matrix_free(layer->input);
     free(layer);
 }
 
 matrix* fc_forward(fc_layer *layer, matrix *raw_input) {
 
-    clear_cache(layer);
+    matrix_free(layer->input);
 
     layer->input = mat_copy(raw_input);
 
