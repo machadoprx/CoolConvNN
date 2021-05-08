@@ -107,11 +107,26 @@ void softmax(matrix *src) {
     }
 }
 
-matrix *multiply(matrix *src, matrix *in, CBLAS_TRANSPOSE tra, CBLAS_TRANSPOSE trb, int m, int n, int k) {
+matrix *multiply(matrix *src, matrix *in, bool tra, bool trb, int m, int n, int k) {
 
     matrix *out = internal_alloc(m, n);
-    cblas_sgemm(CblasRowMajor, tra, trb,
-        m, n, k, 1.0f, src->data, src->columns, in->data, in->columns, 0.0f, out->data, out->columns);
+    matrix *in1, *in2;
+    if (tra) {
+	in1 = transposed(src);
+    }
+    else in1 = src;
+
+    if (trb) {
+        in2 = transposed(in);                           }                                                    else in2 = in;
+    for (int i = 0; i < m; i++) {
+	for (int j = 0; j < n; j++) {
+	    float sum = 0;
+	    for (int l = 0; l < k; l++) {
+	        sum += in1->data[i*k + l]*in2->data[l*m + j];
+	    }
+	    out->data[i*n + j] = sum;
+	}
+    }
 
     return out;
 }

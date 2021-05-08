@@ -1,2 +1,2 @@
 all:
-	gcc -std=c17 -mfpmath=sse -L${MKLROOT}/lib/intel64 -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm -ldl -fopenmp -liomp5 -march=native -Ofast -flto main.c cool_nn.c matrix.c neural_net.c fc_layer.c conv_layer.c pool_layer.c image.c parse_data.c png2array/png2array.c png2array/lodepng.c utils.c activations_layer.c bn_layer.c -Wall -lm -o cnn_c
+	clang -std=c17 -lpthread -lm -ldl -fopenmp -O3 -flto main.c cool_nn.c matrix.c neural_net.c fc_layer.c conv_layer.c pool_layer.c image.c parse_data.c png2array/png2array.c png2array/lodepng.c utils.c activations_layer.c bn_layer.c -Wall -lm -o cnn_c

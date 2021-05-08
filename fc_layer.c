@@ -28,16 +28,16 @@ matrix* fc_forward(fc_layer *layer, matrix *raw_input) {
 
     layer->input = mat_copy(raw_input);
 
-    return multiply(raw_input, layer->weights, CblasNoTrans, CblasNoTrans, 
+    return multiply(raw_input, layer->weights, false, false, 
                     raw_input->rows, layer->weights->columns, raw_input->columns);
 }
 
 matrix* fc_backward(fc_layer *layer, matrix *dout, float lambda_reg, float l_rate) {
 
-    matrix *dweights = multiply(layer->input, dout, CblasTrans, CblasNoTrans, layer->input->columns, dout->columns, layer->input->rows);
+    matrix *dweights = multiply(layer->input, dout, true, false, layer->input->columns, dout->columns, layer->input->rows);
     apply_sum(dweights, layer->weights, lambda_reg);
 
-    matrix *dinput = multiply(dout, layer->weights, CblasNoTrans, CblasTrans, dout->rows, layer->weights->rows, dout->columns);
+    matrix *dinput = multiply(dout, layer->weights, false, true, dout->rows, layer->weights->rows, dout->columns);
 
     apply_sum(layer->weights, dweights, -l_rate);
 

@@ -6,12 +6,11 @@
 #define matrix_h
 
 #include <math.h>
-#include <mkl/mkl_cblas.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <time.h>
-#include <immintrin.h>
 #include <float.h>
+#include <stdbool.h>
 #include "utils.h"
 
 typedef struct _matrix {
@@ -39,7 +38,7 @@ matrix *variance(matrix *src, matrix *mean, int spatial, int channels);
 
 matrix* mean(matrix *src, int spatial, int channels);
 
-matrix *multiply(matrix *src, matrix *in, CBLAS_TRANSPOSE tra, CBLAS_TRANSPOSE trb, int m, int n, int k);
+matrix *multiply(matrix *src, matrix *in, bool tra, bool trb, int m, int n, int k);
 
 matrix *sum(matrix *src, matrix *in, float scalar);
 
