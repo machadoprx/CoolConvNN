@@ -122,13 +122,20 @@ matrix *multiply(matrix *src, matrix *in, bool tra, bool trb, int m, int n, int 
 	for (int j = 0; j < n; j++) {
 	    float sum = 0;
 	    for (int l = 0; l < k; l++) {
-	        sum += in1->data[i*k + l]*in2->data[l*m + j];
+	        sum += in1->data[i*k + l]*in2->data[l*n + j];
 	    }
 	    out->data[i*n + j] = sum;
 	}
     }
 
     return out;
+}
+/*cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+                    layer->filters->rows, out_cols, layer->filters->columns,
+                    1.0f, layer->filters->data, layer->filters->columns,
+                    col_row, out_cols, 0.0f, out_row, out_cols);*/
+void gemm (bool rowMajor, bool transA, bool transB, unsigned m, unsigned n, unsigned k, float Z, float *A, unsigned Acols, float *B, unsigned Bcols, float X, float *C, float Ccols) {
+    return;
 }
 
 matrix* sum(matrix *src, matrix *in, float scalar) {

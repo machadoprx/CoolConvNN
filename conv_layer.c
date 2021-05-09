@@ -49,7 +49,7 @@ matrix* conv_forward(conv_layer *layer, matrix *raw_input) {
 
         iam2cool(in_row, layer->in_c, layer->in_w, layer->in_h, layer->f_size, layer->stride, 
                 layer->padd, layer->col_w, layer->col_h, layer->col_c, col_row);
-        matrix *mul = multiply
+        matrix *mul = multiply(layer->filters, matrix *in, bool tra, bool trb, int m, int n, int k)
         /*cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, 
                     layer->filters->rows, out_cols, layer->filters->columns, 
                     1.0f, layer->filters->data, layer->filters->columns, 
