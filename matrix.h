@@ -11,6 +11,7 @@
 #include <time.h>
 #include <float.h>
 #include <stdbool.h>
+#include "gemm.h"
 #include "utils.h"
 
 typedef struct _matrix {

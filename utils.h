@@ -6,7 +6,7 @@
 #include <string.h>
 
 #define CACHE_LINE 64
-#define aalloc(bytes) malloc(bytes);
+#define aalloc(bytes) calloc(1, bytes);
 
 enum layer_t{CONV, FC, MAX_POOL, ACTIVATION, BN};
 enum activ_t{NONE, RELU};
