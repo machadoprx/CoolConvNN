@@ -12,10 +12,6 @@ matrix* matrix_alloc(int rows, int columns) {
 
     out->rows = rows;
     out->columns = columns;
-    
-    for (int i = 0; i < len; i++) {
-        out->data[i] = .0f;
-    }
 
     return out;
 }
