@@ -11,6 +11,7 @@ bn_layer *bn_alloc(int in_channels, int in_spatial) {
     layer->run_var = matrix_alloc(1, layer->in_channels);
     layer->run_mean = matrix_alloc(1, layer->in_channels);
 
+    #pragma omp parallel for
     for (int i = 0; i < in_channels; i++) {
         layer->gamma->data[i] = 1.0f;
     }
@@ -38,6 +39,7 @@ static void bn_update_status(bn_layer *layer, matrix *mean, matrix *variance) {
     const float momentum = 0.99f;
     const float nmomentum = 1.0f - momentum;
 
+    #pragma omp parallel for
     for (int i = 0; i < layer->in_channels; i++) {
         layer->run_mean->data[i] = (momentum * layer->run_mean->data[i]) + (nmomentum * mean->data[i]);
         layer->run_var->data[i] = (momentum * layer->run_var->data[i]) + (nmomentum * variance->data[i]);

@@ -238,7 +238,7 @@ void cool_train(cool_nn *net, float **data_set, int *labels, int samples, float 
             acc += accurracy(prob, indices + data_index, labels);
 
             printf("\033[A\33[2K\r");
-            printf("Progress : %.02f%c\n", (float)(num_batches * (e - 1) + k) * 100.0f / (float)(epochs * num_batches), '%');
+            printf("Epoch: %d - Progress : %.02f%c - Accuracy : %.02f%c - Loss : %.02f\n", e, (float)(num_batches * (e - 1) + k) * 100.0f / (float)(epochs * num_batches), '%', 100.0f*acc/(k+1), '%', total_loss/(k+1));
 
             // backpropagation step
             cool_backward(net, prob, batch, indices + data_index, labels, l_rate, l_reg);
@@ -263,7 +263,7 @@ void cool_train(cool_nn *net, float **data_set, int *labels, int samples, float 
             float val_acc = accurracy(val_prob, val_indices, labels);
 
             printf("\033[A\33[2K\r");
-            printf("epoch: %d loss: %g accuracy: %g val_loss: %g val_acc: %g\nFinished\n", e, total_loss / (float)num_batches, acc / (float)num_batches, val_loss, val_acc);
+            printf("Epoch: %d loss: %g Accuracy: %g val_loss: %g val_acc: %g\nFinished\n", e, total_loss / (float)num_batches, acc / (float)num_batches, val_loss, val_acc);
             matrix_free(val);
             matrix_free(val_prob);
         }

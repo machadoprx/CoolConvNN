@@ -4,7 +4,7 @@
 //https://github.com/BVLC/caffe/blob/master/LICENSE
 
 void iam2cool(float *im, int in_c, int in_w, int in_h, int f_size, int stride, int padd, int col_w, int col_h, int col_c, float *out) {
-    #pragma omp parallel for
+    #pragma omp parallel for collapse(2)
     for (int c = 0; c < col_c; c++) {
         int w_off = c % f_size;
         int h_off = (c / f_size) % f_size;
@@ -27,7 +27,7 @@ void iam2cool(float *im, int in_c, int in_w, int in_h, int f_size, int stride, i
 }
 
 void cool2ami(float *cols, int in_c, int in_w, int in_h, int f_size, int stride, int padd, int col_w, int col_h, int col_c, float *out) {
-    #pragma omp parallel for
+    #pragma omp parallel for collapse(2)
     for (int c = 0; c < col_c; c++) {
         int w_off = c % f_size;
         int h_off = (c / f_size) % f_size;

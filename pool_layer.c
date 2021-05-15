@@ -36,7 +36,7 @@ matrix* pool_forward(pool_layer *layer, matrix *raw_input) {
     matrix *out = matrix_alloc(raw_input->rows, layer->out_dim);
     layer->indexes = aalloc(sizeof(int) * raw_input->rows * layer->out_dim);
 
-    #pragma omp parallel for collapse(4)
+    #pragma omp parallel for collapse(3)
     for (int b = 0; b < raw_input->rows; b++) {
         for (int c = 0; c < layer->chan; c++) {
             for(int h = 0; h < layer->out_h; h++) {

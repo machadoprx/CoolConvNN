@@ -63,7 +63,7 @@ matrix* softmaxed(matrix *src) {
                 max = src_row[j];
             }
         }
-        #pragma omp simd reduction(+: sum)
+        //#pragma omp simd reduction(+: sum)
         for (j = 0; j < src->columns; j++) {
             out_row[j] = expf(src_row[j] - max);
             sum += out_row[j];
@@ -90,7 +90,8 @@ void softmax(matrix *src) {
                 max = src_row[j];
             }
         }
-        #pragma omp simd reduction(+: sum)
+        
+        //#pragma omp simd reduction(+: sum)
         for (j = 0; j < src->columns; j++) {
             src_row[j] = expf(src_row[j] - max);
             sum += src_row[j];
@@ -160,7 +161,6 @@ matrix* mean(matrix *src, int spatial, int channels) {
         register float sum = 0.0f;
         for (int b = 0; b < src->rows; b++) {
             register float *src_ptr = src->data + spatial * (b * channels + c);
-            #pragma omp simd reduction (+: sum)
             for (int i = 0; i < spatial; i++) {
                 sum += src_ptr[i];
             }
@@ -180,7 +180,6 @@ matrix* variance(matrix *src, matrix *mean, int spatial, int channels) {
         register float curr_mean = mean->data[c];
         for (int b = 0; b < src->rows; b++) {
             register float *src_ptr = src->data + spatial * (b * channels + c);
-            #pragma omp simd reduction (+: sum)
             for (int i = 0; i < spatial; i++) {
                 float diff = src_ptr[i] - curr_mean;
                 sum += diff * diff;
@@ -259,9 +258,12 @@ matrix* sum_columns(matrix *src) { //profile
     #pragma omp parallel for
     for (int i = 0; i < src->rows; i++) {
         register float* src_row = src->data + i * src->columns;
+        register float sum = 0;
+        #pragma omp simd reduction(+: sum)
         for (int j = 0; j < src->columns; j++) {
-            out->data[i] += src_row[j];
+            sum += src_row[j];
         }
+        out->data[i] = sum;
     }
 
     return out;
@@ -286,7 +288,7 @@ float sum_elem(matrix *src) {
     float sum = 0;
     int len = src->rows * src->columns;
 
-    #pragma omp simd reduction(+: sum)
+    #pragma omp parallel for reduction(+: sum)
     for (int i = 0; i < len; i++) {
         sum += src->data[i];
     }
@@ -299,6 +301,7 @@ matrix* mat_copy(matrix *src) {
     matrix *out = internal_alloc(src->rows, src->columns);
     int len = src->rows * src->columns;
 
+    #pragma omp parallel for
     for (int i = 0; i < len; i++) {
         out->data[i] = src->data[i];
     }

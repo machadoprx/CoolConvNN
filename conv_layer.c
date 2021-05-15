@@ -1,5 +1,5 @@
 #include "conv_layer.h"
-
+#include <stdio.h>
 conv_layer* conv_alloc(int in_c, int in_w, int in_h, int out_c, int f_size, int stride, int padd) {
     
     conv_layer *layer = aalloc(sizeof(*layer));
@@ -17,7 +17,6 @@ conv_layer* conv_alloc(int in_c, int in_w, int in_h, int out_c, int f_size, int 
     layer->out_dim = layer->col_w * layer->col_h * out_c;
     layer->col_c = in_c * f_size * f_size;
     layer->col_dim = layer->col_c * layer->col_w * layer->col_h;
-
     layer->filters = matrix_alloc(out_c, layer->col_c);
 
     layer->input_col = NULL;

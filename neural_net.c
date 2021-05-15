@@ -6,8 +6,7 @@
 
 float accurracy(matrix *prob, int *indices, int *labels) {
     int correct = 0;
-    const float threshold = (1.0f / (float)prob->columns) + 0.4f;
-
+    const float threshold = 0.5f;
     for (int i = 0; i < prob->rows; i++) {
         if (prob->data[i * prob->columns + labels[ indices[i] ]] > threshold) {
             correct++;
@@ -41,6 +40,7 @@ float loss(matrix* prob, int *indices, int *labels){
 
     float out = .0f;
 
+    #pragma omp parallel for reduction(+: out)
     for (int i = 0; i < prob->rows; i++) {
         out += logf(prob->data[i * prob->columns + labels[ indices[i] ]]);
     }
@@ -68,6 +68,7 @@ int* random_indices(int samples) {
 
     int *indices = aalloc(sizeof(int) * samples);
     
+    #pragma omp parallel for
     for (int i = 0; i < samples; i++) {
         indices[i] = i;
     }
